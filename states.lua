@@ -316,13 +316,13 @@ function game.make()
 	setmetatable(g,game)
 	g.players = {}
 	print('.')
-	if joysticks then
-		for i=1, love.joystick.getNumJoysticks() do
-			g.players[i] = player.make(i)
-		end
-	else
+	-- if joysticks then
+	-- 	for i=1, love.joystick.getNumJoysticks() do
+	-- 		g.players[i] = player.make(i)
+	-- 	end
+	-- else
 		g.players[1] = player.make(-1)
-	end
+	-- end
 	print('.')
 	g.distance = 100
 	g.rocks = {}
