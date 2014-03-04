@@ -60,3 +60,5 @@ function math.CheckCollision(box1x, box1y, box1w, box1h, box2x, box2y, box2w, bo
         return true                 -- Yes collision. Ouch!
     end
 end
+
+function math.loop(min,v,max) if v > max then return min elseif v < min then return max else return v end end

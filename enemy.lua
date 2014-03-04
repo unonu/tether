@@ -103,6 +103,43 @@ function sentry:update(dt)
 	end
 end
 
+dash = {}
+dash.__index = dash
+
+function dash.make()
+	local d = {}
+	setmetatable(d,dash)
+
+	if math.random(0,1) == 0 then
+		local x = math.random(0,1)*screen.width
+		d.x,d.y = x-(512*math.sign(1-x)),math.random(0,screen.height)
+	else
+		local y = math.random(0,1)*screen.height
+		d.x,d.y = math.random(0,screen.width),y-(512*math.sign(1-y))
+	end
+
+	d.r = math.random(0,2)*math.pi
+	d.timer = 200
+
+	return d
+end
+
+function dash:update( dt )
+	if self.timer > 75 then
+		self.r = math.loop(0,self.r+(math.pi/128),2)
+	if self.timer < 50 then
+		self.x = self.x + math.cos(self.r)*4
+		self.y = self.y + math.sin(self.t)*4
+	end
+	if self.timer < 0 then self.timer = 200 end
+
+	self.timer = self.timer-1
+end
+
+function dash:draw()
+	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
+end
+
 --------------------------------------------------------------
 -- BOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSS --
 --------------------------------------------------------------
@@ -194,3 +231,4 @@ function torrent:update(dt)
 	if self.y_vol ~= 0 then self.y_vol = math.round(self.y_vol - (self.y_vol*.2),2) end
 	self.forces = {}
 end
+
