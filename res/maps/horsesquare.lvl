@@ -1,0 +1,165 @@
+return {
+-- Table: {1}
+{
+   ["zones"]={2},
+   ["mid"]={3},
+   ["maxTeams"]=2,
+   ["width"]=1376,
+   ["flags"]={4},
+   ["barriers"]={5},
+   ["height"]=1376,
+   ["orientation"]="landscape",
+   ["spawns"]={6},
+},
+-- Table: {2}
+{
+   {7},
+   {8},
+   {9},
+   {10},
+   {11},
+   {12},
+   {13},
+   {14},
+   {15},
+   {16},
+},
+-- Table: {3}
+{
+   ["y"]=688,
+   ["x"]=688,
+},
+-- Table: {4}
+{
+   {17},
+   {18},
+},
+-- Table: {5}
+{
+},
+-- Table: {6}
+{
+},
+-- Table: {7}
+{
+   ["y"]=0,
+   ["x"]=0,
+   ["ex"]=13,
+   ["team"]=1,
+   ["height"]=13,
+   ["typ"]="territory",
+   ["ey"]=13,
+   ["width"]=13,
+},
+-- Table: {8}
+{
+   ["y"]=0,
+   ["x"]=30,
+   ["ex"]=43,
+   ["team"]=1,
+   ["height"]=13,
+   ["typ"]="territory",
+   ["ey"]=13,
+   ["width"]=13,
+},
+-- Table: {9}
+{
+   ["y"]=0,
+   ["x"]=13,
+   ["ex"]=30,
+   ["team"]=1,
+   ["height"]=7,
+   ["typ"]="territory",
+   ["ey"]=7,
+   ["width"]=17,
+},
+-- Table: {10}
+{
+   ["y"]=30,
+   ["x"]=0,
+   ["ex"]=13,
+   ["team"]=2,
+   ["height"]=13,
+   ["typ"]="territory",
+   ["ey"]=43,
+   ["width"]=13,
+},
+-- Table: {11}
+{
+   ["y"]=30,
+   ["x"]=30,
+   ["ex"]=43,
+   ["team"]=2,
+   ["height"]=13,
+   ["typ"]="territory",
+   ["ey"]=43,
+   ["width"]=13,
+},
+-- Table: {12}
+{
+   ["y"]=36,
+   ["x"]=13,
+   ["ex"]=30,
+   ["team"]=2,
+   ["height"]=7,
+   ["typ"]="territory",
+   ["ey"]=43,
+   ["width"]=17,
+},
+-- Table: {13}
+{
+   ["y"]=39,
+   ["x"]=3,
+   ["ex"]=7,
+   ["team"]=2,
+   ["height"]=4,
+   ["typ"]="endzone",
+   ["ey"]=43,
+   ["width"]=4,
+},
+-- Table: {14}
+{
+   ["y"]=39,
+   ["x"]=36,
+   ["ex"]=40,
+   ["team"]=2,
+   ["height"]=4,
+   ["typ"]="endzone",
+   ["ey"]=43,
+   ["width"]=4,
+},
+-- Table: {15}
+{
+   ["y"]=0,
+   ["x"]=36,
+   ["ex"]=40,
+   ["team"]=1,
+   ["height"]=4,
+   ["typ"]="endzone",
+   ["ey"]=4,
+   ["width"]=4,
+},
+-- Table: {16}
+{
+   ["y"]=0,
+   ["x"]=3,
+   ["ex"]=7,
+   ["team"]=1,
+   ["height"]=4,
+   ["typ"]="endzone",
+   ["ey"]=4,
+   ["width"]=4,
+},
+-- Table: {17}
+{
+   ["y"]=3,
+   ["x"]=22,
+   ["team"]=1,
+},
+-- Table: {18}
+{
+   ["y"]=40,
+   ["x"]=18,
+   ["team"]=2,
+},
+}

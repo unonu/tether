@@ -1,0 +1,55 @@
+return {
+-- Table: {1}
+{
+   ["zones"]={2},
+   ["mid"]={3},
+   ["maxTeams"]=1,
+   ["width"]=704,
+   ["flags"]={4},
+   ["barriers"]={5},
+   ["height"]=416,
+   ["orientation"]="landscape",
+   ["spawns"]={6},
+},
+-- Table: {2}
+{
+   {7},
+   {8},
+},
+-- Table: {3}
+{
+   ["y"]=208,
+   ["x"]=352,
+},
+-- Table: {4}
+{
+},
+-- Table: {5}
+{
+},
+-- Table: {6}
+{
+},
+-- Table: {7}
+{
+   ["y"]=0,
+   ["x"]=0,
+   ["ex"]=13,
+   ["team"]=1,
+   ["height"]=13,
+   ["typ"]="territory",
+   ["ey"]=13,
+   ["width"]=13,
+},
+-- Table: {8}
+{
+   ["y"]=0,
+   ["x"]=20,
+   ["ex"]=22,
+   ["team"]=1,
+   ["height"]=11,
+   ["typ"]="territory",
+   ["ey"]=11,
+   ["width"]=2,
+},
+}

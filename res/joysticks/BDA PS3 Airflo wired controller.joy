@@ -1,0 +1,24 @@
+#button
+x = 1
+a = 2
+b = 3
+y = 4
+leftshoulder = 5
+rightshoulder = 6
+triggerleft = 7
+triggerright = 8
+back = 9
+start = 10
+leftstick = 11
+rightstick = 12
+guide = 13
+#hat
+dpup = u
+dpdown = d
+dpleft = l
+dpright = r
+#axis
+leftx = 1
+lefty = 2
+rightx = 3
+righty = 4

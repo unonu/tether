@@ -1,0 +1,23 @@
+#buttons
+alt1 = 16
+accept = 15
+cancel = 14
+alt2 = 13
+leftShoulder = 11
+rightShoulder = 12
+leftTrigger = 9
+rightTrigger = 10
+options = 1
+start = 4
+leftClick = 2
+rightClick = 3
+super = 17
+up = 5
+down = 7
+left = 8
+right = 6
+#axes
+leftH = 1
+leftV = 2
+rightH = 3
+rightV = 4
