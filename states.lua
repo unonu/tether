@@ -337,7 +337,10 @@ function game.make()
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
 	print('.')
-	g.pauseCanvas = love.graphics.newCanvas()
+	g.canvases = {
+		pauseBlur = love.graphics.newCanvas(),
+		pauseCanvas = love.graphics.newCanvas(),
+	}
 	-- print('.res')
 	g.res = {bullet = res.load("sprite","shot.png"),crystal = res.load("sprite","point.png"),target = res.load("sprite","target.png"),scoreBoardA = res.load("image","scoreboardBack.png"),scoreBoardB = res.load("image","scoreboardFront.png"),background = res.load("image","greyField.png")}
 	screen:setBackground(g.res.background)
@@ -376,9 +379,9 @@ if self.pause == 1 then
 		e:draw()
 	end
 	
-	for i,p in ipairs(self.players) do
-		p:draw()
-	end
+	-- for i,p in ipairs(self.players) do
+	-- 	p:draw()
+	-- end
 	for i,b in ipairs(self.bullets) do
 		love.graphics.setColor(255,math.random(0,2)*128,math.random(0,255))
 		b:draw()
@@ -443,7 +446,12 @@ if self.pause == 1 then
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
 		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
-	love.graphics.draw(self.pauseCanvas)
+
+
+	love.graphics.draw(self.canvases.pauseBlur)
+							print("drew blur canvas")
+
+
 	--------------
 	self.players[1]:drawA(150,150,'Large')
 	self.players[1]:drawB(screen.width-150,screen.height-150,'Large')
@@ -459,8 +467,9 @@ elseif self.pause == 2 then
 	love.graphics.printf("PAUSED",_x,-16+xy[2]+_y,screen.width,'center')
 elseif self.pause == 3 then
 	local xy = screen:getCentre()
-		love.graphics.setColor(0,0,0)
-	love.graphics.draw(self.pauseCanvas)
+		love.graphics.setColor(255,255,255)
+	love.graphics.draw(self.canvases.pauseBlur)
+							-- print("drew blur canvas")
 	--------------
 	
 	--------------
@@ -585,6 +594,16 @@ if self.pause == 1 then
 	elseif k == 'M' then
 		love.audio.setVolume(math.abs(love.audio.getVolume()-1))
 	elseif k == 'escape' then
+				-- love.graphics.setCanvas(self.canvases.pauseCanvas)
+				print("drew pause canvas")
+						love.graphics.setCanvas(self.canvases.pauseBlur)
+						love.graphics.setShader(shader)
+							-- love.graphics.draw(self.canvases.pauseCanvas)
+				self:draw()
+							print("drew pause canvas to blur")
+						love.graphics.setShader()
+						love.graphics.setCanvas()
+
 		self.pause = 3
 		love.audio.pause()
 	end

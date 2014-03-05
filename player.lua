@@ -96,72 +96,83 @@ function player:closest(x,y)
 	end
 end
 
-function player:drawA(x,y,s)
---			local rot
-		if self.number > 0 then
-			if love.joystick.getAxis(self.number,1) ~= 0 or love.joystick.getAxis(self.number,2) ~= 0 then
-				self.members.a.rot = math.atan2(love.joystick.getAxis(self.number,1),-love.joystick.getAxis(self.number,2))
-			else
-				self.members.a.rot = self.members.a.rot - (math.pi/128)
-			end
+function player:drawMember(member,x,y,s)
+	--rotation
+	if self.number > 0 then
+		if love.joystick.getAxis(self.number,1) ~= 0 or love.joystick.getAxis(self.number,2) ~= 0 then
+			member.rot = math.atan2(love.joystick.getAxis(self.number,1),-love.joystick.getAxis(self.number,2))
 		else
-			if love.keyboard.isDown("w") and love.keyboard.isDown("a") then self.members.a.rot = 7*math.pi/4
-			elseif love.keyboard.isDown("a") and love.keyboard.isDown("s") then self.members.a.rot = 5*math.pi/4
-			elseif love.keyboard.isDown("s") and love.keyboard.isDown("d") then self.members.a.rot = 3*math.pi/4
-			elseif love.keyboard.isDown("d") and love.keyboard.isDown("w") then self.members.a.rot = math.pi/4
-			elseif love.keyboard.isDown("w") then self.members.a.rot = 0
-			elseif love.keyboard.isDown("s") then self.members.a.rot = math.pi
-			elseif love.keyboard.isDown("a") then self.members.a.rot = 3*math.pi/2
-			elseif love.keyboard.isDown("d") then self.members.a.rot = math.pi/2
-			else self.members.a.rot = self.members.a.rot-(math.pi/128) end
-		end
-	if (self.number < 0 and not love.keyboard.isDown('w','a','s','d'))or(self.number > 0 and love.joystick.getAxis(self.number,1) == 0 and love.joystick.getAxis(self.number,2) == 0) then
-		if self.distance < self.tetherDistance then
-			love.graphics.setColor(158,3,151,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player3"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
-			end
-		else
-			love.graphics.setColor(0,0,0,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player3"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
-			end
-		end
-		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,self.members.a.immunity*255)))
-		if s then
-			love.graphics.draw(self.imageLarge,res.quads["playerLarge1"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
-		else
-			love.graphics.draw(self.image,res.quads["player1"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
+			member.rot = member.rot - (math.pi/128)
 		end
 	else
+		-- if not love.keyboard.isDown('w','a','s','d') then 
+			member.rot = member.rot-(math.pi/128)
+		-- end
+		if love.keyboard.isDown("w") and not love.keyboard.isDown("s") then member.rot = 0
+		elseif love.keyboard.isDown("s") and not love.keyboard.isDown("w") then member.rot = math.pi
+		end
+		if love.keyboard.isDown("a") and not love.keyboard.isDown("d") then member.rot = 3*math.pi/2
+		elseif love.keyboard.isDown("d") and not love.keyboard.isDown("a") then member.rot = math.pi/2
+		end
+		if love.keyboard.isDown("w") and love.keyboard.isDown("a") then member.rot = 7*math.pi/4
+		elseif love.keyboard.isDown("s") and love.keyboard.isDown("d") then member.rot = 3*math.pi/4
+		elseif love.keyboard.isDown("a") and love.keyboard.isDown("s") then member.rot = 5*math.pi/4
+		elseif love.keyboard.isDown("d") and love.keyboard.isDown("w") then member.rot = math.pi/4
+		end
+	end
+	--drawing
+	if math.floor((member.x_vol^2 + member.y_vol^2)^.5) == 0 then --stationary
+		--tether effect
 		if self.distance < self.tetherDistance then
 			love.graphics.setColor(158,3,151,128)
 			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
+				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
-				love.graphics.draw(self.image,res.quads["player4"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
+				love.graphics.draw(self.image,res.quads["player3"],x or member.x,y or member.y,member.rot,1,1,24,24)
 			end
 		else
 			love.graphics.setColor(0,0,0,128)
 			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
+				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
-				love.graphics.draw(self.image,res.quads["player4"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
+				love.graphics.draw(self.image,res.quads["player3"],x or member.x,y or member.y,member.rot,1,1,24,24)
 			end
 		end
-		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,self.members.a.immunity*255)))
+		--player
+		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,member.immunity*255)))
 		if s then
-			love.graphics.draw(self.imageLarge,res.quads["playerLarge2"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,144,144)
+			love.graphics.draw(self.imageLarge,res.quads["playerLarge1"],x or member.x,y or member.y,member.rot,1,1,144,144)
 		else
-			love.graphics.draw(self.image,res.quads["player2"],x or self.members.a.x,y or self.members.a.y,self.members.a.rot,1,1,24,24)
+			love.graphics.draw(self.image,res.quads["player1"],x or member.x,y or member.y,member.rot,1,1,24,24)
+		end
+	else --moving
+		--tether effect
+		if self.distance < self.tetherDistance then
+			love.graphics.setColor(158,3,151,128)
+			if s then
+				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or member.x,y or member.y,member.rot,1,1,144,144)
+			else
+				love.graphics.draw(self.image,res.quads["player4"],x or member.x,y or member.y,member.rot,1,1,24,24)
+			end
+		else
+			love.graphics.setColor(0,0,0,128)
+			if s then
+				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or member.x,y or member.y,member.rot,1,1,144,144)
+			else
+				love.graphics.draw(self.image,res.quads["player4"],x or member.x,y or member.y,member.rot,1,1,24,24)
+			end
+		end
+		--player
+		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,member.immunity*255)))
+		if s then
+			love.graphics.draw(self.imageLarge,res.quads["playerLarge2"],x or member.x,y or member.y,member.rot,1,1,144,144)
+		else
+			love.graphics.draw(self.image,res.quads["player2"],x or member.x,y or member.y,member.rot,1,1,24,24)
 		end
 	end
-	if self.members.a.hp <= self.members.a.stats.hp/4 and self.members.a.hp > self.members.a.stats.hp/8 then love.graphics.print("Low HP",(x or self.members.a.x)+12,(y or self.members.a.y)-26) end
-	if self.members.a.hp <= self.members.a.stats.hp/8 then love.graphics.print("Very Low HP!",(x or self.members.a.x)+12,(y or self.members.a.y)-26) end
+
+	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then love.graphics.print("Low HP",(x or member.x)+12,(y or member.y)-26) end
+	if member.hp <= member.stats.hp/8 then love.graphics.print("Very Low HP!",(x or member.x)+12,(y or member.y)-26) end
 end
 
 function player:drawB(x,y,s)
@@ -276,10 +287,10 @@ function player:updateA(dt)
 		if vert ~= 0 then self.members.a.y_vol = self.members.a.y_vol + vert*.8*self.members.a.speed end--y
 	else
 		if love.keyboard.isDown('lshift') then self.members.a.tether = true else self.members.a.tether = false end
-		if love.keyboard.isDown('a') then self.members.a.x = self.members.a.x - 4*self.members.a.speed end
-		if love.keyboard.isDown('d') then self.members.a.x = self.members.a.x + 4*self.members.a.speed end
-		if love.keyboard.isDown('w') then self.members.a.y = self.members.a.y - 4*self.members.a.speed end
-		if love.keyboard.isDown('s') then self.members.a.y = self.members.a.y + 4*self.members.a.speed end
+		if love.keyboard.isDown('a') and not love.keyboard.isDown('d') then self.members.a.x_vol = self.members.a.x_vol -.8*self.members.a.speed end
+		if love.keyboard.isDown('d') and not love.keyboard.isDown('a') then self.members.a.x_vol = self.members.a.x_vol +.8*self.members.a.speed end
+		if love.keyboard.isDown('w') and not love.keyboard.isDown('s') then self.members.a.y_vol = self.members.a.y_vol -.8*self.members.a.speed end
+		if love.keyboard.isDown('s') and not love.keyboard.isDown('w') then self.members.a.y_vol = self.members.a.y_vol +.8*self.members.a.speed end
 	end
 	if self.members.a.x < 0 then self:push('a',-self.members.a.x) end
 	if self.members.a.x > screen.width then self:push('a',screen.width-self.members.a.x) end
@@ -345,10 +356,10 @@ function player:updateB(dt)
 		if vert ~= 0 then self.members.b.y_vol = self.members.b.y_vol + vert*.8*self.members.b.speed end--y
 	else
 		if love.keyboard.isDown('rshift') then self.members.b.tether = true else self.members.b.tether = false end
-		if love.keyboard.isDown('l') then self.members.b.x = self.members.b.x - 4*self.members.b.speed end
-		if love.keyboard.isDown('\'') then self.members.b.x = self.members.b.x + 4*self.members.b.speed end
-		if love.keyboard.isDown('p') then self.members.b.y = self.members.b.y - 4*self.members.b.speed end
-		if love.keyboard.isDown(';') then self.members.b.y = self.members.b.y + 4*self.members.b.speed end
+		if love.keyboard.isDown('l') and not love.keyboard.isDown('\'') then self.members.b.x = self.members.b.x - 4*self.members.b.speed end
+		if love.keyboard.isDown('\'') and not love.keyboard.isDown('l') then self.members.b.x = self.members.b.x + 4*self.members.b.speed end
+		if love.keyboard.isDown('p') and not love.keyboard.isDown(';') then self.members.b.y = self.members.b.y - 4*self.members.b.speed end
+		if love.keyboard.isDown(';') and not love.keyboard.isDown('p') then self.members.b.y = self.members.b.y + 4*self.members.b.speed end
 	end
 	if self.members.b.x < 0 then self:push('b',-self.members.b.x) end
 	if self.members.b.x > screen.width then self:push('b',screen.width-self.members.b.x) end

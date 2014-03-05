@@ -127,6 +127,7 @@ end
 function dash:update( dt )
 	if self.timer > 75 then
 		self.r = math.loop(0,self.r+(math.pi/128),2)
+	end
 	if self.timer < 50 then
 		self.x = self.x + math.cos(self.r)*4
 		self.y = self.y + math.sin(self.t)*4
