@@ -7,44 +7,57 @@ function player.make(number)
 	p.x,p.y = screen:getCentre('x'),screen:getCentre('y')
 	p.number = number
 	p.members = {}
-		p.members.a = {}
-			p.members.a.x = screen:getCentre('x')/2
-			p.members.a.y = screen:getCentre('y')
-			p.members.a.x_vol = 0
-			p.members.a.y_vol = 0
-			p.members.a.rot = 0
-			p.members.a.forces = {}
-			p.members.a.speed = 1.5
-			p.members.a._points = 0
-			p.members.a.points = 0
-			p.members.a.stats = {hp = 16, deaths = 0}
-			p.members.a.hp = 16
-			p.members.a.immunity = 0
-			p.members.a.lives = 3
-			p.members.a.tether = false
-			p.members.a.perks = {}
-			p.members.a.attraction = 100
-			p.members.a.target = {rot = 0, scale = 1}
-			p.members.a.lapse = 0
-		p.members.b = {}
-			p.members.b.x = screen:getCentre('x')*1.5
-			p.members.b.y = screen:getCentre('y')
-			p.members.b.x_vol = 0
-			p.members.b.y_vol = 0
-			p.members.b.rot = 0
-			p.members.b.forces = {}
-			p.members.b.speed = 1.5
-			p.members.b._points = 0
-			p.members.b.points = 0
-			p.members.b.stats = {hp = 16, deaths = 0}
-			p.members.b.hp = 16
-			p.members.b.immunity = 0
-			p.members.b.lives = 3
-			p.members.b.tether = false
-			p.members.b.perks = {}
-			p.members.b.attraction = 100
-			p.members.b.target = {rot = 0, scale = 1}
-			p.members.b.lapse = 0
+		p.members.a = {
+			name = 'a',
+			other = 'b',
+			x = screen:getCentre('x')/2,
+			y = screen:getCentre('y'),
+			x_vol = 0,
+			y_vol = 0,
+			rot = 0,
+			forces = {},
+			speed = 1.5,
+			_points = 0,
+			points = 0,
+			stats = {hp = 16, deaths = 0},
+			hp = 16,
+			immunity = 0,
+			lives = 3,
+			tether = false,
+			perks = {},
+			attraction = 100,
+			target = {rot = 0, scale = 1},
+			lapse = 0,
+			color = {100,255,100},
+			keys = {up = 'w', down = 's', left = 'a', right = 'd', tether = 'lshift'},
+			timers = {spawn = 60,},
+		}
+		p.members.b = {
+			name = 'b',
+			other = 'a',
+			x = screen:getCentre('x')*1.5,
+			y = screen:getCentre('y'),
+			x_vol = 0,
+			y_vol = 0,
+			rot = 0,
+			forces = {},
+			speed = 1.5,
+			_points = 0,
+			points = 0,
+			stats = {hp = 16, deaths = 0},
+			hp = 16,
+			immunity = 0,
+			lives = 3,
+			tether = false,
+			perks = {},
+			attraction = 100,
+			target = {rot = 0, scale = 1},
+			lapse = 0,
+			color = {255,100,100},
+			keys = {up = 'i', down = 'k', left = 'j', right = 'l', tether = 'return'},
+			timers = {spawn = 60,},
+		}
+
 	if number > 0 then
 	p.joystick = {}
 		p.joystick.leftH = tonumber(joysticks[love.joystick.getName(number)].axes.leftH)
@@ -97,41 +110,19 @@ function player:closest(x,y)
 end
 
 function player:drawMember(member,x,y,s)
-	--rotation
-	if self.number > 0 then
-		if love.joystick.getAxis(self.number,1) ~= 0 or love.joystick.getAxis(self.number,2) ~= 0 then
-			member.rot = math.atan2(love.joystick.getAxis(self.number,1),-love.joystick.getAxis(self.number,2))
-		else
-			member.rot = member.rot - (math.pi/128)
-		end
-	else
-		-- if not love.keyboard.isDown('w','a','s','d') then 
-			member.rot = member.rot-(math.pi/128)
-		-- end
-		if love.keyboard.isDown("w") and not love.keyboard.isDown("s") then member.rot = 0
-		elseif love.keyboard.isDown("s") and not love.keyboard.isDown("w") then member.rot = math.pi
-		end
-		if love.keyboard.isDown("a") and not love.keyboard.isDown("d") then member.rot = 3*math.pi/2
-		elseif love.keyboard.isDown("d") and not love.keyboard.isDown("a") then member.rot = math.pi/2
-		end
-		if love.keyboard.isDown("w") and love.keyboard.isDown("a") then member.rot = 7*math.pi/4
-		elseif love.keyboard.isDown("s") and love.keyboard.isDown("d") then member.rot = 3*math.pi/4
-		elseif love.keyboard.isDown("a") and love.keyboard.isDown("s") then member.rot = 5*math.pi/4
-		elseif love.keyboard.isDown("d") and love.keyboard.isDown("w") then member.rot = math.pi/4
-		end
-	end
 	--drawing
-	if math.floor((member.x_vol^2 + member.y_vol^2)^.5) == 0 then --stationary
+	if not love.keyboard.isDown(member.keys.up,member.keys.down,member.keys.left,member.keys.right) then --stationary
+			member.rot = member.rot-(math.pi/128)
 		--tether effect
 		if self.distance < self.tetherDistance then
-			love.graphics.setColor(158,3,151,128)
+			love.graphics.setColor(14,59,255,128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
 				love.graphics.draw(self.image,res.quads["player3"],x or member.x,y or member.y,member.rot,1,1,24,24)
 			end
 		else
-			love.graphics.setColor(0,0,0,128)
+			love.graphics.setColor(0,0,0,128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
@@ -139,23 +130,24 @@ function player:drawMember(member,x,y,s)
 			end
 		end
 		--player
-		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,member.immunity*255)))
+		love.graphics.setColor(member.color[1],member.color[2],member.color[3],255-math.random(0,math.max(0,member.immunity*255))*(60-member.timers.spawn)/60)
 		if s then
 			love.graphics.draw(self.imageLarge,res.quads["playerLarge1"],x or member.x,y or member.y,member.rot,1,1,144,144)
 		else
 			love.graphics.draw(self.image,res.quads["player1"],x or member.x,y or member.y,member.rot,1,1,24,24)
 		end
 	else --moving
+			member.rot = math.atan2(member.y_vol,member.x_vol)+(math.pi/2)
 		--tether effect
 		if self.distance < self.tetherDistance then
-			love.graphics.setColor(158,3,151,128)
+			love.graphics.setColor(14,59,255,128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
 				love.graphics.draw(self.image,res.quads["player4"],x or member.x,y or member.y,member.rot,1,1,24,24)
 			end
 		else
-			love.graphics.setColor(0,0,0,128)
+			love.graphics.setColor(0,0,0,128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or member.x,y or member.y,member.rot,1,1,144,144)
 			else
@@ -163,7 +155,7 @@ function player:drawMember(member,x,y,s)
 			end
 		end
 		--player
-		love.graphics.setColor(100,100,255,255-math.random(0,math.max(0,member.immunity*255)))
+		love.graphics.setColor(member.color[1],member.color[2],member.color[3],255-math.random(0,math.max(0,member.immunity*255))*(60-member.timers.spawn)/60)
 		if s then
 			love.graphics.draw(self.imageLarge,res.quads["playerLarge2"],x or member.x,y or member.y,member.rot,1,1,144,144)
 		else
@@ -175,245 +167,122 @@ function player:drawMember(member,x,y,s)
 	if member.hp <= member.stats.hp/8 then love.graphics.print("Very Low HP!",(x or member.x)+12,(y or member.y)-26) end
 end
 
-function player:drawB(x,y,s)
---			local rot
-		if self.number > 0 then
-			if love.joystick.getAxis(self.number,3) ~= 0 or love.joystick.getAxis(self.number,4) ~= 0 then
-				self.members.b.rot = math.atan2(love.joystick.getAxis(self.number,3),-love.joystick.getAxis(self.number,4))
-			else
-				self.members.b.rot = self.members.b.rot - (math.pi/128)
-			end
-		else
-			if love.keyboard.isDown("p") and love.keyboard.isDown("l") then self.members.b.rot = 7*math.pi/4
-			elseif love.keyboard.isDown("l") and love.keyboard.isDown(";") then self.members.b.rot = 5*math.pi/4
-			elseif love.keyboard.isDown(";") and love.keyboard.isDown("\'") then self.members.b.rot = 3*math.pi/4
-			elseif love.keyboard.isDown("\'") and love.keyboard.isDown("p") then self.members.b.rot = math.pi/4
-			elseif love.keyboard.isDown("p") then self.members.b.rot = 0
-			elseif love.keyboard.isDown(";") then self.members.b.rot = math.pi
-			elseif love.keyboard.isDown("l") then self.members.b.rot = 3*math.pi/2
-			elseif love.keyboard.isDown("\'") then self.members.b.rot = math.pi/2 
-			else self.members.b.rot = self.members.b.rot- (math.pi/128) end
-		end
-	if (self.number < 0 and not love.keyboard.isDown('p','l',';','\'')) or (self.number > 0 and love.joystick.getAxis(self.number,3) == 0 and love.joystick.getAxis(self.number,4) == 0) then
-		if self.distance < self.tetherDistance then
-			love.graphics.setColor(158,3,151,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player3"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-			end
-		else
-			love.graphics.setColor(0,0,0,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge3"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player3"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-			end
-		end
-		love.graphics.setColor(255,100,100,255-math.random(0,math.max(0,self.members.b.immunity*255)))
-		if s then
-			love.graphics.draw(self.imageLarge,res.quads["playerLarge1"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-		else
-			love.graphics.draw(self.image,res.quads["player1"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-		end
-	else
-		if self.distance < self.tetherDistance then
-			love.graphics.setColor(158,3,151,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player4"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-			end
-		else
-			love.graphics.setColor(0,0,0,128)
-			if s then
-				love.graphics.draw(self.imageLarge,res.quads["playerLarge4"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-			else
-				love.graphics.draw(self.image,res.quads["player4"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-			end
-		end
-		love.graphics.setColor(255,100,100,255-math.random(0,math.max(0,self.members.b.immunity*255)))
-		if s then
-			love.graphics.draw(self.imageLarge,res.quads["playerLarge2"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,144,144)
-		else
-			love.graphics.draw(self.image,res.quads["player2"],x or self.members.b.x,y or self.members.b.y,self.members.b.rot,1,1,24,24)
-		end
-	end
-	if self.members.b.hp <= self.members.b.stats.hp/4 and self.members.b.hp > self.members.b.stats.hp/8 then love.graphics.print("Low HP",(x or self.members.b.x)+12,(y or self.members.b.y)-26) end
-	if self.members.b.hp <= self.members.b.stats.hp/8 then love.graphics.print("Very Low HP!",(x or self.members.b.x)+12,(y or self.members.b.y)-26) end
-end
-
 function player:draw()
 
 	if self.members.a.tether and self.members.b.tether then
 		if self.distance <= self.tetherDistance then
 			love.graphics.setLineWidth(math.floor(24-24*self.distance/self.tetherDistance))
-			love.graphics.setColor(158,3,152,255-(128*self.distance/self.tetherDistance))
+			love.graphics.setColor(math.random(14,77),math.random(59,155),255,255-(128*self.distance/self.tetherDistance))
 			love.graphics.line(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y)
 		end
 	else
 		if self.distance <= self.tetherDistance then
 			love.graphics.setLineWidth(3)
-			love.graphics.setColor(180,0,180,24)
-			love.graphics.line(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y)
+			love.graphics.setColor(14,59,255,24)
+			love.graphics.stippledLine(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y,8,8)
 		end
 		love.graphics.setLineWidth(1)
 		love.graphics.setColor(255,0,0,16)
-		love.graphics.line(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y)
+		love.graphics.stippledLine(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y,8,8)
 	end
 
 	--------------
 	-- A member --
 	--------------
-	self:drawA()
+	self:drawMember(self.members.a)
 
 	--------------
 	-- B member --
 	--------------
-	self:drawB()
-
-	--------------
-	
---	love.graphics.rectangle('line',self.members.a.x-16,self.members.a.y-16,32,32)
---	love.graphics.rectangle('line',self.members.b.x-16,self.members.b.y-16,32,32)
+	self:drawMember(self.members.b)
 end
 
-function player:updateA(dt)
-	self.members.a._points = self.members.a.points
-	if self.number > 0 then
-	local horiz, vert = love.joystick.getAxis(self.number,self.joystick.leftH), love.joystick.getAxis(self.number,self.joystick.leftV)
-		if love.joystick.isDown(self.number,self.joystick.leftShoulder) then self.members.a.tether = true else self.members.a.tether = false end
-		if horiz ~= 0 then self.members.a.x_vol = self.members.a.x_vol + horiz*.8*self.members.a.speed end--x
-		if vert ~= 0 then self.members.a.y_vol = self.members.a.y_vol + vert*.8*self.members.a.speed end--y
-	else
-		if love.keyboard.isDown('lshift') then self.members.a.tether = true else self.members.a.tether = false end
-		if love.keyboard.isDown('a') and not love.keyboard.isDown('d') then self.members.a.x_vol = self.members.a.x_vol -.8*self.members.a.speed end
-		if love.keyboard.isDown('d') and not love.keyboard.isDown('a') then self.members.a.x_vol = self.members.a.x_vol +.8*self.members.a.speed end
-		if love.keyboard.isDown('w') and not love.keyboard.isDown('s') then self.members.a.y_vol = self.members.a.y_vol -.8*self.members.a.speed end
-		if love.keyboard.isDown('s') and not love.keyboard.isDown('w') then self.members.a.y_vol = self.members.a.y_vol +.8*self.members.a.speed end
-	end
-	if self.members.a.x < 0 then self:push('a',-self.members.a.x) end
-	if self.members.a.x > screen.width then self:push('a',screen.width-self.members.a.x) end
-	if self.members.a.y < 64 then self:push('a',0,64-self.members.a.y) end
-	if self.members.a.y > screen.height then self:push('a',0,screen.height-self.members.a.y) end
+function player:updateMember(member,dt)
+	member._points = member.points
+	if love.keyboard.isDown(member.keys.tether) then member.tether = true else member.tether = false end
+	if love.keyboard.isDown(member.keys.right) and not love.keyboard.isDown(member.keys.left,member.keys.up,member.keys.down) then 
+		member.x_vol = math.round(member.x_vol +.8*member.speed,4) end
+	if love.keyboard.isDown(member.keys.left) and not love.keyboard.isDown(member.keys.right,member.keys.up,member.keys.down) then 
+		member.x_vol = math.round(member.x_vol -.8*member.speed,4) end
+	if love.keyboard.isDown(member.keys.down) and not love.keyboard.isDown(member.keys.up,member.keys.left,member.keys.right) then 
+		member.y_vol = math.round(member.y_vol +.8*member.speed,4) end
+	if love.keyboard.isDown(member.keys.up) and not love.keyboard.isDown(member.keys.down,member.keys.left,member.keys.right) then 
+		member.y_vol = math.round(member.y_vol -.8*member.speed,4) end
+
+	if love.keyboard.isDown(member.keys.right) and love.keyboard.isDown(member.keys.up,member.keys.down) then 
+		member.x_vol = math.round(member.x_vol +.6*member.speed,4) end
+	if love.keyboard.isDown(member.keys.left) and love.keyboard.isDown(member.keys.up,member.keys.down) then 
+		member.x_vol = math.round(member.x_vol -.6*member.speed,4) end
+	if love.keyboard.isDown(member.keys.down) and love.keyboard.isDown(member.keys.left,member.keys.right) then 
+		member.y_vol = math.round(member.y_vol +.6*member.speed,4) end	
+	if love.keyboard.isDown(member.keys.up) and love.keyboard.isDown(member.keys.left,member.keys.right) then 
+		member.y_vol = math.round(member.y_vol -.6*member.speed,4) end
+	-- 
+	if member.x < 0 then self:push(member.name,-member.x) end
+	if member.x > screen.width then self:push(member.name,screen.width-member.x) end
+	if member.y < 64 then self:push(member.name,0,64-member.y) end
+	if member.y > screen.height then self:push(member.name,0,screen.height-member.y) end
 ------------------------------------------------------>
-	if self.members.a.tether and self.distance > self.tetherDistance then -- and self.members.b.tether == false
-		self:push('b',self.members.a.x-self.members.b.x,self.members.a.y-self.members.b.y,math.round(64/math.abs(self.distance),2))
-		self:push('a',self.members.b.x-self.members.a.x,self.members.b.y-self.members.a.y,math.round(32/math.abs(self.distance),2))
+	if member.tether and self.distance > self.tetherDistance then
+		self:push(member.other,member.x-self.members[member.other].x,member.y-self.members[member.other].y,math.round(64/math.abs(self.distance),2))
+		self:push(member.name,self.members[member.other].x-member.x,self.members[member.other].y-member.y,math.round(32/math.abs(self.distance),2))
 	end
 ------------------------------------------------------>
-	if self.members.a.hp <= self.members.a.stats.hp/4 and self.members.a.hp > self.members.a.stats.hp/8 then
-		if not screen.flashing then screen:flash(1,5,{0,0,255},"edge") end
+	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then
+		if not screen.flashing then screen:flash(1,5,colorExtreme(member.color,255),"edge") end
 		love.audio.play(self.sounds.adanger)
-		if self.members.a.lapse > 1200 then -- should I make this constant a stat?
-			self.members.a.lapse = 0
-			self:giveHealth('a')
+		if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
+			member.lapse = 0
+			self:giveHealth(member.name)
 		end
 	end
-	if self.members.a.hp <= self.members.a.stats.hp/8 then
-		if not screen.flashing then screen:flash(1,10,{0,0,255},"edge") end
+	if member.hp <= member.stats.hp/8 then
+		if not screen.flashing then screen:flash(1,10,colorExtreme(member.color,255),"edge") end
 		if math.random(1,3) == 2 then screen:aberate(math.random(1,3),math.random(0,2)) end
 		love.audio.play(self.sounds.acritical)
-		if self.members.a.lapse > 1200 and self.members.a.lives <= 1 then -- should I make this constant a stat?
-			self.members.a.lapse = 0
-			self:giveHealth('a')
+		if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
+			member.lapse = 0
+			self:giveHealth(member.name)
 		end
 	end
-	if self.members.a.hp <= 0 then
-		self.members.a.lives = self.members.a.lives - 1
-		self.members.a.stats.deaths = self.members.a.stats.deaths +1
-		self.members.a.hp = self.members.a.stats.hp
+	if member.hp <= 0 then
+		member.lives = member.lives - 1
+		member.stats.deaths = member.stats.deaths +1
+		member.hp = member.stats.hp
 		screen:shake(1,12)
-		for ii=1, math.min(self.members.a.points,100) do
-			table.insert(state.crystals, crystal.make(self.members.a.x+math.random(-48,48),self.members.a.y+math.random(-48,48)))
+		for ii=1, math.min(member.points,100) do
+			table.insert(state.crystals, crystal.make(member.x+math.random(-48,48),member.y+math.random(-48,48)))
 		end
-		self.members.a.points = math.max(0,self.members.a.points-100)
-		messages:new("Player "..self.number.." died",self.members.a.x,self.members.a.y,'up',-1,{0,128,90},'small')
-		print(self.members.a.lives.." lives left.")
-		self.members.a.x,self.members.a.y = screen:getCentre('x'),screen:getCentre('y')
-		self.members.a.immunity = 18
+		member.points = math.max(0,member.points-100)
+		messages:new("Player "..self.number.." died",member.x,member.y,'up',-1,{0,128,90},'small')
+		print(member.lives.." lives left.")
+		member.x,member.y = screen:getCentre('x'),screen:getCentre('y')
+		member.immunity = 18
+		member.timers.spawn = 60
 		love.audio.play(self.sounds.aDie)
 	end
 	
-	if self.members.a.target.rot < math.pi*2 then
-		self.members.a.target.rot = self.members.a.target.rot+(math.pi/120)
+	--timers
+	if member.target.rot < math.pi*2 then
+		member.target.rot = member.target.rot+(math.pi/120)
 	else
-		self.members.a.target.rot = 0
+		member.target.rot = 0
 	end
-	if self.members.a.target.scale > 1 then
-		self.members.a.target.scale = self.members.a.target.scale - .2
+	if member.target.scale > 1 then
+		member.target.scale = member.target.scale - .2
 	end
-	
-	if self.members.a.immunity > 0 then self.members.a.immunity = self.members.a.immunity - .1;else self.members.a.immunity = 0 end
-end
 
-function player:updateB(dt)
-	self.members.b._points = self.members.b.points
-	if self.number > 0 then
-	local horiz, vert = love.joystick.getAxis(self.number,self.joystick.rightH), love.joystick.getAxis(self.number,self.joystick.rightV)
-		if love.joystick.isDown(self.number,self.joystick.rightShoulder) then self.members.b.tether = true else self.members.b.tether = false end
-		if horiz ~= 0 then self.members.b.x_vol = self.members.b.x_vol + horiz*.8*self.members.b.speed end--x
-		if vert ~= 0 then self.members.b.y_vol = self.members.b.y_vol + vert*.8*self.members.b.speed end--y
-	else
-		if love.keyboard.isDown('rshift') then self.members.b.tether = true else self.members.b.tether = false end
-		if love.keyboard.isDown('l') and not love.keyboard.isDown('\'') then self.members.b.x = self.members.b.x - 4*self.members.b.speed end
-		if love.keyboard.isDown('\'') and not love.keyboard.isDown('l') then self.members.b.x = self.members.b.x + 4*self.members.b.speed end
-		if love.keyboard.isDown('p') and not love.keyboard.isDown(';') then self.members.b.y = self.members.b.y - 4*self.members.b.speed end
-		if love.keyboard.isDown(';') and not love.keyboard.isDown('p') then self.members.b.y = self.members.b.y + 4*self.members.b.speed end
-	end
-	if self.members.b.x < 0 then self:push('b',-self.members.b.x) end
-	if self.members.b.x > screen.width then self:push('b',screen.width-self.members.b.x) end
-	if self.members.b.y < 64 then self:push('b',0,64-self.members.b.y) end
-	if self.members.b.y > screen.height then self:push('b',0,screen.height-self.members.b.y) end
-------------------------------------------------->
-	if self.members.b.tether and self.distance > self.tetherDistance then -- and self.members.a.tether == false
-		self:push('a',self.members.b.x-self.members.a.x,self.members.b.y-self.members.a.y,math.round(64/math.abs(self.distance),2))
-		self:push('b',self.members.a.x-self.members.b.x,self.members.a.y-self.members.b.y,math.round(32/math.abs(self.distance),2))
-	end
------------------------------------------------------->
-	if self.members.b.hp <= self.members.b.stats.hp/4 and self.members.b.hp > self.members.b.stats.hp/8 then
-		if not screen.flashing then screen:flash(1,5,{255,0,0},"edge") end
-		love.audio.play(self.sounds.bdanger)
-		if self.members.b.lapse > 1200 then -- should I make this constant a stat?
-			self.members.b.lapse = 0
-			self:giveHealth('b')
-		end
-	end
-	if self.members.b.hp <= self.members.b.stats.hp/8 then
-		if not screen.flashing then screen:flash(1,10,{255,0,0},"edge") end
-		if math.random(1,3) == 2 then screen:aberate(math.random(1,3),math.random(0,2)) end
-		love.audio.play(self.sounds.bcritical)
-		if self.members.b.lapse > 1200 and self.members.b.lives <= 1 then -- should I make this constant a stat?
-			self.members.b.lapse = 0
-			self:giveHealth('b')
-		end
-	end
-	if self.members.b.hp <= 0 then
-		self.members.b.lives = self.members.b.lives - 1
-		self.members.b.stats.deaths = self.members.b.stats.deaths +1
-		self.members.b.hp = self.members.b.stats.hp
-		screen:shake(1,12)
-		for ii=1, math.min(self.members.b.points,100) do
-			table.insert(state.crystals, crystal.make(self.members.b.x+math.random(-48,48),self.members.b.y+math.random(-48,48)))
-		end
-		self.members.b.points = math.max(0,self.members.b.points-100)
-		messages:new("Player "..(self.number+1).." died. ",self.members.b.x,self.members.b.y,'up',-1,{0,128,90},'small')
-		print(self.members.b.lives.." lives left.")
-		self.members.b.x,self.members.b.y = screen:getCentre('x'),screen:getCentre('y')
-		self.members.b.immunity = 18
-		love.audio.play(self.sounds.bDie)
-	end
+	if member.timers.spawn > 0 then member.timers.spawn = member.timers.spawn - 1 end
 	
-	if self.members.b.target.rot < math.pi*2 then
-		self.members.b.target.rot = self.members.b.target.rot+(math.pi/120)
-	else
-		self.members.b.target.rot = 0
-	end
-	if self.members.b.target.scale > 1 then
-		self.members.b.target.scale = self.members.b.target.scale - .2
-	end
-	
-	if self.members.b.immunity > 0 then self.members.b.immunity = self.members.b.immunity - .1;else self.members.b.immunity = 0 end
+	--position, velocity and acceleration
+	for i,f in ipairs(member.forces) do member.x_vol = math.round(member.x_vol + math.cos(f[2])*f[1],4) end
+	for i,f in ipairs(member.forces) do member.y_vol = math.round(member.y_vol + math.sin(f[2])*f[1],4) end
+	if math.abs(member.x_vol) < .001 then member.x_vol = 0 end
+	if math.abs(member.y_vol) < .001 then member.y_vol = 0 end
+	member.x = member.x + member.x_vol
+	member.y = member.y + member.y_vol
+
+	if member.immunity > 0 then member.immunity = member.immunity - .1;else member.immunity = 0 end
 end
 
 function player:update()
@@ -423,21 +292,12 @@ function player:update()
 	--------------
 	-- A member --
 	--------------
-	self:updateA(dt)
+	self:updateMember(self.members.a,dt)
 
 	--------------
 	-- B member --
 	--------------
-	self:updateB(dt)
-	
-	for i,f in ipairs(self.members.a.forces) do self.members.a.x_vol = self.members.a.x_vol + math.cos(f[2])*f[1] end
-	for i,f in ipairs(self.members.a.forces) do self.members.a.y_vol = self.members.a.y_vol + math.sin(f[2])*f[1] end
-	for i,f in ipairs(self.members.b.forces) do self.members.b.x_vol = self.members.b.x_vol + math.cos(f[2])*f[1] end
-	for i,f in ipairs(self.members.b.forces) do self.members.b.y_vol = self.members.b.y_vol + math.sin(f[2])*f[1] end
-	self.members.a.x = self.members.a.x + self.members.a.x_vol
-	self.members.a.y = self.members.a.y + self.members.a.y_vol
-	self.members.b.x = self.members.b.x + self.members.b.x_vol
-	self.members.b.y = self.members.b.y + self.members.b.y_vol
+	self:updateMember(self.members.b,dt)
 
 	------------
 	-- Tether --
@@ -445,14 +305,31 @@ function player:update()
 	local tetherSrength = (math.floor(24-24*self.distance/self.tetherDistance))/12
 	if self.members.a.tether and self.members.b.tether then
 		if self.distance <= self.tetherDistance then
-			for i,e in ipairs(state.enemies) do
-				if math.checkIntersect({x=self.members.a.x,y=self.members.a.y},{x=self.members.b.x,y=self.members.b.y},{x=e.x-e.r,y=e.y-e.r},{x=e.x+e.r,y=e.y+e.r}) or math.checkIntersect({x=self.members.a.x,y=self.members.a.y},{x=self.members.b.x,y=self.members.b.y},{x=e.x-e.r,y=e.y+e.r},{x=e.x+e.r,y=e.y-e.r}) then
-					e.hp = e.hp - tetherSrength
+			for i,r in ipairs(state.enemies) do
+				if math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x-r.r,r.y-r.r},{r.x+r.r,r.y+r.r})
+				or math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x-r.r,r.y+r.r},{r.x+r.r,r.y-r.r}) then
+				-- if math.getPerpDistance({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y}) <= r.r then
+					local perp_x, perp_y = math.getPerpIntercept({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y})
+				-- print(r.x,r.y,perp_x,perp_y)
+				-- if math.dist(r.x,r.y,perp_x,perp_y) <= r.r
+				-- and math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y},{perp_x,perp_y}) then
+					local int_x, int_y = math.getIntercept({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y},{perp_x,perp_y})
+					sparks.make(int_x,int_y,math.random(130,140),math.random(230,240),255,255-(128*self.distance/self.tetherDistance))
+					r.hp = r.hp - tetherSrength
 					screen:shake(.15,3,false)
 				end
 			end
+			-- print("------------")
 			for i,r in ipairs(state.rocks) do
-				if math.checkIntersect({x=self.members.a.x,y=self.members.a.y},{x=self.members.b.x,y=self.members.b.y},{x=r.x-r.r,y=r.y-r.r},{x=r.x+r.r,y=r.y+r.r}) or math.checkIntersect({x=self.members.a.x,y=self.members.a.y},{x=self.members.b.x,y=self.members.b.y},{x=r.x-r.r,y=r.y+r.r},{x=r.x+r.r,y=r.y-r.r}) then
+				if math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x-r.r,r.y-r.r},{r.x+r.r,r.y+r.r})
+				or math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x-r.r,r.y+r.r},{r.x+r.r,r.y-r.r}) then
+				-- if math.getPerpDistance({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y}) <= r.r then
+					local perp_x, perp_y = math.getPerpIntercept({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y})
+				-- print(r.x,r.y,perp_x,perp_y)
+				-- if math.dist(r.x,r.y,perp_x,perp_y) <= r.r
+				-- and math.checkIntersect({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y},{perp_x,perp_y}) then
+					local int_x, int_y = math.getIntercept({self.members.a.x,self.members.a.y},{self.members.b.x,self.members.b.y},{r.x,r.y},{perp_x,perp_y})
+					sparks.make(int_x,int_y,math.random(130,140),math.random(230,240),255,255-(128*self.distance/self.tetherDistance))
 					r.hp = r.hp - tetherSrength
 					screen:shake(.15,3,false)
 				end
@@ -471,7 +348,7 @@ function player:update()
 			self.members.a.hp = self.members.a.hp - 1
 			self.members.a.lapse = 0
 			screen:shake(.5,4)
-			if not screen.flashing then screen:flash(1,20,{0,0,255},"edge") end
+			if not screen.flashing then screen:flash(1,20,colorExtreme(self.members.a.color,255),"edge") end
 			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 			table.remove(state.bullets,i)
 		end
@@ -479,9 +356,25 @@ function player:update()
 			self.members.b.hp = self.members.b.hp - 1
 			self.members.b.lapse = 0
 			screen:shake(.5,4)
-			if not screen.flashing then screen:flash(1,20,{255,0,0},"edge") end
+			if not screen.flashing then screen:flash(1,20,colorExtreme(self.members.b.color,255),"edge") end
 			love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
 			table.remove(state.bullets,i)
+		end
+	end
+	for i,b in ipairs(state.enemies) do
+		if self.members.a.immunity == 0 and b.collideable and b.x >= self.members.a.x-6 and b.x <= self.members.a.x+6 and b.y >= self.members.a.y-6 and b.y <= self.members.a.y+6 then
+			self.members.a.hp = self.members.a.hp - b.damage
+			self.members.a.lapse = 0
+			screen:shake(.5,4)
+			if not screen.flashing then screen:flash(1,20,colorExtreme(self.members.a.color,255),"edge") end
+			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
+		end
+		if self.members.b.immunity == 0 and b.collideable and b.x >= self.members.b.x-12 and b.x <= self.members.b.x+12 and b.y >= self.members.b.y-12 and b.y <= self.members.b.y+12 then
+			self.members.b.hp = self.members.b.hp - b.damage
+			self.members.b.lapse = 0
+			screen:shake(.5,4)
+			if not screen.flashing then screen:flash(1,20,colorExtreme(self.members.b.color,255),"edge") end
+			love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
 		end
 	end
 	for i,c in ipairs(state.crystals) do
@@ -499,10 +392,10 @@ function player:update()
 		self.dead = true
 	end
 
-	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = self.members.a.x_vol - (self.members.a.x_vol*.2) end
-	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = self.members.a.y_vol - (self.members.a.y_vol*.2) end
-	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = self.members.b.x_vol - (self.members.b.x_vol*.2) end
-	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = self.members.b.y_vol - (self.members.b.y_vol*.2) end
+	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = math.trunc(self.members.a.x_vol - (self.members.a.x_vol*.2),4) end
+	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = math.trunc(self.members.a.y_vol - (self.members.a.y_vol*.2),4) end
+	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = math.trunc(self.members.b.x_vol - (self.members.b.x_vol*.2),4) end
+	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = math.trunc(self.members.b.y_vol - (self.members.b.y_vol*.2),4) end
 	
 	self.members.a.forces = {}
 	self.members.b.forces = {}

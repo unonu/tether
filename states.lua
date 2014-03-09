@@ -67,6 +67,7 @@ function mainmenu.make(ready)
 		m.effects.fader = 120
 		m.effects.screenR = screen.width
 		m.colors = {r=255,g=0,b=0}
+	love.graphics.setFont(fonts.large)
 	love.audio.stop()
 
 	m.ready = ready or false
@@ -105,7 +106,6 @@ else
 	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
 	local xy = screen:getCentre()
 		love.graphics.setColor(255,255,255)
-		love.graphics.setFont(fonts.large)
 	local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
 		if _x ~= 0 or _y ~= 0 then
 			screen:aberate(.1,math.rsign(1))
@@ -306,24 +306,9 @@ game = {}
 game.__index = game
 
 function game.make()
---	print('.')
---				love.graphics.clear()
---				love.graphics.setColor(0,0,0)
---				love.graphics.rectangle('fill',0,0,screen.width,screen.height)
---				love.timer.sleep(3)
-	print('.')
 	local g = {}
 	setmetatable(g,game)
-	g.players = {}
-	print('.')
-	-- if joysticks then
-	-- 	for i=1, love.joystick.getNumJoysticks() do
-	-- 		g.players[i] = player.make(i)
-	-- 	end
-	-- else
-		g.players[1] = player.make(-1)
-	-- end
-	print('.')
+	g.player = player.make(-1)
 	g.distance = 100
 	g.rocks = {}
 	g.quota = 8
@@ -332,16 +317,13 @@ function game.make()
 	g.enemies = {}
 	g.bullets = {}
 	g.explosions = {}
-	print('.')
 	g.round = 1
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
-	print('.')
 	g.canvases = {
 		pauseBlur = love.graphics.newCanvas(),
 		pauseCanvas = love.graphics.newCanvas(),
 	}
-	-- print('.res')
 	g.res = {bullet = res.load("sprite","shot.png"),crystal = res.load("sprite","point.png"),target = res.load("sprite","target.png"),scoreBoardA = res.load("image","scoreboardBack.png"),scoreBoardB = res.load("image","scoreboardFront.png"),background = res.load("image","greyField.png")}
 	screen:setBackground(g.res.background)
 	g.sounds = {collect = res.load("sound","collect"),explosion = res.load("sound","explosion")}
@@ -354,7 +336,6 @@ function game.make()
 	g.pause = 1
 	g.menu = {"Continue","Restart","Exit to Menu","Quit"}
 	g.menuIndex = 1
---	love.graphics.setBackgroundColor(255,255,255)
 	messages:new("START!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,255})
 	
 	return g
@@ -362,8 +343,7 @@ end
 
 function game:draw()
 	love.graphics.setColor(255,255,255)
---	love.graphics.rectangle('fill',0,0,screen.width,screen.height)
-	love.graphics.draw(self.res.background)
+	love.graphics.draw(self.res.background,0,0,0,screen.width/1280,screen.height/720)
 if self.pause == 1 then
 	love.graphics.setFont(fonts.small)
 	--------------------------------
@@ -379,9 +359,8 @@ if self.pause == 1 then
 		e:draw()
 	end
 	
-	-- for i,p in ipairs(self.players) do
-	-- 	p:draw()
-	-- end
+	self.player:draw()
+
 	for i,b in ipairs(self.bullets) do
 		love.graphics.setColor(255,math.random(0,2)*128,math.random(0,255))
 		b:draw()
@@ -393,20 +372,22 @@ if self.pause == 1 then
 	----------------------
 	messages:draw()
 
---	for i,p in ipairs(self.players[1]) do
+--	for i,p in ipairs(self.player) do
 			love.graphics.setColor(255,255,255)
 		love.graphics.draw(self.res.scoreBoardA)
 		love.graphics.setFont(fonts.small)
-			love.graphics.setColor(100,100,255)
-		love.graphics.rectangle("fill",0,0,self.players[1].members.a.hp/self.players[1].members.a.stats.hp*screen.width/2,12)
-			love.graphics.setColor(255,100,100)
-		love.graphics.rectangle("fill",screen.width,0,-self.players[1].members.b.hp/self.players[1].members.b.stats.hp*screen.width/2,12)
+
+		--hp
+			love.graphics.setColor(self.player.members.a.color)
+		love.graphics.rectangle("fill",0,screen.height-12,self.player.members.a.hp/self.player.members.a.stats.hp*screen.width/2,12)
+			love.graphics.setColor(self.player.members.b.color)
+		love.graphics.rectangle("fill",screen.width,screen.height-12,-self.player.members.b.hp/self.player.members.b.stats.hp*screen.width/2,12)
 
 			love.graphics.setColor(255,255,255)
-		for i=1,self.players[1].members.a.lives do
+		for i=1,self.player.members.a.lives do
 			love.graphics.circle("fill",0+12*i,6,5,4)
 		end
-		for i=1,self.players[1].members.b.lives do
+		for i=1,self.player.members.b.lives do
 			love.graphics.circle("fill",screen.width-12*i,6,5,4)
 		end
 		love.graphics.draw(self.res.scoreBoardB)
@@ -415,33 +396,27 @@ if self.pause == 1 then
 			love.graphics.setFont(fonts.largeOutline)
 			love.graphics.push()
 			love.graphics.translate(2,18)
-			if self.players[1].members.a.points ~= self.players[1].members.a._points then
+			if self.player.members.a.points ~= self.player.members.a._points then
 				love.graphics.scale(1.5)
-			love.graphics.print(self.players[1].members.a.points,0,0)
+			love.graphics.print(self.player.members.a.points,0,0)
 				love.graphics.scale(.75)
 			else
-			love.graphics.print(self.players[1].members.a.points,0,0)
+			love.graphics.print(self.player.members.a.points,0,0)
 			end
 			love.graphics.pop()
-
---			love.graphics.setColor(255,200,0)
---			love.graphics.setFont(fonts.largeOutline)
 			love.graphics.push()
-			love.graphics.translate(screen.width-(fonts.largeOutline:getWidth(self.players[1].members.b.points))-2,18)
-			if self.players[1].members.b.points ~= self.players[1].members.b._points then
+			love.graphics.translate(screen.width-(fonts.largeOutline:getWidth(self.player.members.b.points))-2,18)
+			if self.player.members.b.points ~= self.player.members.b._points then
 				love.graphics.scale(1.5)
-			love.graphics.print(self.players[1].members.b.points,0,0)
+			love.graphics.print(self.player.members.b.points,0,0)
 				love.graphics.scale(.75)
 			else
-			love.graphics.print(self.players[1].members.b.points,0,0)
+			love.graphics.print(self.player.members.b.points,0,0)
 			end
 			love.graphics.pop()
---				love.graphics.translate()
---	end
 
 		love.graphics.setColor(255,255,255)
---	love.graphics.rectangle('fill',0,screen.height-12,screen.width-(screen.width*(#self.rocks/8)),12)
-		love.graphics.setFont(fonts.largeOutline)
+		love.graphics.setFont(fonts.roundNumbers)
 	love.graphics.print(self.round,screen:getCentre('x')-(fonts.large:getWidth(self.round)/2),12)
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
@@ -453,8 +428,8 @@ elseif self.pause == 2 then
 
 
 	--------------
-	self.players[1]:drawA(150,150,'Large')
-	self.players[1]:drawB(screen.width-150,screen.height-150,'Large')
+	self.player:drawA(150,150,'Large')
+	self.player:drawB(screen.width-150,screen.height-150,'Large')
 	--------------
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,xy[2]-48,screen.width*(self.pc.timer/30),96)
@@ -469,12 +444,11 @@ elseif self.pause == 3 then
 	local xy = screen:getCentre()
 		love.graphics.setColor(255,255,255)
 	love.graphics.draw(self.canvases.pauseBlur)
-							-- print("drew blur canvas")
 	--------------
 	
 	--------------
 		love.graphics.setColor(0,0,0)
-	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72)+32)
+	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
 		love.graphics.setColor(255,255,255)
 		love.graphics.setFont(fonts.large)
 	local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
@@ -495,21 +469,14 @@ end
 function game:update(dt)
 if self.pause == 1 then
 	distance = 100 + (100*math.floor(self.points/8))
-	for i,p in ipairs(self.players) do
-		p:update(dt)
-		if p.dead then
-			print("Lasted "..self.round.." rounds.")
-			local ppp = {}
-			for ii,pp in ipairs(self.players) do
-				ppp["player "..ii.." A"] = {points = pp.members.a.points}
-				print("player "..ii.." A had "..pp.members.a.points.." points.")
-				ppp["player "..ii.." B"] = {points = pp.members.b.points}
-				print("player "..ii.." B had "..pp.members.b.points.." points.")
-			end
-				state = heaven.make(ppp,self.round,self.stats.rocks,self.stats.enemies)
-				return
+		self.player:update(dt)
+		if self.player.dead then
+			print("You lasted "..self.round.." rounds.")
+			print("Player 1 had "..self.player.members.a.points.." points.")
+			print("Player 2 had "..self.player.members.b.points.." points.")
+			state = heaven.make(ppp,self.round,self.stats.rocks,self.stats.enemies)
+			return
 		end
-	end
 	for i,e in ipairs(self.enemies) do
 		e:update(dt)
 		if e.hp <= 0 or e.kill then
@@ -597,15 +564,18 @@ if self.pause == 1 then
 				-- love.graphics.setCanvas(self.canvases.pauseCanvas)
 				print("drew pause canvas")
 						love.graphics.setCanvas(self.canvases.pauseBlur)
-						love.graphics.setShader(shader)
+						-- love.graphics.setShader(shader)
 							-- love.graphics.draw(self.canvases.pauseCanvas)
 				self:draw()
 							print("drew pause canvas to blur")
-						love.graphics.setShader()
+						-- love.graphics.setShader()
 						love.graphics.setCanvas()
 
 		self.pause = 3
 		love.audio.pause()
+	elseif k == 'backspace' then
+		self.player.members.a.hp = 0	
+		self.player.members.b.hp = 0	
 	end
 elseif self.pause == 2 then
 	if k == 'escape' or k == 'return' then
@@ -705,19 +675,15 @@ end
 heaven = {}
 heaven.__index = heaven
 
-function heaven.make(players,rounds,rocks,enemies)
+function heaven.make(player,rounds,rocks,enemies)
 	love.audio.stop()
 	messages:clear()
 	local h = {}
 	setmetatable(h,heaven)
-	h.winner = {nil,0}
+	h.player = player
 	screen:clearEffects()
 	screen:shake(.8,3)
-	for i,p in pairs(players) do
-		if p.points > h.winner[2] then
-			h.winner = {i,p.points}
-		end
-	end
+	h.winner = {player.points}
 	h.rocks = rocks
 	h.enemies = enemies
 	h.ready = false
@@ -742,20 +708,21 @@ if self.ready then
 		love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
 	end
 else
-		love.graphics.setColor(0,0,0)
-	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
-		love.graphics.setColor(255,0,0)
-	if self.winner[1] then
-			love.graphics.setFont(fonts.large)
-		love.graphics.printf(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.',0,screen:getCentre('y')-(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')/2),screen.width,'center')
-			love.graphics.setFont(fonts.small)
-		love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')*2),screen.width,'center')
-	else
-			love.graphics.setFont(fonts.large)
-		love.graphics.printf("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.',0,screen:getCentre('y')-(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')/2),screen.width,'center')
-			love.graphics.setFont(fonts.small)
-		love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')*2),screen.width,'center')
-	end
+	-- 	love.graphics.setColor(0,0,0)
+	-- love.graphics.rectangle("fill",0,0,screen.width,screen.height)
+	-- 	love.graphics.setColor(255,0,0)
+	-- if self.winner[1] then
+	-- 		love.graphics.setFont(fonts.large)
+	-- 	love.graphics.printf(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.',0,screen:getCentre('y')-(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')/2),screen.width,'center')
+	-- 		love.graphics.setFont(fonts.small)
+	-- 	love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')*2),screen.width,'center')
+	-- else
+	-- 		love.graphics.setFont(fonts.large)
+	-- 	love.graphics.printf("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.',0,screen:getCentre('y')-(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')/2),screen.width,'center')
+	-- 		love.graphics.setFont(fonts.small)
+	-- 	love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')*2),screen.width,'center')
+	-- end
+	love.graphics.setBackgroundColor(0,0,0)
 end
 end
 

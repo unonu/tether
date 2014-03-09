@@ -15,62 +15,54 @@ function drawBack()
 	end
 end
 
+function colorExtreme( table,m )
+	local t ={}
+	for i,v in ipairs(table) do
+		if v >= m then t[i] = 255
+		else t[i] = 0 end
+	end
+	return t
+end
+
+function love.graphics.stippledLine( x1,y1,x2,y2,l,g )
+	local ang = math.atan2((y2-y1),(x2-x1))
+	local x_dist = math.cos(ang)
+	local y_dist = math.sin(ang)
+	for i=0, math.floor(((x2-x1)^2+(y2-y1)^2)^.5/(l+g)) do
+		love.graphics.line(x1+(i*x_dist*(l+g)),y1+(i*y_dist*(l+g)),x1+(i*x_dist*(l+g))+(x_dist*l),y1+(i*y_dist*(l+g))+(y_dist*l))
+	end
+end
+
 function rounder()
---	if #state.rocks == 0 then
---		state.round = state.round+1
---		state.players[1].tetherDistance = state.players[1].tetherDistance + 50
---		state.enemies = {}
---		state.bullets = {}
---		for i=1, 8 do
---			table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100)))
---		end
---		if state.round > 2 then
---			for i = 1, math.min((state.round-1)^2,6) do
---				table.insert(state.enemies,enemy.make())
---			end
---		end
---		if state.round > 0 then
---			for i = 1, math.min(math.random(1,((state.round-1)^2)),math.random(6,8)) do
---				local ident = math.random(1,#state.rocks)
-----				table.insert(state.enemies,sentry.make(state.rocks[ident].x,state.rocks[ident].y))
---				state.rocks[ident].sentry = sentry.make(state.rocks[ident].x,state.rocks[ident].y)
---			end
---		end
---	end
 	local progress = {}
 	progress[1],progress[2] = math.modf(state.stats.rocksRound/state.quota)
---	print(state.round,progress[1],progress[2])
 	if progress[1] == 1 then
 		state.round = state.round+1
 		state.stats.rocksRound = 0
+		messages:clear()
 		messages:new("ROUND "..state.round.."!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,0},'boomLarge')
 		for i,e in ipairs(state.enemies) do
 			e.kill = true
 		end
---		if math.fmod(state.round,10) == 9 then
---			state.quota = 8
---		end
 		if state.round == 6 then
-			for i,p in ipairs(state.players) do
-				if p.members.a.stats.deaths == 0 and p.members.a.hp == p.members.a.stats.hp then
-					messages:new('Untouchable!',p.members.a.x,p.members.a.y,'up',2,{255,24,15},'boom')
-					p.members.a.immunity = 20
-				elseif p.members.a.stats.deaths == 0 then
-					messages:new('Survivor!',p.members.a.x,p.members.a.y,'up',2,{255,24,15},'boom')
-					p.members.a.immunity = 15
-				end
-				if p.members.b.stats.deaths == 0 and p.members.b.hp == p.members.b.stats.hp then
-					messages:new('Untouchable!',p.members.b.x,p.members.b.y,'up',2,{255,24,15},'boom')
-					p.members.b.immunity = 20
-				elseif p.members.b.stats.deaths == 0 then
-					messages:new('Survivor!',p.members.b.x,p.members.b.y,'up',2,{255,24,15},'boom')
-					p.members.b.immunity = 15
-				end
+			if state.player.members.a.stats.deaths == 0 and state.player.members.a.hp == state.player.members.a.stats.hp then
+				messages:new('Untouchable!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boom')
+				state.player.members.a.immunity = 20
+			elseif state.player.members.a.stats.deaths == 0 then
+				messages:new('Survivor!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boom')
+				state.player.members.a.immunity = 15
+			end
+			if state.player.members.b.stats.deaths == 0 and state.player.members.b.hp == state.player.members.b.stats.hp then
+				messages:new('Untouchable!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boom')
+				state.player.members.b.immunity = 20
+			elseif state.player.members.b.stats.deaths == 0 then
+				messages:new('Survivor!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boom')
+				state.player.members.b.immunity = 15
 			end
 		elseif state.round == 10 then
 			state.quota = -1
-			state.players[1].members.a.x,state.players[1].members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
-			state.players[1].members.b.x,state.players[1].members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
+			state.player.members.a.x,state.player.members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
+			state.player.members.b.x,state.player.members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
 			for i,r in ipairs(state.rocks) do
 				r.hp = 0
 			end
@@ -81,33 +73,8 @@ function rounder()
 			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",2,{255,255,255},'boomMedium')
 		end
 	end
---	if #state.rocks < 8 then
-----		if math.random(0,1) == 1 then
-----			local x = math.random(0,1)*screen.width
-----			table.insert(state.rocks,rock.make(x-(50*math.sign(1-x)),math.random(0,screen.height)))
-----		else
-----			local y = math.random(0,1)*screen.height
-----			table.insert(state.rocks,rock.make(math.random(0,screen.width),y-(50*math.sign(1-y))))
-----		end
---		if state.round <= 2 then
---			table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100)))
---		elseif state.round > 2 and state.round <= 4 then
---			if state.round == 4 then
---				for i,p in ipairs(state.players) do
---					if p.members.a.deaths == 0 then
---						message:new('Survivor!',p.members.a.x,p.members.a.y,'up',2,{255,24,15},'small')
---						p.members.a.immunity = 5
---					end
---					if p.members.b.deaths == 0 then
---						message:new('Survivor!',p.members.b.x,p.members.b.y,'up',2,{255,24,15},'small')
---						p.members.b.immunity = 5
---					end
---				end
---			end
---			table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true))
---		elseif state.round > 4 then
---		end
---	end
+	--
+	--
 	if state.round <= 2 then
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100))) end
 	elseif state.round > 2 and state.round <= 4 then
@@ -138,7 +105,16 @@ function rounder()
 		if #state.enemies == 0 then
 			state.round = 11
 		end
---		state.round = 10
+	elseif state.round > 10 and state.round <= 12 then
+		if #state.enemies < 6 then
+			-- for i = 1, 4-#state.enemies do
+			-- 	table.insert(state.enemies,enemy.make())
+			-- end
+			for i = 1, 2-#state.enemies do
+				table.insert(state.enemies,dash.make())
+			end
+		end
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
 	end
 end
 
@@ -162,107 +138,6 @@ function initFS(name)
 		config:write("#Config File")
 		config:close()
 	end
-end
-
--- function loadJoystickConfigs()
--- 	love.filesystem.setIdentity("tether")
--- 	configuredJoysticks = love.filesystem.getDirectoryItems("joysticks")
--- 	print("Found these joystick config files:")
--- 		for i,j in ipairs(configuredJoysticks) do
--- 			print('\t'..j)
--- 		end
--- 	joystickConfigurations = {}
--- 	for i,j in ipairs(configuredJoysticks) do
--- 	if string.sub(j,-1) ~= '~' and string.sub(j,0,1) ~= '~' then
--- --		print(j)
--- 		local file = love.filesystem.newFile("joysticks/"..j)
--- --		print(love.filesystem.exists("joysticks/"..j))
--- 		file:open('r')
--- 		local conf = {}
--- 		local target = 'buttons'
--- 		for l in file:lines() do
--- --			print(l)
--- --			print(string.sub(l,-1))
--- 			if string.sub(l,0,1) == "#" then target = string.sub(l,2); conf[target]={} else
--- 				conf[target][string.sub(l,string.find(l,'=')+2)] = string.sub(l,1,string.find(l,'=')-2)
--- 				conf[target][string.sub(l,1,string.find(l,'=')-2)] = string.sub(l,string.find(l,'=')+2)
--- 			end
--- 		end
--- 		if joysticks[string.sub(j,0,-5)] then
--- 			joysticks[string.sub(j,0,-5)] = conf
--- 		end
--- 	end
--- 	end
--- end
-
--- function loadJoysticks()
--- 	print(ansicolors.yellow..'Attempting to load joysticks...'..ansicolors.clear)
--- 	if love.joystick.getNumJoysticks() > 0 then
--- 		joysticks = {}
--- 		for i=1, love.joystick.getNumJoysticks() do
--- 			love.joystick.open(i)
--- 			joysticks[love.joystick.getName(i)] = {}
--- --			print(love.joystick.getName(i))
--- 		end
--- 		loadJoystickConfigs()
--- 		if #configuredJoysticks > 0 then
--- 			for i,j in pairs(joysticks) do
--- --				for ii,jj in ipairs(configuredJoysticks) do
--- ----					print(i,jj)
--- --					if i..".joy" == jj then
--- --						print(i,ansicolors.green.."*Ready*"..ansicolors.clear)
--- --					else
--- --						print(i,ansicolors.red.."*Not Ready*"..ansicolors.clear)
--- --					end
--- --					break
--- --				end
--- 				if j == {} then
--- 					print(i,ansicolors.red.."*Not Ready*"..ansicolors.clear)
--- 				else
--- 					print(i,ansicolors.green.."*Ready*"..ansicolors.clear)
--- 				end
--- 			end
--- 		else
--- 			print(ansicolors.red.."No controller confiurations found!\nRunning configurator-inator"..ansicolors.clear)
--- 		end
--- 	else
--- 		print("No joysticks... yuck")
--- 	end
--- end
-
-function loadJoysticks()
-	print(love.joystick.getJoystickCount())
-	for i,j in ipairs(love.joystick.getJoysticks()) do
-		print(j:getName(),j:isGamepad(),j:isVibrationSupported(),j:getAxisCount(),j:getButtonCount(),j:getHatCount(),j:getHat(1))
-	end
-	print(ansicolors.yellow..'Attempting to load joysticks...'..ansicolors.clear)
-	local joysticks = love.joystick.getJoysticks()
-	for i,j in ipairs(joysticks) do
-		if j:isGamepad() == false and love.filesystem.exists('res/joysticks/'..j:getName()..'.joy') then
-			print('found config for '..j:getName())
-			local file,guid = love.filesystem.newFile('res/joysticks/'..j:getName()..'.joy','r'),j:getGUID()
-			-- print(file:open('r'),file:isOpen())
-			local target = ''
-			for l in file:lines() do
-				if string.sub(l,1,1) == '#' then
-					target = string.sub(l,2)
-					print(l)
-				else
-					if target ~= 'hat' then
-						print(string.sub(l,1,string.find(l,'=')-2),tonumber(string.sub(l,string.find(l,'=')+2)))
-						love.joystick.setGamepadMapping(guid,string.sub(l,1,string.find(l,'=')-2),target,tonumber(string.sub(l,string.find(l,'=')+2)))--finish this line
-					else
-						print(string.sub(l,1,string.find(l,'=')-2),string.sub(l,string.find(l,'=')+2))
-						-- love.joystick.setGamepadMapping(guid,string.sub(l,1,string.find(l,'=')-2),target,1,string.sub(l,string.find(l,'=')+2))
-					end
-				end
-			end
-			print('finished loop')
-		end
-		print('a')
-	end
-	print('b')
-	return joysticks
 end
 
 ------------------------
@@ -311,15 +186,11 @@ function screen.init(w,h)
 end
 
 function screen:draw()
---	love.graphics.setColor(255,255,255)
---	love.graphics.draw(self.images.background,0,0)
 	if self.timers.shake ~= 0 then
 		self.shakeing = true
---		print('shaking')
 		self.timers.shake = self.timers.shake - 1
 		self.timers.shake = math.max(self.timers.shake,-1)
 		love.graphics.translate(math.random(-self.delta,self.delta),math.random(-self.delta,self.delta))
---		love.graphics.translate(-48,-48)
 		if self.chromeWhenShake then
 			self.timers.chrome = self.timers.shake
 		end
@@ -341,14 +212,11 @@ end
 function screen:drawFlash()
 	if self.timers.flashDuration ~= 0 then
 		self.flashing = true
---		if self.timers.flashDuration > 0 then
---			self.timers.flashDuration = self.timers.flashDuration -.1
---		end
 		if self.flashMode == "full" then
 			love.graphics.setColor(self.colors.flash[1],self.colors.flash[2],self.colors.flash[3],math.max(self.timers.flashPeriod[1]/self.timers.flashPeriod[2]*255,0))
 			love.graphics.rectangle("fill",0,0,self.width,self.height)
 		elseif self.flashMode == "edge" then
-			love.graphics.setColor(self.colors.flash[1],self.colors.flash[2],self.colors.flash[3],math.max(self.timers.flashPeriod[1]/self.timers.flashPeriod[2]*255,0))
+			love.graphics.setColor(self.colors.flash[1],self.colors.flash[2],self.colors.flash[3],math.max(self.timers.flashPeriod[1]/self.timers.flashPeriod[2]*128,0))
 			love.graphics.draw(self.images.flash,0,0,0,self.width/256,self.height/256)
 		else
 			print("[WARNING]: (Screen) Unsupported flash mode. Doing nothing.")
@@ -377,7 +245,6 @@ function screen:shake(time,delta,chrome,deteriorate)
 	else
 		self.chromeWhenShake = true
 	end
---	print('called shake')
 	self.timers.shake = time*60
 	self.delta = delta or 16
 	self.delta = self.delta/2
@@ -416,58 +283,27 @@ function screen:setBackground(arg)
 end
 
 function screen:releaseChromaticFilter()
-	love.graphics.setCanvas(self.canvases.red)
-			love.graphics.push()
-			love.graphics.translate(-4*self.focus,0)
-		if type(self.background) == 'table' then
-			love.graphics.setColor(self.background[1],self.background[2],self.background[3])
-			love.graphics.rectangle("fill",0,0,self.width,self.height)
-		else
-			love.graphics.setColor(255,255,255)
-			love.graphics.draw(self.background)
-		end
---		love.graphics.rectangle("fill",0,0,self.width,self.height)
-		love.graphics.setColor(255,0,0)
-		love.graphics.draw(self.canvases.buffer)
-			love.graphics.pop()
-	love.graphics.setCanvas(self.canvases.green)
-			love.graphics.push()
-			love.graphics.translate(0,-4*self.focus)
-		if type(self.background) == 'table' then
-			love.graphics.setColor(self.background[1],self.background[2],self.background[3])
-			love.graphics.rectangle("fill",0,0,self.width,self.height)
-		else
-			love.graphics.setColor(255,255,255)
-			love.graphics.draw(self.background)
-		end
---		love.graphics.rectangle("fill",0,0,self.width,self.height)
-		love.graphics.setColor(0,255,0)
-		love.graphics.draw(self.canvases.buffer)
-			love.graphics.pop()
-	love.graphics.setCanvas(self.canvases.blue)
-			love.graphics.push()
-			love.graphics.translate(4*self.focus,0)
-		if type(self.background) == 'table' then
-			love.graphics.setColor(self.background[1],self.background[2],self.background[3])
-			love.graphics.rectangle("fill",0,0,self.width,self.height)
-		else
-			love.graphics.setColor(255,255,255)
-			love.graphics.draw(self.background)
-		end
---		love.graphics.rectangle("fill",0,0,self.width,self.height)
-		love.graphics.setColor(0,0,255)
-		love.graphics.draw(self.canvases.buffer)
-			love.graphics.pop()
 	love.graphics.setCanvas()
-		love.graphics.setColor(255,255,255)
-		love.graphics.setBlendMode("additive")
-		love.graphics.draw(self.canvases.red)
-		love.graphics.draw(self.canvases.green)
-		love.graphics.draw(self.canvases.blue)
-		love.graphics.setBlendMode("alpha")
-	for i,c in pairs(self.canvases) do
-		c:clear()
-	end
+
+	love.graphics.setColor(255,255,255)
+	love.graphics.setBlendMode("additive")
+	love.graphics.push()
+		--red
+			love.graphics.translate(-4*self.focus,0)
+			love.graphics.setColorMask( true, false, false)
+			love.graphics.draw(self.canvases.buffer)
+		--blue
+			love.graphics.translate(4*self.focus,-4*self.focus)
+			love.graphics.setColorMask( false, true, false)
+			love.graphics.draw(self.canvases.buffer)
+		--green
+			love.graphics.translate(4*self.focus,4*self.focus)
+			love.graphics.setColorMask( false, false, true)
+			love.graphics.draw(self.canvases.buffer)
+	love.graphics.pop()
+	love.graphics.setBlendMode("alpha")
+
+	love.graphics.setColorMask()
 end
 
 function screen:capFPS()

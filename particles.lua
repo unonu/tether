@@ -6,48 +6,40 @@ particles = {}
 
 cloud = {}
 function cloud.make(x,y,r,g,b,a)
-	local c = love.graphics.newParticleSystem(res.load("sprite","particle.png"),48)
-	c:setPosition(x,y)
---	c:setGravity(0)
---	c:setSpread(math.pi*2)
---	c:stop()
-	
-	c:setEmissionRate(512)
-	c:setSpeed(120, 80)
-	c:setGravity(0,0)
---	c:setSize(1, 2)
-	c:setColors(r or 255,g or 255,b or 255,a or 255)
---	c:setPosition(400, 300)
-	c:setLifetime(16)
-	c:setParticleLife(24)
-	c:setDirection(0)
-	c:setSpread(math.pi*2)
-	c:setSpin(0,2)
-	c:setRotation(0,math.pi*2)
+	local c = love.graphics.newParticleSystem(res.load("sprite","particle.png"),40)
+		c:setColors(r,g,b,a,math.clamp(0,r+24,0),math.clamp(0,g+24,0),math.clamp(0,b+24,0),0)
+		c:setEmitterLifetime(5)
+		c:setParticleLifetime(5)
+		c:setEmissionRate(80)
+		c:setSpeed(128,128)
+		c:setRadialAcceleration(-24,-8,-24,8)
+		c:setDirection(0)
+		c:setAreaSpread("uniform",2,2) --set to radius of object
+		c:setSpread(2*math.pi) --raidans
+		c:setSpin(-math.pi,-math.pi,0)
+		c:setPosition(x,y)
+		c:setSizes(1,0)
+		c:stop()
 	
 	table.insert(particles, c)
 end
 
 sparks = {}
 function sparks.make(x,y,r,g,b,a)
-	local c = love.graphics.newParticleSystem(res.load("sprite","sparks.png"),24)
-	c:setPosition(x,y)
---	c:setGravity(0)
---	c:setSpread(math.pi*2)
---	c:stop()
-	
-	c:setEmissionRate(12)
-	c:setSpeed(120, 80)
-	c:setGravity(0,0)
---	c:setSize(1, 2)
-	c:setColors(r or 255,g or 255,b or 255,a or 255)
---	c:setPosition(400, 300)
-	c:setLifetime(16)
-	c:setParticleLife(24)
-	c:setDirection(0)
-	c:setSpread(math.pi*2)
-	c:setSpin(0,6)
-	c:setRotation(0,math.pi*2)
+	local c = love.graphics.newParticleSystem(res.load("sprite","spark.png"),40)
+		c:setColors(r,g,b,a,math.clamp(0,r-24,255),math.clamp(0,g-24,255),math.clamp(0,b-24,255),math.clamp(0,a-24,255),math.clamp(0,r+24,255),math.clamp(0,g+24,255),math.clamp(0,b+24,255),math.clamp(0,a-24,255))
+		c:setEmitterLifetime(.5)
+		c:setParticleLifetime(.5)
+		c:setEmissionRate(10)
+		c:setSpeed(128,128)
+		c:setRadialAcceleration(-24,-8,-24,8)
+		c:setDirection(0)
+		c:setAreaSpread("uniform",2,2) --set to radius of object
+		c:setSpread(2*math.pi) --raidans
+		c:setSpin(-math.pi,-math.pi,0)
+		c:setPosition(x,y)
+		c:setSizes(1,0)
+		c:stop()
 	
 	table.insert(particles, c)
 end

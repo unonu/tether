@@ -24,6 +24,7 @@ function enemy.make()
 	e.dir = math.rsign()
 	e.hp = 2
 	e.kill = false
+	e.collideable = false
 	e.fireLimit = 200
 	e.fire = e.fireLimit
 	
@@ -31,7 +32,7 @@ function enemy.make()
 end
 
 function enemy:draw()
-	local rot = math.atan2(self.y-state.players[1]:closest(self.x,self.y).y,self.x-state.players[1]:closest(self.x,self.y).x)
+	local rot = math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x)
 	love.graphics.draw(self.image,self.x,self.y,rot-(math.pi/2),1,1,24,24)
 end
 
@@ -40,16 +41,16 @@ function enemy:update(dt)
 		self.dir = -self.dir
 	end
 	self.r = self.r-math.min(0-(math.pi/self.speed),0)*self.dir
-	if self._x < state.players[1]:closest(self.x,self.y).x then
+	if self._x < state.player:closest(self.x,self.y).x then
 		self._x = self._x+1
 	end
-	if self._x > state.players[1]:closest(self.x,self.y).x then
+	if self._x > state.player:closest(self.x,self.y).x then
 		self._x = self._x-1
 	end
-	if self._y < state.players[1]:closest(self.x,self.y).y then
+	if self._y < state.player:closest(self.x,self.y).y then
 		self._y = self._y+1
 	end
-	if self._y > state.players[1]:closest(self.x,self.y).y then
+	if self._y > state.player:closest(self.x,self.y).y then
 		self._y = self._y-1
 	end
 	
@@ -62,7 +63,7 @@ function enemy:update(dt)
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		bullet.make(self.x,self.y,math.atan2(self.y-state.players[1]:closest(self.x,self.y).y,self.x-state.players[1]:closest(self.x,self.y).x),4,'enemy')
+		bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
 	end
 end
 
@@ -80,6 +81,7 @@ function sentry.make(x,y)
 	e.fireLimit = 256
 	e.fire = e.fireLimit
 	e.drop = false
+	e.collideable = false
 	e.class = 'sentry'
 	e.image = res.load("sprite","sentry.png")
 	
@@ -99,7 +101,7 @@ function sentry:update(dt)
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		bullet.make(self.x+math.cos(self.rot)*24,self.y+math.sin(self.rot)*24,math.atan2(self.y-state.players[1]:closest(self.x,self.y).y,self.x-state.players[1]:closest(self.x,self.y).x),4,'enemy')
+		bullet.make(self.x+math.cos(self.rot)*24,self.y+math.sin(self.rot)*24,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
 	end
 end
 
@@ -107,38 +109,80 @@ dash = {}
 dash.__index = dash
 
 function dash.make()
-	local d = {}
-	setmetatable(d,dash)
+	local e = {}
+	setmetatable(e,dash)
 
 	if math.random(0,1) == 0 then
 		local x = math.random(0,1)*screen.width
-		d.x,d.y = x-(512*math.sign(1-x)),math.random(0,screen.height)
+		e.x,e.y = x-(512*math.sign(1-x)),math.random(0,screen.height)
 	else
 		local y = math.random(0,1)*screen.height
-		d.x,d.y = math.random(0,screen.width),y-(512*math.sign(1-y))
+		e.x,e.y = math.random(0,screen.width),y-(512*math.sign(1-y))
 	end
 
-	d.r = math.random(0,2)*math.pi
-	d.timer = 200
+	e.r = math.random(0,2)*math.pi
+	e.timer = 100
+	e.locked = false
+	e.r = 8
+	e.rot = 0
+	e.hp = 12
+	e.dir = math.rsign()
+	e.fireLimit = 256
+	e.fire = e.fireLimit
+	e.drop = true
+	e.bounty = math.random(8,12)
+	e.class = 'dash'
+	e.image = res.load("sprite","sentry.png")
+	e.aimgle = math.pi/2
+	e.v = 0
+	e.collideable = true
+	e.damage = 4
 
-	return d
+	return e
 end
 
 function dash:update( dt )
-	if self.timer > 75 then
-		self.r = math.loop(0,self.r+(math.pi/128),2)
+	--
+	print(self.r,self.x,self.y)
+	if not self.locked then
+		self.r = math.round(math.loop(-math.pi,self.r-(math.pi/256),math.pi),2)
 	end
-	if self.timer < 50 then
-		self.x = self.x + math.cos(self.r)*4
-		self.y = self.y + math.sin(self.t)*4
+	if math.round(math.atan2(self.y-state.player:closest(self.x,self.y).y,
+		self.x-state.player:closest(self.x,self.y).x),1) >= math.loop(-math.pi,self.r-(math.pi/48),math.pi)
+	and math.round(math.atan2(self.y-state.player:closest(self.x,self.y).y,
+		self.x-state.player:closest(self.x,self.y).x),1) <= math.loop(-math.pi,self.r+(math.pi/48),math.pi) then
+		self.locked = true
 	end
-	if self.timer < 0 then self.timer = 200 end
-
-	self.timer = self.timer-1
+	if self.locked then
+		if self.v == 0 then self.timer = self.timer -1 end
+		if self.timer < 0 then
+			self.timer = 100
+			self.v = 32
+		end
+		if self.v > 0 then
+			self.x = self.x - math.cos(self.r)*self.v
+			self.y = self.y - math.sin(self.r)*self.v
+			self.v = self.v-1
+			if self.v == 0 then
+				self.locked = false
+				self.aimgle = math.pi/2
+			end
+		end
+		if self.aimgle > 0 then self.aimgle= self.aimgle-(math.pi/24) end
+	end
+	-- for i,r in ipairs(state.rocks) do
+	-- 	if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
+	-- 		r.hp = 0
+	-- 	end
+	-- end
 end
 
 function dash:draw()
 	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
+	if self.locked then
+		love.graphics.line(self.x,self.y,self.x+math.cos(self.r+self.aimgle)*-600,self.y+math.sin(self.r+self.aimgle)*-600)
+		love.graphics.line(self.x,self.y,self.x+math.cos(self.r-self.aimgle)*-600,self.y+math.sin(self.r-self.aimgle)*-600)
+	end
 end
 
 --------------------------------------------------------------
@@ -162,6 +206,7 @@ function torrent.make(x,y,hp)
 	t.stats.hp = hp
 	t.hp = hp
 	t.bounty = 201
+	t.collideable = false
 	t._hp = hp
 	t.x_vol = 0
 	t.y_vol = 0
@@ -211,7 +256,7 @@ function torrent:update(dt)
 	end
 	if self.timers.pause > 0 and self.timers.fire > 0 then
 		if math.fmod(self.timers.fire,4) == 0 then
-			bullet.make(self.x,self.y,math.atan2(self.y-state.players[1]:closest(self.x,self.y).y,self.x-state.players[1]:closest(self.x,self.y).x),4,'enemy')
+			bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
 		end
 		self.timers.fire = self.timers.fire - 1
 --	else

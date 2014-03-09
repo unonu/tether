@@ -9,7 +9,7 @@ end
 -- Returns the distance between two points.
 function math.dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
 -- Distance between two 3D points:
-function math.dist(x1,y1,z1, x2,y2,z2) return ((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)^0.5 end
+-- function math.dist(x1,y1,z1, x2,y2,z2) return ((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)^0.5 end
 
 
 -- Returns the angle between two points.
@@ -33,6 +33,7 @@ function math.normalize(t) local n,m = #t,0 for i=1,n do m=m+t[i] end m=1/m for 
 -- Returns 'n' rounded to the nearest 'deci'th.
 function math.round(n, deci) deci = 10^(deci or 0) return math.floor(n*deci+.5)/deci end
 
+function math.trunc(n, deci) deci = 10^(deci or 0) return math.floor(n*deci)/deci end
 
 -- Randomly returns either -1 or 1.
 function math.rsign() return math.random(2) == 2 and 1 or -1 end
@@ -44,7 +45,7 @@ function math.sign(n) return n>0 and 1 or n<0 and -1 or 0 end
 
 -- Checks if two line segments intersect. Line segments are given in form of ({x,y},{x,y}, {x,y},{x,y}).
 function math.checkIntersect(l1p1, l1p2, l2p1, l2p2)
-    local function checkDir(pt1, pt2, pt3) return math.sign(((pt2.x-pt1.x)*(pt3.y-pt1.y)) - ((pt3.x-pt1.x)*(pt2.y-pt1.y))) end
+    local function checkDir(pt1, pt2, pt3) return math.sign(((pt2[1]-pt1[1])*(pt3[2]-pt1[2])) - ((pt3[1]-pt1[1])*(pt2[2]-pt1[2]))) end
     return (checkDir(l1p1,l1p2,l2p1) ~= checkDir(l1p1,l1p2,l2p2)) and (checkDir(l2p1,l2p2,l1p1) ~= checkDir(l2p1,l2p2,l1p2))
 end
 
@@ -62,3 +63,32 @@ function math.CheckCollision(box1x, box1y, box1w, box1h, box2x, box2y, box2w, bo
 end
 
 function math.loop(min,v,max) if v > max then return min elseif v < min then return max else return v end end
+
+-- gets the intersection 
+function math.getIntercept(l1p1, l1p2, l2p1, l2p2)
+  local m1 = (l1p2[2]-l1p1[2])/(l1p2[1]-l1p1[1])
+  local m2 = (l2p2[2]-l2p1[2])/(l2p2[1]-l2p1[1])
+  local b1 = -m1*l1p1[1]+l1p1[2]
+  local b2 = -m2*l2p1[1]+l2p1[2]
+  local x = (b2-b1)/(m1-m2)
+  local y = m1*x+b1
+  return x,y
+end
+
+--takes three points, first two are line {} {} {}
+function math.getPerpIntercept(lp1,lp2,p3)
+  local h = math.dist(lp1[1],lp1[2],p3[1],p3[2])
+  local phi = math.atan2(lp2[2]-lp1[2],lp2[1]-lp1[1])
+  local the = math.atan2(p3[2]-lp1[2],p3[1]-lp1[1]) - phi
+  local a = h*math.cos(the)
+  local x = a/math.cos(phi)
+  local y = a/math.sin(phi)
+  return x,y
+end
+
+function math.getPerpDistance(lp1,lp2,p3)
+  local h = math.dist(lp1[1],lp1[2],p3[1],p3[2])
+  local phi = math.atan2(lp2[2]-lp1[2],lp2[1]-lp1[1])
+  local the = math.atan2(p3[2]-lp1[2],p3[1]-lp1[1]) - phi
+  return h*math.sin(the)
+end
