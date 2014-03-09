@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------------
--- Behold, before you lies the whirling infinite. Bits and pieces of half forgotten dreams. What is it: reality? Or is it simply wishfull thinking? --
+-- Behold, before you lies the whirling infinite. Bits and pieces of half forgotten dreams. What is it? Reality? Or is it simply wishfull thinking? --
 --                         PARTICLES
 
 particles = {}

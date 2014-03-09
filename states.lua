@@ -5,7 +5,7 @@ intro.__index = intro
 function intro.make(dt)
 	local i = {}
 	setmetatable(i,intro)
-	i.slides = {res.load("image","orea.png"),res.load("image","betterWith.png")}
+	i.slides = {res.load("image","orea.png"),}
 	i.slide = 1
 	i.timerUp = 0
 	i.timerDown = dt
@@ -51,9 +51,6 @@ end
 function intro:mousepressed(x,y,button)
 	state = mainmenu.make()
 end
-function intro:gamepadpressed(joystick,button)
-	state = mainmenu.make()
-end
 
 mainmenu = {}
 mainmenu.__index = mainmenu
@@ -61,7 +58,7 @@ mainmenu.__index = mainmenu
 function mainmenu.make(ready)
 	local m = {}
 	setmetatable(m,mainmenu)
-	m.menu = {"Start","Options","Quit"}
+	m.menu = {"Start","Options","Credits","Quit"}
 	m.menuIndex = 1
 	m.effects = {}
 		m.effects.fader = 120
@@ -116,32 +113,34 @@ end
 
 function mainmenu:keypressed(k)
 	if k ~= 'escape' then -- This is sorta messy
-	self.ready = true
 		if self.ready then
-		if k == 'up' then
-			if self.menuIndex > 1 then
-				self.menuIndex = self.menuIndex-1
-				screen:shake(.15,2)
-			end
-		elseif k == 'down' then
-			if self.menuIndex < #self.menu then
-				self.menuIndex = self.menuIndex+1
-				screen:shake(.15,2)
-			end
-		elseif k == 'return' then
-			if self.menu[self.menuIndex] == 'Start' then
-				love.graphics.clear()
-				screen:shake(.15,2)
-				love.graphics.setColor(0,0,0)
-				love.graphics.rectangle('fill',0,0,screen.width,screen.height)
-				state = game.make()
-			elseif self.menu[self.menuIndex] == 'Options' then
-				state = options.make()
-			elseif self.menu[self.menuIndex] == 'Quit' then
-				love.event.quit()
+			if k == 'up' then
+				if self.menuIndex > 1 then
+					self.menuIndex = self.menuIndex-1
+					screen:shake(.15,2)
+				end
+			elseif k == 'down' then
+				if self.menuIndex < #self.menu then
+					self.menuIndex = self.menuIndex+1
+					screen:shake(.15,2)
+				end
+			elseif k == 'return' then
+				if self.menu[self.menuIndex] == 'Start' then
+					love.graphics.clear()
+					screen:shake(.15,2)
+					love.graphics.setColor(0,0,0)
+					love.graphics.rectangle('fill',0,0,screen.width,screen.height)
+					state = game.make()
+				elseif self.menu[self.menuIndex] == 'Options' then
+					state = options.make()
+				elseif self.menu[self.menuIndex] == 'Credits' then
+					state = credits.make()
+				elseif self.menu[self.menuIndex] == 'Quit' then
+					love.event.quit()
+				end
 			end
 		end
-		end
+		self.ready = true
 	else
 		if self.ready then
 			self.ready = false
@@ -149,42 +148,6 @@ function mainmenu:keypressed(k)
 			self.effects.screenR = screen.width
 		else
 			love.event.quit()
-		end
-	end
-end
-
-function mainmenu:gamepadreleased(joystick,button)
-	if button == 'start' or button == 'a' then
-		if not self.ready then
-			self.ready = true
-		else
-			if self.menu[self.menuIndex] == 'Start' then
-				love.graphics.clear()
-				screen:shake(.15,2)
-				love.graphics.setColor(0,0,0)
-				love.graphics.rectangle('fill',0,0,screen.width,screen.height)
-				state = game.make()
-			elseif self.menu[self.menuIndex] == 'Options' then
-				state = options.make()
-			elseif self.menu[self.menuIndex] == 'Quit' then
-				love.event.quit()
-			end
-		end
-	elseif button == 'up' then
-		if self.menuIndex > 1 then
-				self.menuIndex = self.menuIndex-1
-				screen:shake(.15,2)
-		end
-	elseif button == 'down' then
-		if self.menuIndex < #self.menu then
-			self.menuIndex = self.menuIndex+1
-			screen:shake(.15,2)
-		end
-	elseif button == 'b' then
-		if self.ready then
-			self.ready = false
-			self.effects.fader = 120
-			self.effects.screenR = screen.width
 		end
 	end
 end
@@ -277,31 +240,6 @@ function options:keypressed(k)
 	end
 end
 
-function options:gamepadreleased(joystick,button)
-	if button == 'start' or button == 'a' then
-		if self.menu[self.menuIndex] == 'Fullscreen' then
-			screen.toggleFullscreen()
-		elseif self.menu[self.menuIndex] == 'Music' then
-			love.audio.setVolume(math.abs(love.audio.getVolume()-1))
-			print(love.audio.getVolume())
-		elseif self.menu[self.menuIndex] == 'Back' then
-			state = mainmenu.make(true)
-		end
-	elseif button == 'up' then
-		if self.menuIndex > 1 then
-			self.menuIndex = self.menuIndex-1
-			screen:shake(.15,2)
-		end
-	elseif button == 'down' then
-		if self.menuIndex < #self.menu then
-			self.menuIndex = self.menuIndex+1
-			screen:shake(.15,2)
-		end
-	elseif button == 'cancel' then
-		state = mainmenu.make(true)
-	end
-end
-
 game = {}
 game.__index = game
 
@@ -310,7 +248,6 @@ function game.make()
 	setmetatable(g,game)
 	g.player = player.make(-1)
 	g.distance = 100
-	g.rocks = {}
 	g.quota = 8
 	g.points = 0
 	g.crystals = {}
@@ -324,18 +261,31 @@ function game.make()
 		pauseBlur = love.graphics.newCanvas(),
 		pauseCanvas = love.graphics.newCanvas(),
 	}
-	g.res = {bullet = res.load("sprite","shot.png"),crystal = res.load("sprite","point.png"),target = res.load("sprite","target.png"),scoreBoardA = res.load("image","scoreboardBack.png"),scoreBoardB = res.load("image","scoreboardFront.png"),background = res.load("image","greyField.png")}
-	screen:setBackground(g.res.background)
-	g.sounds = {collect = res.load("sound","collect"),explosion = res.load("sound","explosion")}
+	g.res = {	bullet = res.load("sprite","shot.png"),
+				crystal = res.load("sprite","point.png"),
+				target = res.load("sprite","target.png"),
+				scoreBoardA = res.load("image","scoreboardBack.png"),
+				scoreBoardB = res.load("image","scoreboardFront.png"),
+				background = res.load("image","greyField.png"),
+				healthbar = res.load("image","healthbar.png"),
+			}
+	g.sounds = {collect = res.load("sound","collect"),
+				explosion = res.load("sound","explosion"),
+			}
 	g.music = res.load("music","music")
-	love.audio.play(g.music)
-	print('.')
-	for i=1, 8 do
-		table.insert(g.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100)))
-	end
+	g.music:rewind()
+	g.music:play()
+
 	g.pause = 1
 	g.menu = {"Continue","Restart","Exit to Menu","Quit"}
 	g.menuIndex = 1
+
+	g.rocks = {}
+	for i=1, 8 do
+		table.insert(g.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100)))
+	end
+
+	screen:setBackground(g.res.background)
 	messages:new("START!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,255})
 	
 	return g
@@ -344,6 +294,13 @@ end
 function game:draw()
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(self.res.background,0,0,0,screen.width/1280,screen.height/720)
+
+	--round
+	love.graphics.setColor(255,255,255,200)
+	love.graphics.setFont(fonts.roundNumbers)
+	love.graphics.print(self.round,screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2),
+		screen:getCentre('y')-(fonts.roundNumbers:getWidth(self.round)/2))
+
 if self.pause == 1 then
 	love.graphics.setFont(fonts.small)
 	--------------------------------
@@ -415,9 +372,6 @@ if self.pause == 1 then
 			end
 			love.graphics.pop()
 
-		love.graphics.setColor(255,255,255)
-		love.graphics.setFont(fonts.roundNumbers)
-	love.graphics.print(self.round,screen:getCentre('x')-(fonts.large:getWidth(self.round)/2),12)
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
 		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
@@ -613,65 +567,6 @@ elseif self.pause == 3 then
 end
 end
 
-function game:gamepadreleased(joystick,button)
-	if button == "start" then
-		if self.pause == 2 then
-			love.audio.resume()
-			self.pause = 1
-		elseif self.pause == 1 then
-			love.graphics.setCanvas(self.pauseCanvas)
-				self:draw()
-			love.graphics.setCanvas()
-			love.audio.pause()
-			self.pause = 2
-		end
-	elseif button == "back" then
-		if self.pause == 3 then
-			love.audio.resume()
-			self.pause = 1
-		else
-			love.graphics.setCanvas(self.pauseCanvas)
-				self:draw()
-			love.graphics.setCanvas()
-			love.audio.pause()
-			self.pause = 3
-		end
-	end
-	if self.pause == 3 then
-		if button == 'up' then
-			if self.menuIndex > 1 then
-				self.menuIndex = self.menuIndex-1
-				screen:shake(.15,2)
-			end
-		elseif button == 'down' then
-			if self.menuIndex < #self.menu then
-				self.menuIndex = self.menuIndex+1
-				screen:shake(.15,2)
-			end
-		elseif button == 'a' then
-			if self.menu[self.menuIndex] == 'Continue' then
---			screen:shake(.15,2)
-				love.audio.resume()
-				self.pause = 1
-			elseif self.menu[self.menuIndex] == 'Restart' then
-				screen:shake(.15,2)
-				state = game.make()
-			elseif self.menu[self.menuIndex] == 'Exit to Menu' then
-				screen:shake(.15,2)
-				state = mainmenu.make(true)
-			elseif self.menu[self.menuIndex] == 'Quit' then
-				love.event.quit()
-			end
-		elseif button == 'b' then
-			self.pause = 1
-		end
-	end
-end
-
-function game:mousepressed(x,y,mousepressed)
-
-end
-
 heaven = {}
 heaven.__index = heaven
 
@@ -683,12 +578,43 @@ function heaven.make(player,rounds,rocks,enemies)
 	h.player = player
 	screen:clearEffects()
 	screen:shake(.8,3)
-	h.winner = {player.points}
+	h.winner = 'a'
+	h.loser = 'b'
+	h.tie = false
+	if player.members.a.points > player.members.b.points then
+		h.winner = 'a'; h.loser = 'b'
+	elseif player.members.a.points > player.members.b.points then
+		h.winner = 'b'; h.loser = 'a'
+	else
+		h.tie = true
+	end
 	h.rocks = rocks
 	h.enemies = enemies
 	h.ready = false
 	h.menu = {"Restart","Main Menu"}
 	h.menuIndex = 1
+	h.name = "      "
+	h.characters = {{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					{'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+						'0','1','2','3','4','5','6','7','8','9','!','?',',','.','-','_','&','#','/',},
+					}
+	h.winnerName = {1,1,1}
+	h.loserName = {1,1,1}
+	h.winnerIndex = 1
+	h.loserIndex = 1
+
+
+	h.record = love.filesystem.newFile("records/highScores",'r')
+
 
 	return h
 end
@@ -707,6 +633,7 @@ if self.ready then
 		end
 		love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
 	end
+
 else
 	-- 	love.graphics.setColor(0,0,0)
 	-- love.graphics.rectangle("fill",0,0,screen.width,screen.height)
@@ -723,6 +650,8 @@ else
 	-- 	love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')*2),screen.width,'center')
 	-- end
 	love.graphics.setBackgroundColor(0,0,0)
+	love.graphics.setColor(255,255,255)
+	love.graphics.print(h.characters[1][winnerName])
 end
 end
 
@@ -733,19 +662,36 @@ end
 function heaven:keypressed(k)
 if self.ready then
 	if k == 'up' then
-		if self.menuIndex > 1 then
-			self.menuIndex = self.menuIndex-1
-		end
+		-- if self.menuIndex > 1 then
+		-- 	self.menuIndex = self.menuIndex-1
+		-- end
 	elseif k == 'down' then
-		if self.menuIndex < #self.menu then
-			self.menuIndex = self.menuIndex+1
-		end
+		-- if self.menuIndex < #self.menu then
+		-- 	self.menuIndex = self.menuIndex+1
+		-- end
+	--choose the name column to edit
+	elseif k == self.player.members[self.winner].keys.right then
+		if self.winnerIndex < 3 then self.winnerIndex = self.winnerIndex + 1 end
+	elseif k == self.player.members[self.winner].keys.left then
+		if self.winnerIndex > 1 then self.winnerIndex = self.winnerIndex - 1 end
+	elseif k == self.player.members[self.loser].keys.right then
+		if self.loserIndex < 3 then self.loserIndex = self.loserIndex + 1 end
+	elseif k == self.player.members[self.loser].keys.left then
+		if self.loserIndex > 1 then self.loserIndex = self.loserIndex - 1 end
+	--choose the character for the name column
+	elseif k == self.player.members[self.winner].keys.up then
+			self.winnerName[winnerIndex] = math.loop(1,self.winnerName[winnerIndex] + 1,#self.winnerName[winnerIndex])
+	elseif k == self.player.members[self.winner].keys.down then
+			self.winnerName[winnerIndex] = math.loop(1,self.winnerName[winnerIndex] - 1,#self.winnerName[winnerIndex])
+	elseif k == self.player.members[self.loser].keys.up then
+			self.loserName[loserIndex] = math.loop(1,self.loserName[loserIndex] + 1,#self.loserName[loserIndex])
+	elseif k == self.player.members[self.loser].keys.down then
+			self.loserName[loserIndex] = math.loop(1,self.loserName[loserIndex] - 1,#self.loserName[loserIndex])
 	elseif k == 'return' then
 		if self.menu[self.menuIndex] == 'Restart' then
 			screen:shake(.15,2)
 			state = game.make()
 		elseif self.menu[self.menuIndex] == 'Main Menu' then
---			screen:shake(.15,2)
 			state = mainmenu.make(true)
 		end
 	end
@@ -756,40 +702,89 @@ else
 end
 end
 
-function heaven:gamepadreleased(joystick, button)
-if self.ready then
-	if button == 'b' then
-		self.ready = false
-	elseif button == 'up' then
-		if self.menuIndex > 1 then
-			self.menuIndex = self.menuIndex-1
-		end
-	elseif button == 'down' then
-		if self.menuIndex < #self.menu then
-			self.menuIndex = self.menuIndex+1
-		end
-	elseif button == 'a' then
-		if self.menu[self.menuIndex] == 'Restart' then
-			screen:shake(.15,2)
-			state = game.make()
-		elseif self.menu[self.menuIndex] == 'Main Menu' then
---			screen:shake(.15,2)
-			state = mainmenu.make(true)
-		end
-	end
-else
-	if button == 'start' or button == 'a' then
-		self.ready = true
-	end
-end
-end
+credits = {}
+credits.__index = credits
 
-configurator = {}
-configurator.__index = configurator
-
-function configurator.make()
+function credits.make()
 	local c = {}
-	setmetatable(c,configurator)
-	print("HOLD EVERYTHING!!!\nWe've found a new controller...'")
---	c.
+	setmetatable(c,credits)
+	c.offset = screen.height
+	c.credits = {}
+	local f = love.filesystem.newFile("/res/credits/credits.txt",'r')
+	local y = 0
+	for l in f:lines() do
+		if l:sub(1,2) == '#!' then
+			love.graphics.setFont(fonts[l:sub(3)])
+			table.insert(c.credits,{l,0,0})
+		else
+			table.insert(c.credits,{l,love.graphics.getFont():getWidth(l),y})
+			y = y + love.graphics.getFont():getHeight(l) + 4
+		end
+	end
+	c.particles = {}
+	c.files = {}
+	local t = love.filesystem.getDirectoryItems("res/sprites/")
+	print(#c.files)
+	local removed = 0
+	for i,f in ipairs(t) do 
+		print(f)
+		if f:sub(-4) == ".png" then
+			print('i')
+			table.insert(c.files,f)
+		end
+	end
+	print(#c.files)
+
+	return c
+end
+
+function credits:draw()
+	local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
+		if _x ~= 0 or _y ~= 0 then
+			screen:aberate(.1,math.rsign(1))
+		end
+	love.graphics.setColor(0,0,0)
+	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
+	love.graphics.setColor(255,255,255)
+
+	for i,o in ipairs(self.particles) do
+		love.graphics.setColor(128,128,128,o[8])
+		love.graphics.draw(o[1],o[2],o[3],o[6],o[4],o[4],o[1]:getWidth()/2,o[1]:getHeight()/2)
+		if o[3]-o[1]:getHeight()/2 > screen.height then table.remove(self.particles,i) end
+		o[3] = o[3]+o[5]
+		o[6] = o[6]-o[7]
+	end
+
+	love.graphics.setColor(255,255,255)
+	for i,l in ipairs(self.credits) do
+		if l[1]:sub(1,2) == '#!' then
+			love.graphics.setFont(fonts[l[1]:sub(3)])
+		elseif l[1]:sub(1,2) == '#?' then
+			love.graphics.setColor(unpack(hexToCol(l[1]:sub(3))))
+		else
+			love.graphics.print(l[1],screen:getCentre('x')-(l[2]/2),self.offset + l[3])
+		end
+	end
+
+	love.graphics.print(#self.particles,0,0)
+end
+
+function credits:update(dt)
+	if self.offset + self.credits[#self.credits][3] < -24 then
+		state = mainmenu.make(true)
+	end
+	self.offset = self.offset - 1
+
+	local i = math.random()
+	if math.random(0,40) == 40 then
+		print(math.random(1,#self.files))
+		local o = {res.load("sprite",self.files[math.random(1,#self.files)]),math.random(0,screen.width),0,i,i/2,0,i*math.pi/100,math.random(64,196)}
+		o[3] = -o[1]:getHeight()
+		table.insert(self.particles,o)
+	end
+
+end
+
+function credits:keypressed(k)
+	state = mainmenu.make(true)
 end

@@ -15,6 +15,44 @@ function drawBack()
 	end
 end
 
+
+function table.getIndex(t,item)
+	if t and #t ~= nil then
+		for i=1,#t do
+			if t[i] == item then return i end
+		end
+	elseif t then
+		for i,s in pairs(t) do
+			if s == item then return i end
+		end
+	else return nil end
+end
+
+function table.compare(t1,t2)
+	if #t1 == #t2 then
+		for i=1,#t1 do
+			if t1[i] ~= t2[i] then return false end
+		end
+		return true
+	end
+end
+
+function splitString(str,del)
+	local t = {}
+	local c = 0
+	while c do
+		table.insert(t,str:sub(c+1,((str:find(del or ' ',c+1)) or 0)-1))
+		c = str:find(del or  ' ',c+1)
+	end
+	return t
+end
+
+function atoi(s)
+	local i = 0
+	for c in s:gmatch("%d") do i = i*10+c end
+	return i
+end
+
 function colorExtreme( table,m )
 	local t ={}
 	for i,v in ipairs(table) do
@@ -22,6 +60,17 @@ function colorExtreme( table,m )
 		else t[i] = 0 end
 	end
 	return t
+end
+
+
+function hexToCol(h)
+	local t
+	for c in h:gmatch(".") do
+		t = (t or '')..c..','
+	end
+	t = t:gsub("%a",function (s) return s:lower():byte()-87 end)
+	t = splitString(t,",")
+	return {t[2]*16+t[3],t[4]*16+t[5],t[6]*16+t[7]}
 end
 
 function love.graphics.stippledLine( x1,y1,x2,y2,l,g )
