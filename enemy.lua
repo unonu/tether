@@ -125,7 +125,7 @@ function dash.make()
 	e.locked = false
 	e.r = 8
 	e.rot = 0
-	e.hp = 12
+	e.hp = 2
 	e.dir = math.rsign()
 	e.fireLimit = 256
 	e.fire = e.fireLimit
@@ -143,7 +143,7 @@ end
 
 function dash:update( dt )
 	--
-	print(self.r,self.x,self.y)
+	-- print(self.r,self.x,self.y)
 	if not self.locked then
 		self.r = math.round(math.loop(-math.pi,self.r-(math.pi/256),math.pi),2)
 	end
@@ -192,7 +192,7 @@ end
 torrent = {}
 torrent.__index = torrent
 
-function torrent.make(x,y,hp)
+function torrent.make(x,y,hp,intro)
 	local t = {}
 	setmetatable(t,torrent)
 	t.x = x
@@ -212,15 +212,18 @@ function torrent.make(x,y,hp)
 	t.y_vol = 0
 	t.forces = {{2,math.random(0,3.13)}}
 	t.timers = {}
-		t.timers.moves = 3
+		t.timers.moves = 0
 		t.timers.cooldown = 0
 		t.timers.pause = 100
-		t.timers.fire = 32
+		t.timers.fire = 0
+		t.timers.intro = math.floor((screen.height/2)+(2*t.r))
+	t.intro = intro or false
 	
 	return t
 end
 
 function torrent:draw()
+if self.timers.intro == 0 then
 		love.graphics.setColor(255,0,0)
 	love.graphics.circle('fill',self.x,self.y,48,6)
 	if self.hp ~= self._hp then
@@ -230,9 +233,21 @@ function torrent:draw()
 		love.graphics.setColor(0,255,12)
 	end
 	love.graphics.circle('fill',self.x,self.y,48*(self.hp/self.stats.hp),6)
+else
+		love.graphics.setColor(255,0,0)
+	love.graphics.circle('fill',self.x,(screen.height/2)-self.timers.intro,48,6)
+	if self.hp ~= self._hp then
+		love.graphics.setColor(255,255,255,255)
+		self._hp = self.hp
+	else
+		love.graphics.setColor(0,255,12)
+	end
+	love.graphics.circle('fill',(screen.height/2)-self.x,self.timers.intro,48*(self.hp/self.stats.hp),6)
+end
 end
 
 function torrent:update(dt)
+if self.timers.intro == 0 then
 	self.r = 8+(self.hp*.2)
 	if self.timers.cooldown <= 0 then
 		self.timers.pause = self.timers.pause-1
@@ -276,5 +291,9 @@ function torrent:update(dt)
 	if self.x_vol ~= 0 then self.x_vol = math.round(self.x_vol - (self.x_vol*.2),2) end
 	if self.y_vol ~= 0 then self.y_vol = math.round(self.y_vol - (self.y_vol*.2),2) end
 	self.forces = {}
+else
+	self.timers.intro = self.timers.intro - 1
+	if self.timers.intro == 0 then state.grabPlayer = false end
+end
 end
 

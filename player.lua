@@ -23,6 +23,7 @@ function player.make(number)
 			hp = 16,
 			immunity = 0,
 			lives = 3,
+			spawned = true,
 			tether = false,
 			perks = {},
 			attraction = 100,
@@ -30,7 +31,7 @@ function player.make(number)
 			lapse = 0,
 			color = {100,255,100},
 			keys = {up = 'w', down = 's', left = 'a', right = 'd', tether = 'lshift'},
-			timers = {spawn = 60,},
+			timers = {spawn = 0,},
 		}
 		p.members.b = {
 			name = 'b',
@@ -48,6 +49,7 @@ function player.make(number)
 			hp = 16,
 			immunity = 0,
 			lives = 3,
+			spawned = true,
 			tether = false,
 			perks = {},
 			attraction = 100,
@@ -55,7 +57,7 @@ function player.make(number)
 			lapse = 0,
 			color = {255,100,100},
 			keys = {up = 'i', down = 'k', left = 'j', right = 'l', tether = 'return'},
-			timers = {spawn = 60,},
+			timers = {spawn = 0,},
 		}
 
 	if number > 0 then
@@ -110,8 +112,10 @@ function player:closest(x,y)
 end
 
 function player:drawMember(member,x,y,s)
+	if member.spawned then
 	--drawing
-	if not love.keyboard.isDown(member.keys.up,member.keys.down,member.keys.left,member.keys.right) then --stationary
+	if not love.keyboard.isDown(member.keys.up,member.keys.down,member.keys.left,member.keys.right) or state.grabPlayer then --stationary
+	-- if member.x_vol == 0 and member.y_vol == 0 then --stationary
 			member.rot = member.rot-(math.pi/128)
 		--tether effect
 		if self.distance < self.tetherDistance then
@@ -166,6 +170,7 @@ function player:drawMember(member,x,y,s)
 	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then love.graphics.print("Low HP",(x or member.x)+12,(y or member.y)-26) end
 	if member.hp <= member.stats.hp/8 then love.graphics.print("Very Low HP!",(x or member.x)+12,(y or member.y)-26) end
 end
+end
 
 function player:draw()
 
@@ -198,7 +203,11 @@ function player:draw()
 end
 
 function player:updateMember(member,dt)
+if member.timers.spawn == 0 then
+	if not member.spawned then self:centre(member.name); member.spawned = true end
+
 	member._points = member.points
+	if not state.grabPlayer then
 	if love.keyboard.isDown(member.keys.tether) then member.tether = true else member.tether = false end
 	if love.keyboard.isDown(member.keys.right) and not love.keyboard.isDown(member.keys.left,member.keys.up,member.keys.down) then 
 		member.x_vol = math.round(member.x_vol +.8*member.speed,4) end
@@ -217,6 +226,7 @@ function player:updateMember(member,dt)
 		member.y_vol = math.round(member.y_vol +.6*member.speed,4) end	
 	if love.keyboard.isDown(member.keys.up) and love.keyboard.isDown(member.keys.left,member.keys.right) then 
 		member.y_vol = math.round(member.y_vol -.6*member.speed,4) end
+	end
 	-- 
 	if member.x < 0 then self:push(member.name,-member.x) end
 	if member.x > screen.width then self:push(member.name,screen.width-member.x) end
@@ -256,12 +266,23 @@ function player:updateMember(member,dt)
 		member.points = math.max(0,member.points-100)
 		messages:new("Player "..self.number.." died",member.x,member.y,'up',-1,{0,128,90},'small')
 		print(member.lives.." lives left.")
-		member.x,member.y = screen:getCentre('x'),screen:getCentre('y')
 		member.immunity = 18
 		member.timers.spawn = 60
+		member.spawned = false
 		love.audio.play(self.sounds.aDie)
 	end
 	
+	--position, velocity and acceleration
+	for i,f in ipairs(member.forces) do member.x_vol = math.round(member.x_vol + math.cos(f[2])*f[1],4) end
+	for i,f in ipairs(member.forces) do member.y_vol = math.round(member.y_vol + math.sin(f[2])*f[1],4) end
+	if math.abs(member.x_vol) < .001 then member.x_vol = 0 end
+	if math.abs(member.y_vol) < .001 then member.y_vol = 0 end
+	member.x = member.x + member.x_vol
+	member.y = member.y + member.y_vol
+
+	if member.immunity > 0 then member.immunity = member.immunity - .1;else member.immunity = 0 end
+end
+
 	--timers
 	if member.target.rot < math.pi*2 then
 		member.target.rot = member.target.rot+(math.pi/120)
@@ -273,16 +294,6 @@ function player:updateMember(member,dt)
 	end
 
 	if member.timers.spawn > 0 then member.timers.spawn = member.timers.spawn - 1 end
-	
-	--position, velocity and acceleration
-	for i,f in ipairs(member.forces) do member.x_vol = math.round(member.x_vol + math.cos(f[2])*f[1],4) end
-	for i,f in ipairs(member.forces) do member.y_vol = math.round(member.y_vol + math.sin(f[2])*f[1],4) end
-	if math.abs(member.x_vol) < .001 then member.x_vol = 0 end
-	if math.abs(member.y_vol) < .001 then member.y_vol = 0 end
-	member.x = member.x + member.x_vol
-	member.y = member.y + member.y_vol
-
-	if member.immunity > 0 then member.immunity = member.immunity - .1;else member.immunity = 0 end
 end
 
 function player:update()
@@ -412,4 +423,8 @@ function player:giveHealth(t,h)
 		self.members[t].hp = self.members[t].hp + (h or self.members[t].stats.hp-self.members[t].hp)
 		messages:new("Health Up!",self.members[t].x,self.members[t].y,'up',3,{0,128,90})
 	end
+end
+
+function player:centre(m)
+	self.members[m].x,self.members[m].y = screen:getCentre('x'),screen:getCentre('y')
 end

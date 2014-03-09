@@ -93,6 +93,7 @@ function rounder()
 		for i,e in ipairs(state.enemies) do
 			e.kill = true
 		end
+	state.quota = 8
 		if state.round == 6 then
 			if state.player.members.a.stats.deaths == 0 and state.player.members.a.hp == state.player.members.a.stats.hp then
 				messages:new('Untouchable!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boom')
@@ -110,8 +111,10 @@ function rounder()
 			end
 		elseif state.round == 10 then
 			state.quota = -1
+			state.grabPlayer = true
 			state.player.members.a.x,state.player.members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
 			state.player.members.b.x,state.player.members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
+			state.player:giveHealth('both',8)
 			for i,r in ipairs(state.rocks) do
 				r.hp = 0
 			end
