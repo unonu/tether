@@ -8,10 +8,10 @@ function intro.make(dt)
 	i.slides = {res.load("image","orea.png"),}
 	i.slide = 1
 	i.timerUp = 0
-	i.timerDown = dt
-	i.delay = dt
+	i.timerDown = dt or 80
+	i.delay = dt or 80
 	i.alpha = 0
-	i.dt = dt
+	i.dt = dt or 80
 --print("slide 1")
 	return i
 end
@@ -64,6 +64,7 @@ function mainmenu.make(ready)
 	m.timers = {fader = 120,
 				screenR = screen.width,
 				gameFade = {100,100,100,100,100,100,100},
+				idle = 0,
 				}
 	love.graphics.setFont(fonts.large)
 	love.audio.stop()
@@ -92,6 +93,8 @@ else
 	end
 	
 end
+	self.timers.idle = self.timers.idle + 1
+	if self.timers.idle > 3600 then state = intro.make() end
 end
 
 function mainmenu:draw()
@@ -119,25 +122,24 @@ else
 		if _x ~= 0 or _y ~= 0 then
 			screen:aberate(.1,math.rsign(1))
 		end
-	-- love.graphics.printf("Tether",_x,-16+xy[2]+_y,screen.width,'center')local frac = (100-self.timers.gameFade[1])/100
 	local frac = (100-self.timers.gameFade[1])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('T',(screen.width/2)-140+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('T',(screen.width/2)-90+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[2])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('e',(screen.width/2)-100+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('e',(screen.width/2)-50+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[3])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('t',(screen.width/2)-72+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('t',(screen.width/2)-22+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[4])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('h',(screen.width/2)-36+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('h',(screen.width/2)+6+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[5])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('e',(screen.width/2)-8+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('e',(screen.width/2)+34+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[6])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('r',(screen.width/2)+22+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('r',(screen.width/2)+62+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[7])/100
 		love.graphics.setColor(255,255,255,255*frac)
 end
@@ -146,17 +148,17 @@ end
 function mainmenu:keypressed(k)
 	if k ~= 'escape' then -- This is sorta messy
 		if self.ready then
-			if k == 'up' then
+			if k == 'w' or k == 'i' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
 					screen:shake(.15,2)
 				end
-			elseif k == 'down' then
+			elseif k == 's' or k == 'k' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
 					screen:shake(.15,2)
 				end
-			elseif k == 'return' then
+			elseif k == 'return' or k =='lshift' then
 				if self.menu[self.menuIndex] == 'Start' then
 					love.graphics.clear()
 					screen:shake(.15,2)
@@ -183,6 +185,7 @@ function mainmenu:keypressed(k)
 			love.event.quit()
 		end
 	end
+	self.timers.idle = 0
 end
 
 options = {}
@@ -248,17 +251,17 @@ end
 function options:keypressed(k)
 	if k ~= 'escape' then
 	self.ready = true
-		if k == 'up' then
+		if k == 'w' or k == 'i' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
 				screen:shake(.15,2)
 			end
-		elseif k == 'down' then
+		elseif k == 's' or k == 'k' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
 				screen:shake(.15,2)
 			end
-		elseif k == 'return' then
+		elseif k == 'return' or k =='lshift' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
 				screen.toggleFullscreen()
 			elseif self.menu[self.menuIndex] == 'Music' then
@@ -276,10 +279,15 @@ end
 game = {}
 game.__index = game
 
-function game.make()
+function game.make(name1,name2)
 	local g = {}
 	setmetatable(g,game)
 	g.player = player.make(0)
+	if name1 then
+		print(name2[1],name1[1])
+		g.name1 = name1
+		g.name2 = name2
+	end
 	g.grabPlayer = false
 	g.distance = 100
 	g.quota = 8
@@ -462,7 +470,7 @@ if self.pause == 1 then
 			print("You lasted "..self.round.." rounds.")
 			print("Player 1 had "..self.player.members.a.points.." points.")
 			print("Player 2 had "..self.player.members.b.points.." points.")
-			state = heaven.make(self.player,self.round,self.stats.rocks,self.stats.enemies)
+			state = heaven.make(self.player,self.round,self.stats.rocks,self.stats.enemies,self.name1,self.name2)
 			return
 		end
 		self.player:update(dt)
@@ -567,22 +575,22 @@ if self.pause == 1 then
 		self.player.members.b.hp = 0	
 	end
 elseif self.pause == 2 then
-	if k == 'escape' or k == 'return' then
+	if k == 'escape' or k == 'return' or k =='lshift' then
 		self.pause = 1
 		love.audio.resume()
 	end
 elseif self.pause == 3 then
-	if k == 'up' then
+	if k == 'w' or k == 'i' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
 			screen:shake(.15,2)
 		end
-	elseif k == 'down' then
+	elseif k == 's' or k == 'k' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
 			screen:shake(.15,2)
 		end
-	elseif k == 'return' then
+	elseif k == 'return' or k =='lshift' then
 		if self.menu[self.menuIndex] == 'Continue' then
 --			screen:shake(.15,2)
 			love.audio.resume()
@@ -608,7 +616,7 @@ end
 heaven = {}
 heaven.__index = heaven
 
-function heaven.make(player,rounds,rocks,enemies)
+function heaven.make(player,rounds,rocks,enemies,name1,name2)
 	love.audio.stop()
 	messages:clear()
 	local h = {}
@@ -630,6 +638,7 @@ function heaven.make(player,rounds,rocks,enemies)
 		h.tie = true
 	end
 	h.rocks = rocks
+	h.rounds = rounds
 	h.enemies = enemies
 	h.ready = false
 	h.menu = {"Restart","Main Menu"}
@@ -650,10 +659,18 @@ function heaven.make(player,rounds,rocks,enemies)
 					}
 	h.winnerName = {1,1,1}
 	h.loserName = {1,1,1}
+	if name1 and h.winner == 'a' then
+		h.winnerName = name1
+		h.loserName = name2
+	elseif name1 and h.winner == 'b' then
+		h.winnerName = name2
+		h.loserName = name1
+	end
 	h.winnerIndex = 1
 	h.loserIndex = 1
 	h.winnerConfirm = false
 	h.loserConfirm = false
+	h.confirm = false
 
 	h.timers = {slideWinner = {0,0,0,20},
 				slideLoser = {0,0,0,20},
@@ -661,12 +678,13 @@ function heaven.make(player,rounds,rocks,enemies)
 				wY = screen.height,
 				lY = 0}
 
-	if love.filesystem.exists("records/highScores.txt") then
-		h.record = love.filesystem.newFile("records/highScores.txt",'w')
-	else
+	if not love.filesystem.exists("records/highScores.txt") then
+		print("No high scores found. Making")
 		h.record = love.filesystem.newFile("records/highScores.txt",'w')
 		h.record:write("#high scores")
+		h.record:close()
 	end
+	h.record = "records/highScores.txt"
 
 	h.res = {grad = res.load("image","healthbar.png")}
 
@@ -674,20 +692,10 @@ function heaven.make(player,rounds,rocks,enemies)
 end
 
 function heaven:draw()
-if self.ready then
+if self.ready and not self.confirm then
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
-	local xy = screen:getCentre()
-		love.graphics.setFont(fonts.boom)
-	for i,m in ipairs(self.menu) do
-		if self.menuIndex == i then
-			love.graphics.setColor(255,255,255)
-		else
-			love.graphics.setColor(128,128,128)
-		end
-		love.graphics.printf(m,0,256+(screen:getCentre('x')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
-	end
-
+	
 		love.graphics.setFont(fonts.large)
 		love.graphics.push()
 		love.graphics.translate((screen.width/2)-96,screen.height/2)
@@ -747,23 +755,43 @@ if self.ready then
 	love.graphics.print(self.characters[6][self.loserName[3]],160,self.timers.slideLoser[3])
 
 		love.graphics.pop()
+elseif self.ready and self.confirm then	
+		love.graphics.setFont(fonts.large)
+		love.graphics.push()
+		love.graphics.translate((screen.width/2)-96,screen.height/2)
 
-else
-	-- 	love.graphics.setColor(0,0,0)
-	-- love.graphics.rectangle("fill",0,0,screen.width,screen.height)
-	-- 	love.graphics.setColor(255,0,0)
-	-- if self.winner[1] then
-	-- 		love.graphics.setFont(fonts.large)
-	-- 	love.graphics.printf(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.',0,screen:getCentre('y')-(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')/2),screen.width,'center')
-	-- 		love.graphics.setFont(fonts.small)
-	-- 	love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight(self.winner[1]..' won with '..self.winner[2]..' points.\nI guess congratulations are in order.')*2),screen.width,'center')
-	-- else
-	-- 		love.graphics.setFont(fonts.large)
-	-- 	love.graphics.printf("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.',0,screen:getCentre('y')-(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')/2),screen.width,'center')
-	-- 		love.graphics.setFont(fonts.small)
-	-- 	love.graphics.printf("Destroyed "..self.rocks.." rocks, and vapourised "..self.enemies.." enemies.",0,screen:getCentre('y')+(fonts.large:getHeight("IT WAS A TIE!?\n"..self.winner[2]..' points were gathered.')*2),screen.width,'center')
-	-- end
-	-- love.graphics.setBackgroundColor(0,0,0)
+	--confirm tether
+		love.graphics.setColor(math.random(14,77),math.random(59,155),255)
+		love.graphics.draw(self.res.grad,-64,44,-math.pi/2,48,16)
+		love.graphics.draw(self.res.grad,256,-4,math.pi/2,48,16)
+
+		love.graphics.setColor(255,255,255)
+	--winner
+	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],-64,16,0,.5,.5,144,144)
+	love.graphics.print(self.characters[1][self.winnerName[1]],0,0+self.timers.slideWinner[1])
+	love.graphics.print(self.characters[2][self.winnerName[2]],32,0+self.timers.slideWinner[2])
+	love.graphics.print(self.characters[3][self.winnerName[3]],64,self.timers.slideWinner[3])
+	--loser
+	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],256,16,-math.pi,.5,.5,144,144)
+	love.graphics.print(self.characters[4][self.loserName[1]],96,0+self.timers.slideLoser[1])
+	love.graphics.print(self.characters[5][self.loserName[2]],128,0+self.timers.slideLoser[2])
+	love.graphics.print(self.characters[6][self.loserName[3]],160,self.timers.slideLoser[3])
+
+		love.graphics.pop()
+
+	local x = 12
+		love.graphics.setFont(fonts.boom)
+	for i,m in ipairs(self.menu) do
+		if self.menuIndex == i then
+			love.graphics.setColor(255,255,255)
+		else
+			love.graphics.setColor(128,128,128)
+		end
+		love.graphics.print(m,0+x,screen.height-24)
+		x = x+love.graphics.getFont():getWidth(m)+24
+	end
+	
+elseif not self.ready then
 
 	love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
@@ -774,39 +802,39 @@ else
 		if _x ~= 0 or _y ~= 0 then
 			screen:aberate(.1,math.rsign(1))
 		end
-	-- love.graphics.printf("Game Over",_x,-16+xy[2]+_y,screen.width,'center')
 	local frac = (100-self.timers.gameFade[1])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('G',(screen.width/2)-140+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('G',(screen.width/2)-142+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[2])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('a',(screen.width/2)-100+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('a',(screen.width/2)-102+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[3])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('m',(screen.width/2)-72+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('m',(screen.width/2)-74+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[4])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('e',(screen.width/2)-36+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('e',(screen.width/2)-38+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[5])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print(' ',(screen.width/2)-8+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print(' ',(screen.width/2)-10+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[6])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('O',(screen.width/2)+22+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('O',(screen.width/2)+18+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[7])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('v',(screen.width/2)+62+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('v',(screen.width/2)+58+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[8])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('e',(screen.width/2)+90+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('e',(screen.width/2)+86+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[9])/100
 		love.graphics.setColor(255,255,255,255*frac)
-	love.graphics.print('r',(screen.width/2)+118+_x,-16+_y + ((screen.height/2)*frac))
+	love.graphics.print('r',(screen.width/2)+114+_x,-16+_y + ((screen.height/2)*frac))
 
 end
 end
 
 function heaven:update(dt)
+if not self.confirm then
 	for i = 1, 3 do
 		if self.timers.slideWinner[i] > 0 then self.timers.slideWinner[i] = self.timers.slideWinner[i] - 2
 		elseif self.timers.slideWinner[i] < 0 then self.timers.slideWinner[i] = self.timers.slideWinner[i] + 2 end
@@ -825,30 +853,48 @@ function heaven:update(dt)
 		end
 	end
 
-
 	self.winnerConfirm = love.keyboard.isDown(self.player.members[self.winner].keys.tether)
 	self.loserConfirm = love.keyboard.isDown(self.player.members[self.loser].keys.tether)
+	self.confirm = (self.winnerConfirm and self.loserConfirm)
+
+	if self.confirm then
+		self.winnerConfirm = false
+		self.loserConfirm = false
+		local name = self.characters[1][self.winnerName[1]]..self.characters[2][self.winnerName[2]]..self.characters[3][self.winnerName[3]]..
+						self.characters[4][self.loserName[1]]..self.characters[5][self.loserName[2]]..self.characters[6][self.loserName[3]]
+		local toAppend = ('\n'..name.."|"..self.player.members[self.winner].points.."|"..self.player.members[self.loser].points..
+							self.player.members[self.winner].lives.."|"..self.player.members[self.loser].lives..
+							self.rounds.."|"..self.rocks.."|"..self.enemies)
+		print("Adding score to record.")
+		love.filesystem.append(self.record,toAppend)
+	end
+else
+	if self.winnerConfirm or self.loserConfirm then
+		if self.menu[self.menuIndex] == 'Restart' then
+			screen:shake(.15,2)
+			if self.winner == 'a' then
+				state = game.make(self.winnerName,self.loserName)
+			else
+				state = game.make(self.loserName,self.winnerName)
+			end
+		elseif self.menu[self.menuIndex] == 'Main Menu' then
+			state = mainmenu.make(true)
+		end
+	end
+end
 end
 
 function heaven:keypressed(k)
-if self.ready then
-	if k == 'up' then
-		-- if self.menuIndex > 1 then
-		-- 	self.menuIndex = self.menuIndex-1
-		-- end
-	elseif k == 'down' then
-		-- if self.menuIndex < #self.menu then
-		-- 	self.menuIndex = self.menuIndex+1
-		-- end
-	--choose the name column to edit
-	elseif k == self.player.members[self.winner].keys.right and not self.winnerConfirm then
-		if self.winnerIndex < 3 then self.winnerIndex = self.winnerIndex + 1 end
+if self.ready and not self.confirm then
+	--choose the name column to edit or the menu item
+	if k == self.player.members[self.winner].keys.right and not self.winnerConfirm then
+			if self.winnerIndex < 3 then self.winnerIndex = self.winnerIndex + 1 end
 	elseif k == self.player.members[self.winner].keys.left and not self.winnerConfirm then
-		if self.winnerIndex > 1 then self.winnerIndex = self.winnerIndex - 1 end
+			if self.winnerIndex > 1 then self.winnerIndex = self.winnerIndex - 1 end
 	elseif k == self.player.members[self.loser].keys.right and not self.loserConfirm then
-		if self.loserIndex < 3 then self.loserIndex = self.loserIndex + 1 end
+			if self.loserIndex < 3 then self.loserIndex = self.loserIndex + 1 end
 	elseif k == self.player.members[self.loser].keys.left then
-		if self.loserIndex > 1 then self.loserIndex = self.loserIndex - 1 end
+			if self.loserIndex > 1 then self.loserIndex = self.loserIndex - 1 end
 	--choose the character for the name column
 	elseif k == self.player.members[self.winner].keys.up and not self.winnerConfirm then
 			self.winnerName[self.winnerIndex] = math.loop(1,self.winnerName[self.winnerIndex] - 1,#self.characters[self.winnerIndex])
@@ -866,19 +912,37 @@ if self.ready then
 			self.loserName[self.loserIndex] = math.loop(1,self.loserName[self.loserIndex] + 1,#self.characters[self.loserIndex+3])
 			self.timers.slideLoser[self.loserIndex] = self.timers.slideLoser[4]
 			screen:shake(.15,2)
-	
-	-- elseif k == 'return' then
-	-- 	if self.menu[self.menuIndex] == 'Restart' then
-	-- 		screen:shake(.15,2)
-	-- 		state = game.make()
-	-- 	elseif self.menu[self.menuIndex] == 'Main Menu' then
-	-- 		state = mainmenu.make(true)
-	-- 	end
+	end
+elseif self.ready and self.confirm then
+	if k == self.player.members[self.winner].keys.right then
+			if self.menuIndex < #self.menu then
+				self.menuIndex = self.menuIndex+1
+				screen:shake(.15,2)
+			end
+	elseif k == self.player.members[self.winner].keys.left then
+			if self.menuIndex > 1 then
+				self.menuIndex = self.menuIndex-1
+				screen:shake(.15,2)
+			end
+	elseif k == self.player.members[self.loser].keys.right then
+			if self.menuIndex < #self.menu then
+				self.menuIndex = self.menuIndex+1
+				screen:shake(.15,2)
+			end
+	elseif k == self.player.members[self.loser].keys.left then
+			if self.menuIndex > 1 then
+				self.menuIndex = self.menuIndex-1
+				screen:shake(.15,2)
+			end
+	elseif k == self.player.members[self.winner].keys.tether then
+		self.winnerConfirm = not self.winnerConfirm
+	elseif k == self.player.members[self.loser].keys.tether then
+		self.loserConfirm = not self.loserConfirm
 	end
 else
-	if k == 'escape' then
+	-- if k == 'escape' then
 		self.ready = true
-	end
+	-- end
 end
 end
 
@@ -890,9 +954,9 @@ function credits.make()
 	setmetatable(c,credits)
 	c.offset = screen.height
 	c.credits = {}
-	local file = love.filesystem.newFile("/res/credits/credits.txt",'r')
+	local file = "res/credits/credits.txt"
 	local y = 0
-	for l in file:lines() do
+	for l in love.filesystem.lines(file) do
 		if l:sub(1,2) == '#!' then
 			love.graphics.setFont(fonts[l:sub(3)])
 			table.insert(c.credits,{l,0,0})
@@ -901,21 +965,16 @@ function credits.make()
 			y = y + love.graphics.getFont():getHeight(l) + 4
 		end
 	end
-	file:close()
 
 	c.particles = {}
 	c.files = {}
 	local t = love.filesystem.getDirectoryItems("res/sprites/")
-	print(#c.files)
 	local removed = 0
-	for i,f in ipairs(t) do 
-		print(f)
+	for i,f in ipairs(t) do
 		if f:sub(-4) == ".png" then
-			print('i')
 			table.insert(c.files,f)
 		end
 	end
-	print(#c.files)
 
 	return c
 end
@@ -947,19 +1006,16 @@ function credits:draw()
 			love.graphics.print(l[1],screen:getCentre('x')-(l[2]/2),self.offset + l[3])
 		end
 	end
-
-	love.graphics.print(#self.particles,0,0)
 end
 
 function credits:update(dt)
-	if self.offset + self.credits[#self.credits][3] < -24 then
-		state = mainmenu.make(true)
-	end
+	if self.offset + self.credits[#self.credits][3] > -24 then
+		-- state = mainmenu.make(true)
 	self.offset = self.offset - 1
+	end
 
 	local i = math.random()
 	if math.random(0,40) == 40 then
-		print(math.random(1,#self.files))
 		local o = {res.load("sprite",self.files[math.random(1,#self.files)]),math.random(0,screen.width),0,i,i/2,0,i*math.pi/100,math.random(64,196)}
 		o[3] = -o[1]:getHeight()
 		table.insert(self.particles,o)

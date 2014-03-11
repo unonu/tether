@@ -190,6 +190,8 @@ function initFS(name)
 		config:write("#Config File")
 		config:close()
 	end
+	-- if not love.filesystem.getLastModified("credits.txt") == love.filesystem.getLastModified("res/credits/credits.txt") then
+
 end
 
 ------------------------
@@ -354,8 +356,8 @@ function screen:releaseChromaticFilter()
 			love.graphics.draw(self.canvases.buffer)
 	love.graphics.pop()
 	love.graphics.setBlendMode("alpha")
-
 	love.graphics.setColorMask()
+	self.canvases.buffer:clear()
 end
 
 function screen:capFPS()

@@ -27,7 +27,8 @@ end
 sparks = {}
 function sparks.make(x,y,r,g,b,a)
 	local c = love.graphics.newParticleSystem(res.load("sprite","spark.png"),40)
-		c:setColors(r,g,b,a,math.clamp(0,r-24,255),math.clamp(0,g-24,255),math.clamp(0,b-24,255),math.clamp(0,a-24,255),math.clamp(0,r+24,255),math.clamp(0,g+24,255),math.clamp(0,b+24,255),math.clamp(0,a-24,255))
+		c:setColors(r,g,b,a,math.clamp(0,r-24,255),math.clamp(0,g-24,255),math.clamp(0,b-24,255),
+			math.clamp(0,a-24,255),math.clamp(0,r+24,255),math.clamp(0,g+24,255),math.clamp(0,b+24,255),math.clamp(0,a-24,255))
 		c:setEmitterLifetime(.5)
 		c:setParticleLifetime(.5)
 		c:setEmissionRate(10)
