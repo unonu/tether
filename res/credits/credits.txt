@@ -3,7 +3,6 @@ Credits
 #!boom
 Lucas
 Dodger
-Eddie
 
 #?#0000FF
 Credits

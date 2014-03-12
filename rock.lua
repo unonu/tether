@@ -6,6 +6,7 @@ function rock.make(x,y,s,p)
 	setmetatable(r,rock)
 	r.hp = 48
 	r._hp = 48
+	-- r.dhp = 48
 	r.kill = false
 	r.killTimer = 90
 	r.x,r.y = x,y
@@ -23,29 +24,34 @@ function rock.make(x,y,s,p)
 	r.timers.birth = 0
 	r.rot = (math.random()-.5)*math.pi
 	r.a_vol = (math.random()-.5)/200
+	r.heat = 0
 
-	r.p = love.graphics.newParticleSystem(res.load("sprite","particle.png"),1)
+	r.p = love.graphics.newParticleSystem(res.load("sprite","particle.png"),2)
+		r.p:setEmitterLifetime(2)
+		r.p:setParticleLifetime(2)
+		r.p:setEmissionRate(1)
+		r.p:setSpeed(48,32)
+		r.p:setRadialAcceleration(-24,-8,-24,8)
+		r.p:setAreaSpread("uniform",2,2) --set to radius of object
+		r.p:setSpread(math.pi/6) --raidans
+		r.p:setSpin(-math.pi,-math.pi,0)
+		r.p:setSizes(1,1,0)
+		r.p:setColors(237,143-(143*r.heat),77-(77*r.heat))
 		r.p:setPosition(0,0)
-		r.p:setEmissionRate(12)
-		r.p:setSpeed(20, 60)
-		r.p:setColors(170,120,85,128)
 		r.p:setDirection(0)
-		r.p:setSpread(math.pi/4)
-		r.p:setSpin(0,2)
-		r.p:setRotation(0,math.pi*2)
 		r.p:stop()
 
 	return r
 end
 
 function rock:draw()
+	love.graphics.draw(self.p)
 	if self.timers.birth < 31 then
 		self.timers.birth = self.timers.birth + 1
-		love.graphics.setColor(237,143,77,self.timers.birth*8)
+		love.graphics.setColor(237,143-(143*self.heat),77-(77*self.heat),self.timers.birth*8)
 	else
-		love.graphics.setColor(237,143,77)
+		love.graphics.setColor(237,143-(143*self.heat),77-(77*self.heat))
 	end
-	love.graphics.draw(self.p)
 	love.graphics.draw(self.image,self.x,self.y,self.rot,1,1,50,50)
 	love.graphics.point(self.x,self.y)
 	if self.sentry then
@@ -71,27 +77,31 @@ function rock:update(dt)
 	if (self.x-24 < 0 and self.x_vol < 0) or (self.x+24 > screen.width and self.x_vol > 0) then
 		self.x_vol = -self.x_vol
 	end
-	if (self.y-24 < 64 and self.y_vol < 0) or (self.y+24 > screen.height and self.y_vol > 0) then
+	if (self.y-24 < 0 and self.y_vol < 0) or (self.y+24 > screen.height and self.y_vol > 0) then
 		self.y_vol = -self.y_vol
 	end
 
 	self.x = self.x + self.x_vol
 	self.y = self.y + self.y_vol
+	self.p:setPosition(self.x,self.y)
+	self.p:setDirection(math.atan2(self.y_vol,self.x_vol)-math.pi)
+	self.p:setColors(237,143-(143*self.heat),77-(77*self.heat))
 
+	
+	self.heat = 1-(self.hp/self._hp)
 	if self.hp < self._hp and self.hp >= self._hp/2 then
-		if self.p:getCount() == 0 then
-			self.p:setBufferSize(5)
-			self.p:setSpeed(4, 10)
-		end
-		self.p:setDirection(math.atan2(screen:getCentre('y')-self.y,screen:getCentre('x')-self.x))
-		self.p:setEmissionRate(math.ceil(1-(self.hp/self._hp)))
+		-- print(math.ceil(6*self.heat))
+		-- if self.p:getBufferSize() ~= self.p:setBufferSize(math.ceil(6*self.heat)) then
+		-- 	self.p:setBufferSize(math.ceil(6*self.heat))
+		-- 	self.p:setEmissionRate(math.ceil(6*self.heat)/2)
+		-- end
+		-- -- self.p:emit(4)
+		self.p:start()
 	elseif self.hp < self._hp/2 and self.hp > 0 then
-		if self.p:getCount() == 0 then
-			self.p:setBufferSize(12*(1-(self.hp/self._hp)))
-			self.p:setSpeed(10, 20)
-		end
-		self.p:setDirection(math.atan2(screen:getCentre('y')-self.y,screen:getCentre('x')-self.x))
-		self.p:setEmissionRate(math.ceil((1-(self.hp/self._hp))*3))
+		self.p:setBufferSize(math.ceil(6*self.heat))
+		self.p:setEmissionRate(math.ceil(6*self.heat)/2)
+		-- self.p:emit(4)
+		self.p:start()
 	elseif self.hp <= 0 then
 		cloud.make(self.x,self.y,170,120,85,128)
 		love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
@@ -99,14 +109,14 @@ function rock:update(dt)
 		state.points = state.points + 1
 	end
 
+	self.p:update(dt)
+
+
 	if self. sentry then
 		self.sentry.x, self.sentry.y = self.x, self.y
 		self.sentry:update(dt)
 	end
 
-	self.p:setPosition(self.x,self.y)
-	self.p:start()
-	self.p:update(dt)
 	--
 	if ((self.x_vol^2)+(self.y_vol^2))^(1.5) > self.s then
 		self.x_vol = self.x_vol - (self.x_vol*.1)

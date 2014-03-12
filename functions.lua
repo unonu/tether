@@ -309,9 +309,10 @@ function screen:aberate(time,focus)
 	self.focus = focus or 1
 end
 
-function screen:flash(periods,speed,color,mode)
+--no clue how this works anymore
+function screen:flash(period,speed,color,mode)
 	if mode then self:setFlashMode(mode) end
-	self.timers.flashDuration = periods or 1
+	self.timers.flashDuration = period or 1
 	self.timers.flashPeriod = {100,100}
 	self.flashSpeed = speed or 1
 	self.colors.flash = color or {255,255,255}
@@ -321,11 +322,22 @@ function screen:setFlashMode(mode)
 	self.flashMode = mode
 end
 
-function screen:clearEffects()
+function screen:clearEffects(a)
+	if not a then
 	self.timers.shake = 0
 	self.timers.chrome = 0
 	self.timers.flashPeriod = {0,0}
 	self.timers.flashDuration = 0
+	else
+		if a == 'flash' then
+			self.timers.flashPeriod = {0,0}
+			self.timers.flashDuration = 0
+		elseif a == 'shake' then
+			self.timers.shake = 0
+		elseif a =='chrome' then
+			self.timers.chrome = 0
+		end
+	end
 end
 
 function screen:setChromaticFilter()
@@ -346,11 +358,11 @@ function screen:releaseChromaticFilter()
 			love.graphics.translate(-4*self.focus,0)
 			love.graphics.setColorMask( true, false, false)
 			love.graphics.draw(self.canvases.buffer)
-		--blue
+		--green
 			love.graphics.translate(4*self.focus,-4*self.focus)
 			love.graphics.setColorMask( false, true, false)
 			love.graphics.draw(self.canvases.buffer)
-		--green
+		--blue
 			love.graphics.translate(4*self.focus,4*self.focus)
 			love.graphics.setColorMask( false, false, true)
 			love.graphics.draw(self.canvases.buffer)
@@ -401,7 +413,7 @@ function messages:new(text,x,y,mode,life,color,font)
 	m.x = x or 0
 	m.y = y or 0
 	m.mode = mode or 'still'
-	m.life = math.max(((life or -1)*60)+255,-1)
+	m.life = math.max(((life or -1)*60),-1)
 	m.color = color or {255,255,255}
 	m.font = font or 'boomMedium'
 	
@@ -411,7 +423,7 @@ end
 
 function messages:draw()
 	for i,m in ipairs(self.messages) do
-		love.graphics.setColor(m.color[1],m.color[2],m.color[3],math.min(m.life,255))
+		love.graphics.setColor(m.color[1],m.color[2],m.color[3],(m.color[4] or math.min(255*m.life/60,255)))
 		love.graphics.setFont(fonts[m.font])
 		love.graphics.print(m.text,m.x-(fonts[m.font]:getWidth(m.text)/2),m.y-(fonts[m.font]:getHeight(m.text)/2))
 	end
@@ -439,13 +451,13 @@ function messages:update(dt)
 			if m.x > screen.width+fonts[m.font]:getWidth(m.text) then
 				table.remove(self.messages,i)
 			end
-		elseif m.mode == 'still' then
+		-- elseif m.mode == 'still' then
+		end
 			if m.life > 0 then
-				m.life = m.life -1
+				m.life = m.life - 1
 			elseif m.life == 0 then
 				table.remove(self.messages,i)
 			end
-		end
 	end
 	love.graphics.setFont(fonts.small)
 end

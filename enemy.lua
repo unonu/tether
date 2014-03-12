@@ -75,11 +75,11 @@ function sentry.make(x,y)
 	setmetatable(e,sentry)
 	e.x,e.y = x,y
 	e.r = 8
-	e.rot = 0
+	e.rot = math.random(-math.pi,math.pi)
 	e.hp = 12
 	e.dir = math.rsign()
 	e.fireLimit = 256
-	e.fire = e.fireLimit
+	e.fire = math.random(60,e.fireLimit)
 	e.drop = false
 	e.collideable = false
 	e.class = 'sentry'
@@ -93,7 +93,6 @@ function sentry:draw()
 end
 
 function sentry:update(dt)
-	self.rot = self.rot + (math.pi/128)*self.dir
 --	screen:shake(.15,4,false)
 	if self.hp <= 0 then
 		state.points = state.points + 1
@@ -103,6 +102,7 @@ function sentry:update(dt)
 	if self.fire == 0 then
 		bullet.make(self.x+math.cos(self.rot)*24,self.y+math.sin(self.rot)*24,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
 	end
+	self.rot = self.rot + (math.pi/128)*self.dir
 end
 
 dash = {}
@@ -179,6 +179,8 @@ end
 
 function dash:draw()
 	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
+	love.graphics.setColor(255,255,255,64)
+	love.graphics.arc("fill",self.x,self.y,-600,self.r-(math.pi/48),self.r+(math.pi/48),6)
 	if self.locked then
 		love.graphics.line(self.x,self.y,self.x+math.cos(self.r+self.aimgle)*-600,self.y+math.sin(self.r+self.aimgle)*-600)
 		love.graphics.line(self.x,self.y,self.x+math.cos(self.r-self.aimgle)*-600,self.y+math.sin(self.r-self.aimgle)*-600)
@@ -212,7 +214,7 @@ function torrent.make(x,y,hp,intro)
 	t.y_vol = 0
 	t.forces = {{2,math.random(0,3.13)}}
 	t.timers = {}
-		t.timers.moves = 0
+		t.timers.moves = 3
 		t.timers.cooldown = 0
 		t.timers.pause = 100
 		t.timers.fire = 0

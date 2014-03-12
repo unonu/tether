@@ -29,4 +29,5 @@
 function love.conf(t)
 	t.version = "0.9.0"
 	t.console = true
+	-- t.window.borderless = true
 end
