@@ -21,9 +21,10 @@ function player.make(number)
 			points = 0, 
 			stats = {hp = 16,  deaths = 0}, 
 			hp = 16, 
-			_hp = 16, 
+			_hp = 16,
 			immunity = 0, 
-			lives = 3, 
+			lives = 3,
+			_lives = 3, 
 			spawned = true, 
 			tether = false, 
 			perks = {}, 
@@ -51,7 +52,8 @@ function player.make(number)
 			hp = 16, 
 			_hp = 16, 
 			immunity = 0, 
-			lives = 3, 
+			lives = 3,
+			_lives = 3,
 			spawned = true, 
 			tether = false, 
 			perks = {}, 
@@ -178,12 +180,11 @@ function player:drawMember(member, x, y, s)
 		end
 	end
 
-	love.graphics.setColor(255, 255, 255, 64)
+	love.graphics.setColor(255, 255, 255, 128)
 	for i=1, member.lives do
 		love.graphics.circle("fill", member.x - 20 - (i*14), member.y - 24, 5, 4)
 	end
-	love.graphics.setColor(255, 255, 255, 122)
-	love.graphics.setFont(fonts.small)
+	love.graphics.setFont(fonts.boom)
 	love.graphics.print(member.points, member.x + 20, member.y + 20)
 
 	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then love.graphics.print("Low HP", (x or member.x)+12, (y or member.y)-26) end
@@ -249,6 +250,9 @@ end
 function player:updateMember(member, dt)
 if member.timers.spawn == 0 then
 	if not member.spawned then self:centre(member.name); member.spawned = true end
+	if member.lives == 0 and member._lives ~= member.lives then messages:new("LAST LIFE!", member.x, member.y, 'up', -1, {255,0,0}, 'boomMedium') end
+
+	member._lives = member.lives
 
 	member._points = member.points
 if not state.grabPlayer then
@@ -309,7 +313,7 @@ end
 			table.insert(state.crystals,  crystal.make(member.x+math.random(-48, 48), member.y+math.random(-48, 48)))
 		end
 		member.points = math.max(0, member.points-100)
-		messages:new("Player "..self.number.." died", member.x, member.y, 'up', -1, {0, 128, 90}, 'small')
+		messages:new("Player "..self.number.." died", member.x, member.y, 'up', -1, {0, 128, 90}, 'boomMedium')
 		print(member.lives.." lives left.")
 		member.immunity = 18
 		member.timers.spawn = 60
@@ -492,11 +496,23 @@ function player:giveHealth(t, h)
 	if t=='both' then
 		self.members.a.hp = math.min(self.members.a.hp + (h or self.members.a.stats.hp-self.members.a.hp), 16)
 		self.members.b.hp = math.min(self.members.b.hp + (h or self.members.b.stats.hp-self.members.b.hp), 16)
-		messages:new("Health Up!", self.members.a.x, self.members.a.y, 'up', 3, {0, 128, 90})
-		messages:new("Health Up!", self.members.b.x, self.members.b.y, 'up', 3, {0, 128, 90})
+		messages:new("Health Up!", self.members.a.x, self.members.a.y, 'up', 3, {0, 128, 0})
+		messages:new("Health Up!", self.members.b.x, self.members.b.y, 'up', 3, {0, 128, 0})
 	else
 		self.members[t].hp = math.min(self.members[t].hp + (h or self.members[t].stats.hp-self.members[t].hp), 16)
-		messages:new("Health Up!", self.members[t].x, self.members[t].y, 'up', 3, {0, 128, 90})
+		messages:new("Health Up!", self.members[t].x, self.members[t].y, 'up', 3, {0, 128, 0})
+	end
+end
+
+function player:givePoints(t, h)
+	if t=='both' then
+		self.members.a.points = self.members.a.points + (h or 0)
+		self.members.b.points =self.members.b.points + (h or 0)
+		messages:new("+"..h, self.members.a.x, self.members.a.y, 'up', 3, {128, 128, 0})
+		messages:new("+"..h, self.members.b.x, self.members.b.y, 'up', 3, {128, 128, 0})
+	else
+		self.members[t].points = self.members[t].points + (h or 0)
+		messages:new("+"..h, self.members[t].x, self.members[t].y, 'up', 3, {128, 128, 0})
 	end
 end
 

@@ -21,7 +21,7 @@ function love.load()
 	love.graphics.setFont(fonts.small)
 	love.audio.setVolume(0) -- 0.-1.
 	res.init()
-	screen.init(1024,768)
+	screen.init(1024,768,true)
 	print(ansicolors.yellow..'Done Loading. Took '..(love.timer.getTime()-stime)..' seconds to load.\n'..ansicolors.clear)
 
 	state = intro.make(80)

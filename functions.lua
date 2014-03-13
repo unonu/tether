@@ -84,8 +84,10 @@ end
 
 function rounder()
 	local progress = {}
-	progress[1],progress[2] = math.modf(state.stats.rocksRound/state.quota)
+	--per round
+	progress[1],progress[2] = math.abs(math.modf(state.stats.rocksRound/state.quota))
 	if progress[1] == 1 then
+		state.player:givePoints('both',100)
 		state.round = state.round+1
 		state.stats.rocksRound = 0
 		messages:clear()
@@ -93,24 +95,24 @@ function rounder()
 		for i,e in ipairs(state.enemies) do
 			e.kill = true
 		end
-	state.quota = 8
 		if state.round == 6 then
 			if state.player.members.a.stats.deaths == 0 and state.player.members.a.hp == state.player.members.a.stats.hp then
-				messages:new('Untouchable!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boom')
-				state.player.members.a.immunity = 20
+				messages:new('UNTOUCHABLE!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boomMedium')
+				state.player.members.a.immunity = 40
 			elseif state.player.members.a.stats.deaths == 0 then
-				messages:new('Survivor!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boom')
-				state.player.members.a.immunity = 15
+				messages:new('SURVIVOR!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boomMedium')
+				state.player.members.a.immunity = 20
 			end
 			if state.player.members.b.stats.deaths == 0 and state.player.members.b.hp == state.player.members.b.stats.hp then
-				messages:new('Untouchable!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boom')
-				state.player.members.b.immunity = 20
+				messages:new('UNTOUCHABLE!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boomMedium')
+				state.player.members.b.immunity = 40
 			elseif state.player.members.b.stats.deaths == 0 then
-				messages:new('Survivor!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boom')
-				state.player.members.b.immunity = 15
+				messages:new('SURVIVOR!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boomMedium')
+				state.player.members.b.immunity = 20
 			end
 		elseif state.round == 10 then
 			state.quota = -1
+			state.boss = true
 			state.grabPlayer = true
 			state.player.members.a.x,state.player.members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
 			state.player.members.b.x,state.player.members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
@@ -122,11 +124,53 @@ function rounder()
 				e.kill = true
 			end
 			table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),256))
-			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",2,{255,255,255},'boomMedium')
+			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",3,{255,255,255},'boomLarge')
+		elseif state.round == 11 then
+			state.quota = 8
+			state.boss = false
+			state.grabPlayer = false
+			state.player:giveHealth('both',16)
+		elseif state.round == 21 then
+			state.quota = 10
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 31 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 41 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 51 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 61 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 71 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 81 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 91 then
+			state.quota = 12
+			state.boss = false
+			state.grabPlayer = false
+		elseif state.round == 101 then
+			state.quota = -1
+			state.boss = true
+			state.grabPlayer = false
 		end
 	end
 	--
-	--
+	--durring round
+	--first 10
 	if state.round <= 2 then
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100))) end
 	elseif state.round > 2 and state.round <= 4 then
@@ -155,18 +199,62 @@ function rounder()
 	elseif state.round == 10 then
 		if #state.rocks < 6 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
 		if #state.enemies == 0 then
-			state.round = 11
+			state.stats.rocksRound = state.quota
 		end
-	elseif state.round > 10 and state.round <= 12 then
+	--second 10
+	elseif state.round > 10 and state.round <= 11 then
 		if #state.enemies < 6 then
-			-- for i = 1, 4-#state.enemies do
-			-- 	table.insert(state.enemies,enemy.make())
-			-- end
 			for i = 1, 2-#state.enemies do
 				table.insert(state.enemies,dash.make())
 			end
 		end
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
+	elseif state.round > 11 and state.round <= 14 then
+		if #state.enemies < 6 then
+			for i = 1, 4-#state.enemies do
+				table.insert(state.enemies,enemy.make())
+			end
+			for i = 1, 2-#state.enemies do
+				table.insert(state.enemies,dash.make())
+			end
+		end
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
+	elseif state.round > 14 and state.round <= 16 then
+		if #state.enemies < 7 then
+			for i = 1, 6-#state.enemies do
+				table.insert(state.enemies,enemy.make())
+			end
+			for i = 1, 1-#state.enemies do
+				table.insert(state.enemies,dash.make())
+			end
+		end
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,2)) end
+	elseif state.round >16 and state.round <= 18 then
+		if #state.enemies < 8 then
+			for i = 1, 7-#state.enemies do
+				table.insert(state.enemies,enemy.make())
+			end
+			for i = 1, 1-#state.enemies do
+				table.insert(state.enemies,dash.make())
+			end
+		end
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
+	elseif state.round == 19 then
+		if #state.enemies < 12 then
+			for i = 1, 8-#state.enemies do
+				table.insert(state.enemies,enemy.make())
+			end
+			for i = 1, 4-#state.enemies do
+				table.insert(state.enemies,dash.make())
+			end
+		end
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
+	elseif state.round == 20 then
+		if #state.rocks < 8 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
+		if #state.enemies == 0 then
+			state.stats.rocksRound = state.quota
+		end
+	--third ten
 	end
 end
 
@@ -175,10 +263,6 @@ function initFS(name)
 	if not love.filesystem.exists("tether") then
 		print("Couldn\'t find save directory")
 		love.filesystem.setIdentity('tether')
-	end
-	if not love.filesystem.exists("joysticks") then
-		love.filesystem.createDirectory("joysticks")
-		-- love.filesystem.newFileData('res/joysticks')
 	end
 	if not love.filesystem.exists("records") then
 		love.filesystem.createDirectory("records")
@@ -190,7 +274,6 @@ function initFS(name)
 		config:write("#Config File")
 		config:close()
 	end
-	-- if not love.filesystem.getLastModified("credits.txt") == love.filesystem.getLastModified("res/credits/credits.txt") then
 
 end
 
@@ -200,12 +283,12 @@ end
 
 screen = {}
 screen.__index = screen
-function screen.init(w,h)
+function screen.init(w,h,f)
 	local s = {}
 	setmetatable(s,screen)
 	s.width = w or 1280
 	s.height = h or 720
-	love.window.setMode(s.width,s.height)
+	love.window.setMode(s.width,s.height,{f or false})
 	s.images = {}
 		s.images.flash = res.load("image","flash.png")
 		s.images.background = res.load("image","background.png")
@@ -231,7 +314,7 @@ function screen.init(w,h)
 	s.flashSpeed = 1
 	s.background = {255,255,255}
 	s.fps = 1/60
-	s.fullscreen = false
+	s.fullscreen = f or false
 	table.sort(s.modes, function(a, b) return a.width*a.height < b.width*b.height end)
 	s.chromeWhenShake = true
 	

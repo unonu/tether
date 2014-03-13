@@ -6,7 +6,6 @@ function loadScores(path)
 			local s = {}
 			local i = l:find('|')
 			s.name = l:sub(1,l:find('|'))
-			print(l:sub(i+1,l:find('|',i+1)-1))
 			s.winnerPoints = tonumber(l:sub(i+1,l:find('|',i+1)-1))
 				i = l:find('|',i+1)
 			s.loserPoints = tonumber(l:sub(i+1,l:find('|',i+1)-1))
@@ -29,16 +28,16 @@ function loadScores(path)
 end
 
 function sortScoresCombo(a,b)
-	if a.winnerPoints+a.loserPoints < b.winnerPoints+b.loserPoints then
-		return false
+	if a.winnerPoints+a.loserPoints > b.winnerPoints+b.loserPoints then
+		return true
 	elseif a.winnerPoints+a.loserPoints == b.winnerPoints+b.loserPoints then
 		return a.name > b.name
 	end
 end
 
 function sortScoresTime(a,b)
-	if a.time < b.time then
-		return false
+	if a.time > b.time then
+		return true
 	elseif a.time == b.time then
 		return a.name > b.name
 	end

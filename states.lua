@@ -301,13 +301,14 @@ function game.make(name1,name2)
 	end
 	g.grabPlayer = false
 	g.distance = 100
-	g.quota = 8
+	g.quota = 6
 	g.points = 0
 	g.crystals = {}
 	g.enemies = {}
 	g.bullets = {}
 	g.explosions = {}
 	g.round = 1
+	g.boss = false
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
 	g.canvases = {
@@ -339,7 +340,7 @@ function game.make(name1,name2)
 
 	screen:setBackground(g.res.background)
 	messages:clear()
-	messages:new("START!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,255})
+	messages:new("START!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,255},'boomLarge')
 	g.time = {elapsed = 0,
 				startTime = love.timer.getTime(),
 			}
@@ -362,11 +363,13 @@ if self.pause == 1 then
 	love.graphics.setFont(fonts.boomMedium)
 	love.graphics.print("ROUND",screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2)-28,
 		screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round)/2),-math.pi/2)
-	local remainder = self.quota-math.fmod(self.stats.rocks,self.quota)
-	love.graphics.print(remainder.." LEFT",screen:getCentre('x')-fonts.boomMedium:getWidth(remainder.." LEFT")/2,
-		screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round))/2)
+	if not self.boss then
+		local remainder = self.quota-math.fmod(self.stats.rocksRound,self.quota)
+		love.graphics.print(remainder.." LEFT",screen:getCentre('x')-fonts.boomMedium:getWidth(remainder.." LEFT")/2,
+			screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round))/2)
+	end
 	--time
-	love.graphics.print(self.time.elapsed,screen:getCentre('x')-fonts.boomMedium:getWidth(self.time.elapsed)/2,12)
+	love.graphics.print(math.modf(self.time.elapsed/60)..':'..math.floor(self.time.elapsed),screen:getCentre('x')-fonts.boomMedium:getWidth(self.time.elapsed)/2,32)
 
 
 	love.graphics.setFont(fonts.small)
@@ -408,38 +411,6 @@ if self.pause == 1 then
 			love.graphics.setColor(0,0,0,50)
 		love.graphics.rectangle("fill",self.player.members.a.hp/self.player.members.a.stats.hp*screen.width/2,screen.height-12,1,12)
 		love.graphics.rectangle("fill",screen.width-self.player.members.b.hp/self.player.members.b.stats.hp*screen.width/2,screen.height-12,1,12)
-
-		-- 	love.graphics.setColor(255,255,255)
-		-- for i=1,self.player.members.a.lives do
-		-- 	love.graphics.circle("fill",0+12*i,6,5,4)
-		-- end
-		-- for i=1,self.player.members.b.lives do
-		-- 	love.graphics.circle("fill",screen.width-12*i,6,5,4)
-		-- end
-		-- love.graphics.draw(self.res.scoreBoardB)
-
-		-- 	love.graphics.setColor(255,200,0)
-		-- 	love.graphics.setFont(fonts.largeOutline)
-		-- 	love.graphics.push()
-		-- 	love.graphics.translate(2,18)
-		-- 	if self.player.members.a.points ~= self.player.members.a._points then
-		-- 		love.graphics.scale(1.5)
-		-- 	love.graphics.print(self.player.members.a.points,0,0)
-		-- 		love.graphics.scale(.75)
-		-- 	else
-		-- 	love.graphics.print(self.player.members.a.points,0,0)
-		-- 	end
-		-- 	love.graphics.pop()
-		-- 	love.graphics.push()
-		-- 	love.graphics.translate(screen.width-(fonts.largeOutline:getWidth(self.player.members.b.points))-2,18)
-		-- 	if self.player.members.b.points ~= self.player.members.b._points then
-		-- 		love.graphics.scale(1.5)
-		-- 	love.graphics.print(self.player.members.b.points,0,0)
-		-- 		love.graphics.scale(.75)
-		-- 	else
-		-- 	love.graphics.print(self.player.members.b.points,0,0)
-		-- 	end
-		-- 	love.graphics.pop()
 
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
@@ -514,6 +485,7 @@ if self.pause == 1 then
 			self.stats.enemies = self.stats.enemies +1
 		end
 	end
+	-- if self.boss and #self.enemies == 0 then self.stats.rocksRound = self.quota end
 	for i,r in ipairs(self.rocks) do
 		r:update(dt)
 		if r.hp <= 0 then

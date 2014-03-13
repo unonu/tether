@@ -63,7 +63,7 @@ function enemy:update(dt)
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
+		bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),6,'enemy')
 	end
 end
 
@@ -178,9 +178,10 @@ function dash:update( dt )
 end
 
 function dash:draw()
-	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
 	love.graphics.setColor(255,255,255,64)
 	love.graphics.arc("fill",self.x,self.y,-600,self.r-(math.pi/48),self.r+(math.pi/48),6)
+	love.graphics.setColor(255,0,0)
+	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
 	if self.locked then
 		love.graphics.line(self.x,self.y,self.x+math.cos(self.r+self.aimgle)*-600,self.y+math.sin(self.r+self.aimgle)*-600)
 		love.graphics.line(self.x,self.y,self.x+math.cos(self.r-self.aimgle)*-600,self.y+math.sin(self.r-self.aimgle)*-600)
