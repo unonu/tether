@@ -288,7 +288,7 @@ function screen.init(w,h,f)
 	setmetatable(s,screen)
 	s.width = w or 1280
 	s.height = h or 720
-	love.window.setMode(s.width,s.height,{f or false})
+	love.window.setMode(s.width,s.height)
 	s.images = {}
 		s.images.flash = res.load("image","flash.png")
 		s.images.background = res.load("image","background.png")
