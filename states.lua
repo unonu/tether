@@ -12,7 +12,6 @@ function intro.make(dt)
 	i.delay = dt or 80
 	i.alpha = 0
 	i.dt = dt or 80
---print("slide 1")
 	return i
 end
 
@@ -43,6 +42,7 @@ function intro:draw()
 		love.timer.sleep(1)
 		state = mainmenu.make()
 	end
+	love.graphics.curve(64,64,24,0,math.pi,16)
 end
 
 function intro:keypressed(k)
@@ -67,7 +67,8 @@ function mainmenu.make(ready)
 				screenR = screen.width,
 				gameFade = {100,100,100,100,100,100},
 				idle = 0,
-				bg = screen.width
+				bg = screen.width,
+				tetherRise = (screen.height/2)-16,
 				}
 	m.res = {bg = res.load("image","titleArt.png"),}
 	m.ready = ready or false
@@ -82,10 +83,13 @@ if self.ready then
 		if self.timers.screenR < screen.width*3/4 and self.timers.bg > 0 then
 			-- self.timers.bg = self.timers.bg - (self.timers.bg/24)
 			self.timers.bg = math.max(0,self.timers.bg-64)
-			if self.timers.bg == 128 then
-				screen:flash(1,10,{255,255,255},'full')
+			if self.timers.bg == 0 then
+				screen:flash(1,20,{255,255,255},'full')
 			end
 		end
+	end
+	if self.timers.tetherRise > 0 then
+		self.timers.tetherRise = self.timers.tetherRise - (self.timers.tetherRise/16)
 	end
 else
 	for i =1,6 do
@@ -118,6 +122,12 @@ if self.ready then
 		end
 		love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
 	end
+
+		love.graphics.translate(0,96)
+		love.graphics.setColor(0,0,0)
+	love.graphics.print('Tether',(screen.width/2)-90,self.timers.tetherRise)
+		love.graphics.translate(0,-96)
+
 	if self.timers.screenR > 0 then
 			love.graphics.setColor(0,0,0)
 		love.graphics.circle("fill",screen.width,screen.height,self.timers.screenR,self.timers.screenR)
@@ -158,17 +168,17 @@ function mainmenu:keypressed(k)
 			if k == 'w' or k == 'i' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
-					screen:shake(.15,2)
+					-- screen:shake(.15,2)
 				end
 			elseif k == 's' or k == 'k' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
-					screen:shake(.15,2)
+					-- screen:shake(.15,2)
 				end
 			elseif k == 'return' or k =='lshift' then
 				if self.menu[self.menuIndex] == 'Arcade' then
 					love.graphics.clear()
-					screen:shake(.15,2)
+					-- screen:shake(.15,2)
 					love.graphics.setColor(0,0,0)
 					love.graphics.rectangle('fill',0,0,screen.width,screen.height)
 					state = game.make()
@@ -264,12 +274,12 @@ function options:keypressed(k)
 		if k == 'w' or k == 'i' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
-				screen:shake(.15,2)
+				-- screen:shake(.15,2)
 			end
 		elseif k == 's' or k == 'k' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
-				screen:shake(.15,2)
+				-- screen:shake(.15,2)
 			end
 		elseif k == 'return' or k =='lshift' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
@@ -321,6 +331,8 @@ function game.make(name1,name2)
 				scoreBoardB = res.load("image","scoreboardFront.png"),
 				background = res.load("image","greyField.png"),
 				healthbar = res.load("image","healthbar.png"),
+				itemRing = res.load("image","itemRing.png"),
+				health = res.load("sprite","health.png"),
 			}
 	g.sounds = {collect = res.load("sound","collect"),
 				explosion = res.load("sound","explosion"),
@@ -334,15 +346,17 @@ function game.make(name1,name2)
 	g.menuIndex = 1
 
 	g.rocks = {}
-	for i=1, 8 do
-		table.insert(g.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100)))
-	end
+
+	g.drops = {}
 
 	screen:setBackground(g.res.background)
 	messages:clear()
 	messages:new("START!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,255},'boomLarge')
 	g.time = {elapsed = 0,
 				startTime = love.timer.getTime(),
+				hours = 0,
+				minutes = 0,
+				seconds = 0,
 			}
 	
 	return g
@@ -360,16 +374,20 @@ if self.pause == 1 then
 	love.graphics.print(self.round,screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2),
 		screen:getCentre('y')-(fonts.roundNumbers:getHeight(self.round)/2))
 	love.graphics.setColor(147,147,147,200)
-	love.graphics.setFont(fonts.boomMedium)
-	love.graphics.print("ROUND",screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2)-28,
+	love.graphics.setFont(fonts.medium)
+	love.graphics.print("ROUND",screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2)-22,
 		screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round)/2),-math.pi/2)
 	if not self.boss then
 		local remainder = self.quota-math.fmod(self.stats.rocksRound,self.quota)
-		love.graphics.print(remainder.." LEFT",screen:getCentre('x')-fonts.boomMedium:getWidth(remainder.." LEFT")/2,
+		love.graphics.print(remainder.." LEFT",screen:getCentre('x')-fonts.medium:getWidth(remainder.." LEFT")/2,
+			screen:getCentre('y')+4+(fonts.roundNumbers:getHeight(self.round))/2)
+	else
+		love.graphics.print("BOSS",screen:getCentre('x')-fonts.medium:getWidth("BOSS")/2,
 			screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round))/2)
 	end
 	--time
-	love.graphics.print(math.modf(self.time.elapsed/60)..':'..math.floor(self.time.elapsed),screen:getCentre('x')-fonts.boomMedium:getWidth(self.time.elapsed)/2,32)
+	local time = self.time.hours..':'..self.time.minutes..':'..self.time.seconds
+	love.graphics.print(time, screen:getCentre('x')-fonts.medium:getWidth(time)/2, 32)
 
 
 	love.graphics.setFont(fonts.small)
@@ -381,7 +399,9 @@ if self.pause == 1 then
 	for i,c in ipairs(self.crystals) do
 		c:draw()
 	end
-		love.graphics.setColor(255,0,0)
+	for i,c in ipairs(self.drops) do
+		c:draw()
+	end
 	for i,e in ipairs(self.enemies) do
 		e:draw()
 	end
@@ -394,23 +414,32 @@ if self.pause == 1 then
 	end
 	
 	for i, p in ipairs(particles) do
-		love.graphics.draw(p)
+		if type(p) == "table" then
+			p:draw()
+		else
+			love.graphics.draw(p)
+		end
 	end
 	----------------------
 	messages:draw()
 
-		--hp
-			love.graphics.setColor(255,255,255,120)
-		love.graphics.rectangle("fill",0,screen.height-12,self.player.members.a._hp/self.player.members.a.stats.hp*screen.width/2,12)
-		love.graphics.rectangle("fill",screen.width,screen.height-12,-self.player.members.b._hp/self.player.members.b.stats.hp*screen.width/2,12)
-		
-			love.graphics.setColor(self.player.members.a.color[1],self.player.members.a.color[2],self.player.members.a.color[3],120)
-		love.graphics.rectangle("fill",0,screen.height-12,self.player.members.a.hp/self.player.members.a.stats.hp*screen.width/2,12)
-			love.graphics.setColor(self.player.members.b.color[1],self.player.members.b.color[2],self.player.members.b.color[3],120)
-		love.graphics.rectangle("fill",screen.width,screen.height-12,-self.player.members.b.hp/self.player.members.b.stats.hp*screen.width/2,12)
-			love.graphics.setColor(0,0,0,50)
-		love.graphics.rectangle("fill",self.player.members.a.hp/self.player.members.a.stats.hp*screen.width/2,screen.height-12,1,12)
-		love.graphics.rectangle("fill",screen.width-self.player.members.b.hp/self.player.members.b.stats.hp*screen.width/2,screen.height-12,1,12)
+		--items
+
+		love.graphics.push()
+		love.graphics.translate(-10,screen.height-116)
+		for i=1,5 do
+			if self.player.members.a.items[i] then
+				love.graphics.setColor(255,255,255)
+			else
+				love.graphics.setColor(255,255,255,128)
+			end
+			if i < 3 then
+				love.graphics.draw(self.res.itemRing,i*58,0)
+			else
+				love.graphics.draw(self.res.itemRing,(i*58)-145,58)
+			end
+		end
+		love.graphics.pop()
 
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
@@ -431,12 +460,11 @@ elseif self.pause == 2 then
 			screen:aberate(.1,math.rsign(1))
 		end
 	love.graphics.printf("PAUSED",_x,-16+xy[2]+_y,screen.width,'center')
+
 elseif self.pause == 3 then
 	local xy = screen:getCentre()
-		love.graphics.setColor(255,255,255)
-	love.graphics.draw(self.canvases.pauseCanvas)
-	--------------
-	
+		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
+	love.graphics.draw(self.canvases.pauseCanvas)	
 	--------------
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
@@ -460,16 +488,18 @@ end
 function game:update(dt)
 if self.pause == 1 then
 	self.time.elapsed = love.timer.getTime()-self.time.startTime
+	self.time.seconds = math.floor(self.time.elapsed)-(60*self.time.minutes)-(3600*self.time.hours)
+	if self.time.seconds > 59.99 then self.time.seconds = 0; self.time.minutes = self.time.minutes + 1 end
+	if self.time.minutes > 59.99 then self.time.minutes = 0; self.time.hours = self.time.hours + 1 end
 
-	player.tetherDistance = 100 + (100*math.floor(self.points/8))
-		if self.player.dead then
-			print("You lasted "..self.round.." rounds.")
-			print("Player 1 had "..self.player.members.a.points.." points.")
-			print("Player 2 had "..self.player.members.b.points.." points.")
-			state = heaven.make(self.player,self.round,self.stats.rocks,self.stats.enemies,self.time.elapsed,self.name1,self.name2)
-			return
-		end
-		self.player:update(dt)
+	self.player:update(dt)
+	if self.player.dead then
+		print("You lasted "..self.round.." rounds.")
+		print("Player 1 had "..self.player.members.a.points.." points.")
+		print("Player 2 had "..self.player.members.b.points.." points.")
+		state = heaven.make(self.player,self.round,self.stats.rocks,self.stats.enemies,self.time.elapsed,self.name1,self.name2)
+		return
+	end
 	for i,e in ipairs(self.enemies) do
 		e:update(dt)
 		if e.hp <= 0 or e.kill then
@@ -479,13 +509,9 @@ if self.pause == 1 then
 			end
 			end
 			table.remove(self.enemies,i)
---			if e.class == 'drone' then
---				table.insert(self.enemies,enemy.make())
---			end
 			self.stats.enemies = self.stats.enemies +1
 		end
 	end
-	-- if self.boss and #self.enemies == 0 then self.stats.rocksRound = self.quota end
 	for i,r in ipairs(self.rocks) do
 		r:update(dt)
 		if r.hp <= 0 then
@@ -494,7 +520,6 @@ if self.pause == 1 then
 			end
 			self.stats.rocks = self.stats.rocks +1
 			self.stats.rocksRound = self.stats.rocksRound +1
-			-- if math.fmod(self.stats.rocks,8) > 0 then messages:new(self.quota-math.fmod(self.stats.rocks,self.quota).." left",r.x,r.y,'up',2,{255,24,15},'boomMedium') end
 			table.remove(self.rocks,i)
 		end
 	end
@@ -508,6 +533,12 @@ if self.pause == 1 then
 		c:update(dt)
 		if c.got or c.dead then
 			table.remove(self.crystals,i)
+		end
+	end
+	for i,c in ipairs(self.drops) do
+		c:update(dt)
+		if c.got or c.dead then
+			table.remove(self.drops,i)
 		end
 	end
 	
@@ -578,23 +609,22 @@ elseif self.pause == 3 then
 	if k == 'w' or k == 'i' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
-			screen:shake(.15,2)
+			-- screen:shake(.15,2)
 		end
 	elseif k == 's' or k == 'k' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
-			screen:shake(.15,2)
+			-- screen:shake(.15,2)
 		end
 	elseif k == 'return' or k =='lshift' then
 		if self.menu[self.menuIndex] == 'Continue' then
---			screen:shake(.15,2)
 			love.audio.resume()
 			self.pause = 1
 		elseif self.menu[self.menuIndex] == 'Restart' then
-			screen:shake(.15,2)
+			-- screen:shake(.15,2)
 			state = game.make()
 		elseif self.menu[self.menuIndex] == 'Exit to Menu' then
-			screen:shake(.15,2)
+			-- screen:shake(.15,2)
 			state = mainmenu.make(true)
 		elseif self.menu[self.menuIndex] == 'Resign' then
 			print("You lasted "..self.round.." rounds.")
@@ -621,6 +651,15 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 	h.player.members.a.spawned = true
 	h.player.members.b.spawned = true
 	h.grabPlayer = true
+	h.screen = love.graphics.newCanvas()
+		--
+		love.graphics.setCanvas(h.screen)
+		love:draw()
+		love.graphics.setCanvas()
+		-- love.graphics.setColor(255,0,0)
+		-- love.graphics.draw(h.screen)
+		-- love:draw()
+		-- love.timer.sleep(.5)
 	screen:clearEffects()
 	screen:shake(.8,3)
 	h.winner = 'a'
@@ -673,7 +712,9 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 				slideLoser = {0,0,0,20},
 				gameFade = {100,100,100,100,100,100,100,100,100},
 				wY = screen.height,
-				lY = 0}
+				lY = 0,
+				winnerFlyin = 1,
+				loserFlyin = -1,}
 
 	if not love.filesystem.exists("records/highScores.txt") then
 		print("No high scores found. Making")
@@ -690,8 +731,8 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 end
 
 function heaven:draw()
-if self.ready and not self.confirm then
-		love.graphics.setColor(0,0,0)
+if self.ready and (not self.confirm or self.timers.winnerFlyin > -1.5) then
+		love.graphics.setColor(24,24,24)
 	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
 	
 		love.graphics.setFont(fonts.large)
@@ -700,10 +741,10 @@ if self.ready and not self.confirm then
 
 	--confirm tether
 		love.graphics.setColor(math.random(14,77),math.random(59,155),255)
-	if self.winnerConfirm then
+	if self.winnerConfirm or self.timers.winnerFlyin < -0.1 then
 		love.graphics.draw(self.res.grad,-64,44,-math.pi/2,48,16)
 	end
-	if self.loserConfirm then
+	if self.loserConfirm or self.timers.winnerFlyin < -0.1 then
 		love.graphics.draw(self.res.grad,256,-4,math.pi/2,48,16)
 	end
 
@@ -724,7 +765,7 @@ if self.ready and not self.confirm then
 		love.graphics.rectangle("fill",((self.winnerIndex-1)*32),42,28,4)
 		love.graphics.setColor(unpack(self.player.members[self.winner].color))
 	end
-	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],-64,16,0,.5,.5,144,144)
+	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],-64,16+((screen.height/2)*self.timers.winnerFlyin),0,.5,.5,144,144)
 	love.graphics.print(self.characters[1][self.winnerName[1]],0,0+self.timers.slideWinner[1])
 	love.graphics.print(self.characters[2][self.winnerName[2]],32,0+self.timers.slideWinner[2])
 	love.graphics.print(self.characters[3][self.winnerName[3]],64,self.timers.slideWinner[3])
@@ -747,7 +788,7 @@ if self.ready and not self.confirm then
 		love.graphics.rectangle("fill",96+((self.loserIndex-1)*32),42,28,4)
 		love.graphics.setColor(unpack(self.player.members[self.loser].color))
 	end
-	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],256,16,-math.pi,.5,.5,144,144)
+	love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],256,16+((screen.height/2)*self.timers.loserFlyin),-math.pi,.5,.5,144,144)
 	love.graphics.print(self.characters[4][self.loserName[1]],96,0+self.timers.slideLoser[1])
 	love.graphics.print(self.characters[5][self.loserName[2]],128,0+self.timers.slideLoser[2])
 	love.graphics.print(self.characters[6][self.loserName[3]],160,self.timers.slideLoser[3])
@@ -756,31 +797,24 @@ if self.ready and not self.confirm then
 elseif self.ready and self.confirm then	
 		love.graphics.setFont(fonts.large)
 		love.graphics.push()
-		love.graphics.translate((screen.width/2)-96,4)
+		love.graphics.translate((screen.width/2),8)
 
+		--name
 		love.graphics.setColor(255,255,255)
-	--winner
-	-- love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],-64,16,0,.5,.5,144,144)
-	love.graphics.print(self.characters[1][self.winnerName[1]],0,0+self.timers.slideWinner[1])
-	love.graphics.print(self.characters[2][self.winnerName[2]],32,0+self.timers.slideWinner[2])
-	love.graphics.print(self.characters[3][self.winnerName[3]],64,self.timers.slideWinner[3])
-	--loser
-	-- love.graphics.draw(self.player.imageLarge,res.quads["playerLarge2"],256,16,-math.pi,.5,.5,144,144)
-	love.graphics.print(self.characters[4][self.loserName[1]],96,0+self.timers.slideLoser[1])
-	love.graphics.print(self.characters[5][self.loserName[2]],128,0+self.timers.slideLoser[2])
-	love.graphics.print(self.characters[6][self.loserName[3]],160,self.timers.slideLoser[3])
+		local tag = findScore(self.scores,#self.scores)..". "..self.name.." "..(self.player.members.a.points + self.player.members.b.points)
+		love.graphics.print(tag,-fonts.large:getWidth(tag)/2,0)
 
 		love.graphics.pop()
 
 		love.graphics.push()
 		love.graphics.translate(0,62)
-	drawScores(self.scores)
+	drawScores(self.scores,10)
 		love.graphics.pop()
 
 	love.graphics.setColor(0,0,0,220)
 	love.graphics.rectangle("fill",0,screen.height-36,screen.width,36)
 	local x = 12
-		love.graphics.setFont(fonts.boomMedium)
+		love.graphics.setFont(fonts.medium)
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
 			love.graphics.setColor(255,255,255)
@@ -793,8 +827,13 @@ elseif self.ready and self.confirm then
 	
 elseif not self.ready then
 
+	local frac = (100-self.timers.gameFade[1])/100
+
+	love.graphics.setColor(255,0,0)
+	love.graphics.draw(self.screen)
+
 	love.graphics.setColor(0,0,0)
-	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
+	love.graphics.circle("fill",screen:getCentre('x'),screen:getCentre('y'),screen.width*frac,36)
 
 	self.player:draw()
 
@@ -804,7 +843,6 @@ elseif not self.ready then
 		if _x ~= 0 or _y ~= 0 then
 			screen:aberate(.1,math.rsign(1))
 		end
-	local frac = (100-self.timers.gameFade[1])/100
 		love.graphics.setColor(255,255,255,255*frac)
 	love.graphics.print('G',(screen.width/2)-142+_x,-16+_y + ((screen.height/2)*frac))
 	frac = (100-self.timers.gameFade[2])/100
@@ -836,23 +874,16 @@ end
 end
 
 function heaven:update(dt)
+if self.ready then
 if not self.confirm then
+	if self.timers.winnerFlyin > 0 then self.timers.winnerFlyin = self.timers.winnerFlyin - .1 end
+	if self.timers.loserFlyin < 0 then self.timers.loserFlyin = self.timers.loserFlyin + .1 end
+
 	for i = 1, 3 do
 		if self.timers.slideWinner[i] > 0 then self.timers.slideWinner[i] = self.timers.slideWinner[i] - 2
 		elseif self.timers.slideWinner[i] < 0 then self.timers.slideWinner[i] = self.timers.slideWinner[i] + 2 end
 		if self.timers.slideLoser[i] > 0 then self.timers.slideLoser[i] = self.timers.slideLoser[i] - 2
 		elseif self.timers.slideLoser[i] < 0 then self.timers.slideLoser[i] = self.timers.slideLoser[i] + 2 end
-	end
-	for i =1,9 do
-		if i == 1 then
-			if self.timers.gameFade[i] > 0 then
-				self.timers.gameFade[i] = self.timers.gameFade[i] - (self.timers.gameFade[i]/12)
-			end
-		else
-			if self.timers.gameFade[i-1] < 60 and self.timers.gameFade[i] > 0 then
-				self.timers.gameFade[i] = self.timers.gameFade[i] - (self.timers.gameFade[i]/12)
-			end
-		end
 	end
 
 	self.winnerConfirm = love.keyboard.isDown(self.player.members[self.winner].keys.tether)
@@ -862,9 +893,9 @@ if not self.confirm then
 	if self.confirm then
 		self.winnerConfirm = false
 		self.loserConfirm = false
-		local name = self.characters[1][self.winnerName[1]]..self.characters[2][self.winnerName[2]]..self.characters[3][self.winnerName[3]]..
+		self.name = self.characters[1][self.winnerName[1]]..self.characters[2][self.winnerName[2]]..self.characters[3][self.winnerName[3]]..
 						self.characters[4][self.loserName[1]]..self.characters[5][self.loserName[2]]..self.characters[6][self.loserName[3]]
-		local toAppend = ('\n'..name.."|"..self.player.members[self.winner].points.."|"..self.player.members[self.loser].points.."|"..
+		local toAppend = ('\n'..self.name.."|"..self.player.members[self.winner].points.."|"..self.player.members[self.loser].points.."|"..
 							self.player.members[self.winner].lives.."|"..self.player.members[self.loser].lives.."|"..
 							self.rounds.."|"..self.rocks.."|"..self.enemies.."|"..self.time)
 		print("Adding score to record.")
@@ -873,6 +904,9 @@ if not self.confirm then
 		table.sort(self.scores,sortScoresCombo)
 	end
 else
+	if self.timers.winnerFlyin > -1.5 then self.timers.winnerFlyin = self.timers.winnerFlyin - .1 end
+	if self.timers.loserFlyin < 1.5 then self.timers.loserFlyin = self.timers.loserFlyin + .1 end
+
 	if self.winnerConfirm or self.loserConfirm then
 		if self.menu[self.menuIndex] == 'Restart' then
 			screen:shake(.15,2)
@@ -883,6 +917,19 @@ else
 			end
 		elseif self.menu[self.menuIndex] == 'Main Menu' then
 			state = mainmenu.make(true)
+		end
+	end
+end
+else
+	for i =1,9 do
+		if i == 1 then
+			if self.timers.gameFade[i] > 0 then
+				self.timers.gameFade[i] = self.timers.gameFade[i] - (self.timers.gameFade[i]/12)
+			end
+		else
+			if self.timers.gameFade[i-1] < 60 and self.timers.gameFade[i] > 0 then
+				self.timers.gameFade[i] = self.timers.gameFade[i] - (self.timers.gameFade[i]/12)
+			end
 		end
 	end
 end
@@ -944,9 +991,9 @@ elseif self.ready and self.confirm then
 		self.loserConfirm = not self.loserConfirm
 	end
 else
-	-- if k == 'escape' then
+	if self.timers.gameFade[9] < .01 then
 		self.ready = true
-	-- end
+	end
 end
 end
 

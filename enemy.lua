@@ -1,9 +1,9 @@
-enemy = {}
-enemy.__index = enemy
+drone = {}
+drone.__index = drone
 
-function enemy.make()
+function drone.make()
 	local e = {}
-	setmetatable(e,enemy)
+	setmetatable(e,drone)
 	if math.random(0,1) == 0 then
 		local x = math.random(0,1)*screen.width
 		e.x,e.y = x-(512*math.sign(1-x)),math.random(0,screen.height)
@@ -14,29 +14,30 @@ function enemy.make()
 	e._x = e.x-math.random(0,128)
 	e._y = e.y-math.random(0,128)
 	e.r = math.pi
-	e.dist = math.random(192,256)
+	e.orbit = math.random(192,256)
 
-	e.image = res.load("sprite","enemy.png")
+	e.image = res.load("sprite","drone.png")
 
 	e.class = 'drone'
 	e.drop = true
-	e.speed = math.random(1,3)*192
+	e.speed = (math.random()+1)*128
 	e.dir = math.rsign()
 	e.hp = 2
 	e.kill = false
 	e.collideable = false
-	e.fireLimit = 200
+	e.fireLimit = math.random(60,200)
 	e.fire = e.fireLimit
 	
 	return e
 end
 
-function enemy:draw()
+function drone:draw()
+	love.graphics.setColor(255,0,0)
 	local rot = math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x)
 	love.graphics.draw(self.image,self.x,self.y,rot-(math.pi/2),1,1,24,24)
 end
 
-function enemy:update(dt)
+function drone:update(dt)
 	if self.x < 0 or self.y < 64 or self.x > screen.width or self.y > screen.height then
 		self.dir = -self.dir
 	end
@@ -54,8 +55,8 @@ function enemy:update(dt)
 		self._y = self._y-1
 	end
 	
-	self.x = self._x + (math.cos(self.r)*self.dist)
-	self.y = self._y + (math.sin(self.r)*self.dist)
+	self.x = self._x + (math.cos(self.r)*self.orbit)
+	self.y = self._y + (math.sin(self.r)*self.orbit)
 	
 	if self.hp <= 0 then
 		state.points = state.points + 1
@@ -63,7 +64,9 @@ function enemy:update(dt)
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),6,'enemy')
+		local closest = state.player:closest(self.x,self.y)
+		local x,y = self.x,self.y
+		bullet.make(x,y,math.atan2(y-closest.y,x-closest.x),6,'enemy')
 	end
 end
 
@@ -74,33 +77,51 @@ function sentry.make(x,y)
 	local e = {}
 	setmetatable(e,sentry)
 	e.x,e.y = x,y
-	e.r = 8
+	e.r = 24
 	e.rot = math.random(-math.pi,math.pi)
-	e.hp = 12
+	e.orbit = 32
+	e._hp = 86
+	e.hp = e._hp
 	e.dir = math.rsign()
-	e.fireLimit = 256
-	e.fire = math.random(60,e.fireLimit)
+	e.fireLimit = 320
+	e.fire = math.random(80,e.fireLimit)
 	e.drop = false
 	e.collideable = false
 	e.class = 'sentry'
 	e.image = res.load("sprite","sentry.png")
+	e.shield = 1
+	e._shield = 1
 	
 	return e
 end
 
-function sentry:draw()
-	love.graphics.draw(self.image,self.x+math.cos(self.rot)*32,self.y+math.sin(self.rot)*32,self.rot-math.pi,-1,1,12,12)
+function sentry:draw(rockRot,a)
+	if self.shield ~= self._shield then
+		love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
+		self._shield = self.shield
+	else
+		love.graphics.setColor(255,0,0,math.min(a,math.random(164,200))*self.shield)
+	end
+	love.graphics.circle("fill",self.x,self.y,34,36)
+		love.graphics.setColor(255,255,255,a)
+	love.graphics.draw(self.image,res.quads["sentry1"],self.x,self.y,rockRot,-1,1,17,17)
+		-- love.graphics.setColor(255,0,0,a)
+	love.graphics.draw(self.image,res.quads["sentry2"],self.x,self.y,self.rot-math.pi,-1,1,12,8)
 end
 
 function sentry:update(dt)
---	screen:shake(.15,4,false)
 	if self.hp <= 0 then
 		state.points = state.points + 1
 	end
+
+	self.shield = self.hp/self._hp
+
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		bullet.make(self.x+math.cos(self.rot)*24,self.y+math.sin(self.rot)*24,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
+		local closest = state.player:closest(self.x,self.y)
+		local x,y = self.x+math.cos(self.rot)*self.orbit,self.y+math.sin(self.rot)*self.orbit
+		bullet.make(x,y,math.atan2(y-closest.y,x-closest.x),4,'enemy')
 	end
 	self.rot = self.rot + (math.pi/128)*self.dir
 end
@@ -121,7 +142,7 @@ function dash.make()
 	end
 
 	e.r = math.random(0,2)*math.pi
-	e.timer = 100
+	e.timer = 50
 	e.locked = false
 	e.r = 8
 	e.rot = 0
@@ -156,7 +177,7 @@ function dash:update( dt )
 	if self.locked then
 		if self.v == 0 then self.timer = self.timer -1 end
 		if self.timer < 0 then
-			self.timer = 100
+			self.timer = 50
 			self.v = 32
 		end
 		if self.v > 0 then
@@ -170,11 +191,11 @@ function dash:update( dt )
 		end
 		if self.aimgle > 0 then self.aimgle= self.aimgle-(math.pi/24) end
 	end
-	-- for i,r in ipairs(state.rocks) do
-	-- 	if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
-	-- 		r.hp = 0
-	-- 	end
-	-- end
+	for i,r in ipairs(state.rocks) do
+		if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
+			r.hp = 0
+		end
+	end
 end
 
 function dash:draw()
@@ -187,6 +208,37 @@ function dash:draw()
 		love.graphics.line(self.x,self.y,self.x+math.cos(self.r-self.aimgle)*-600,self.y+math.sin(self.r-self.aimgle)*-600)
 	end
 end
+
+keeper = {}
+keeper.__index = keeper
+
+function keeper.make()
+	local k = {}
+	setmetatable(k,keeper)
+	-- k.x
+	-- k.y
+	-- k.x_vol
+	-- k.y_vol
+	-- k.prime
+	-- k.cooldown
+
+	return k
+end
+
+function keeper:draw()
+	love.graphics.draw()
+end
+
+function keeper:update(dt)
+
+end
+
+quirk = {}
+lec = {}
+rockling = {}
+dap = {}
+clone = {}
+undead = {}
 
 --------------------------------------------------------------
 -- BOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSS --

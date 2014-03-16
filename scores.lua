@@ -21,9 +21,11 @@ function loadScores(path)
 			s.enemies = tonumber(l:sub(i+1,l:find('|',i+1)-1))
 				i = l:find('|',i+1)
 			s.time = tonumber(l:sub(i+1))
+			s.index = #scores+1
 			table.insert(scores,s)
 		end
 	end
+	scores.last = scores[#scores]
 	return scores
 end
 
@@ -31,7 +33,7 @@ function sortScoresCombo(a,b)
 	if a.winnerPoints+a.loserPoints > b.winnerPoints+b.loserPoints then
 		return true
 	elseif a.winnerPoints+a.loserPoints == b.winnerPoints+b.loserPoints then
-		return a.name > b.name
+		return a.name < b.name
 	end
 end
 
@@ -57,4 +59,13 @@ function drawScores(scores,limit)
 		love.graphics.print(s.winnerPoints+s.loserPoints,272,(i-1)*58)
 		if i == (limit or 100) then break end
 	end
+end
+
+function findScore(scores,index)
+	for i,s in ipairs(scores) do
+		if s.index == index then
+			return i
+		end
+	end
+	return -1
 end

@@ -82,180 +82,14 @@ function love.graphics.stippledLine( x1,y1,x2,y2,l,g )
 	end
 end
 
-function rounder()
-	local progress = {}
-	--per round
-	progress[1],progress[2] = math.abs(math.modf(state.stats.rocksRound/state.quota))
-	if progress[1] == 1 then
-		state.player:givePoints('both',100)
-		state.round = state.round+1
-		state.stats.rocksRound = 0
-		messages:clear()
-		messages:new("ROUND "..state.round.."!",screen:getCentre('x'),screen:getCentre('y'),"still",2,{255,255,0},'boomLarge')
-		for i,e in ipairs(state.enemies) do
-			e.kill = true
-		end
-		if state.round == 6 then
-			if state.player.members.a.stats.deaths == 0 and state.player.members.a.hp == state.player.members.a.stats.hp then
-				messages:new('UNTOUCHABLE!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boomMedium')
-				state.player.members.a.immunity = 40
-			elseif state.player.members.a.stats.deaths == 0 then
-				messages:new('SURVIVOR!',state.player.members.a.x,state.player.members.a.y,'up',2,{255,24,15},'boomMedium')
-				state.player.members.a.immunity = 20
-			end
-			if state.player.members.b.stats.deaths == 0 and state.player.members.b.hp == state.player.members.b.stats.hp then
-				messages:new('UNTOUCHABLE!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boomMedium')
-				state.player.members.b.immunity = 40
-			elseif state.player.members.b.stats.deaths == 0 then
-				messages:new('SURVIVOR!',state.player.members.b.x,state.player.members.b.y,'up',2,{255,24,15},'boomMedium')
-				state.player.members.b.immunity = 20
-			end
-		elseif state.round == 10 then
-			state.quota = -1
-			state.boss = true
-			state.grabPlayer = true
-			state.player.members.a.x,state.player.members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
-			state.player.members.b.x,state.player.members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
-			state.player:giveHealth('both',8)
-			for i,r in ipairs(state.rocks) do
-				r.hp = 0
-			end
-			for i,e in ipairs(state.enemies) do
-				e.kill = true
-			end
-			table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),256))
-			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",3,{255,255,255},'boomLarge')
-		elseif state.round == 11 then
-			state.quota = 8
-			state.boss = false
-			state.grabPlayer = false
-			state.player:giveHealth('both',16)
-		elseif state.round == 21 then
-			state.quota = 10
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 31 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 41 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 51 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 61 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 71 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 81 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 91 then
-			state.quota = 12
-			state.boss = false
-			state.grabPlayer = false
-		elseif state.round == 101 then
-			state.quota = -1
-			state.boss = true
-			state.grabPlayer = false
-		end
+function love.graphics.curve(x,y,r,b,e,s)
+	local points = {}
+	local step = ((e-b))/s
+	for i = 1, (s*2)+2, 2 do
+		points[i] = x + math.cos(b+(step*(i-1)/2))*r
+		points[i+1] = y + math.sin(b+(step*(i-1)/2))*r
 	end
-	--
-	--durring round
-	--first 10
-	if state.round <= 2 then
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100))) end
-	elseif state.round > 2 and state.round <= 4 then
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
-	elseif state.round > 4 and state.round <= 6 then
-		if #state.enemies < 3 then
-			for i = 1, 3-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,2)) end
-	elseif state.round > 6 and state.round <= 8 then
-		if #state.enemies < 6 then
-			for i = 1, 6-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
-	elseif state.round == 9 then
-		if #state.enemies < 9 then
-			for i = 1, 9-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-		end
-		if #state.rocks < 14 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
-	elseif state.round == 10 then
-		if #state.rocks < 6 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
-		if #state.enemies == 0 then
-			state.stats.rocksRound = state.quota
-		end
-	--second 10
-	elseif state.round > 10 and state.round <= 11 then
-		if #state.enemies < 6 then
-			for i = 1, 2-#state.enemies do
-				table.insert(state.enemies,dash.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
-	elseif state.round > 11 and state.round <= 14 then
-		if #state.enemies < 6 then
-			for i = 1, 4-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-			for i = 1, 2-#state.enemies do
-				table.insert(state.enemies,dash.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
-	elseif state.round > 14 and state.round <= 16 then
-		if #state.enemies < 7 then
-			for i = 1, 6-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-			for i = 1, 1-#state.enemies do
-				table.insert(state.enemies,dash.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,2)) end
-	elseif state.round >16 and state.round <= 18 then
-		if #state.enemies < 8 then
-			for i = 1, 7-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-			for i = 1, 1-#state.enemies do
-				table.insert(state.enemies,dash.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
-	elseif state.round == 19 then
-		if #state.enemies < 12 then
-			for i = 1, 8-#state.enemies do
-				table.insert(state.enemies,enemy.make())
-			end
-			for i = 1, 4-#state.enemies do
-				table.insert(state.enemies,dash.make())
-			end
-		end
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
-	elseif state.round == 20 then
-		if #state.rocks < 8 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
-		if #state.enemies == 0 then
-			state.stats.rocksRound = state.quota
-		end
-	--third ten
-	end
+	love.graphics.line(unpack(points))
 end
 
 function initFS(name)
@@ -407,10 +241,10 @@ end
 
 function screen:clearEffects(a)
 	if not a then
-	self.timers.shake = 0
-	self.timers.chrome = 0
-	self.timers.flashPeriod = {0,0}
-	self.timers.flashDuration = 0
+		self.timers.shake = 0
+		self.timers.chrome = 0
+		self.timers.flashPeriod = {0,0}
+		self.timers.flashDuration = 0
 	else
 		if a == 'flash' then
 			self.timers.flashPeriod = {0,0}
@@ -498,7 +332,7 @@ function messages:new(text,x,y,mode,life,color,font)
 	m.mode = mode or 'still'
 	m.life = math.max(((life or -1)*60),-1)
 	m.color = color or {255,255,255}
-	m.font = font or 'boomMedium'
+	m.font = font or 'medium'
 	
 	print("sending message: "..text)
 	table.insert(self.messages,m)

@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!DOCTYPE Game SYSTEM "GDCGame.dtd">
+<Game>
+  <title>Tether</title>
+  <author>unonu</author>
+  <author>Randy Sabella</author>
+  <author>Dr. Congo</author>
+  <author>Eric Collins</author>
+  <contact>unonuorea@gmail.com</contact>
+  <location>Tether/tether.exe</location>
+  <background>Tether/splash.png</background>
+  <minPlayers>2</minPlayers>
+  <maxPlayers>2</maxPlayers>
+</Game>

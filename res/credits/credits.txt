@@ -1,8 +1,17 @@
 #!large
 Credits
-#!boom
+#!medium
 Lucas
 Dodger
 
 #?#0000FF
 Credits
+
+#?#83c0f0
+This game was made with
+LOVE 2D. For more information,
+visit www.love2d.org
+
+#?#FFFFFF
+Thanks for playing!
+-unonu

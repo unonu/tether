@@ -4,8 +4,7 @@ rock.__index = rock
 function rock.make(x,y,s,p)
 	local r = {}
 	setmetatable(r,rock)
-	r.hp = 48
-	r._hp = 48
+	r.id = #state.rocks + 1
 	-- r.dhp = 48
 	r.kill = false
 	r.killTimer = 90
@@ -14,10 +13,13 @@ function rock.make(x,y,s,p)
 	r.y_vol = 0
 	r.r = 24
 	r.s = math.random(1,2)/10
+	r._hp = 48
 	if s and math.random(1,(p or 1))==1 then
-	r.sentry = sentry.make(x,y)
-	r.sentryNum = nil
+		r.sentry = sentry.make(x,y)
+		r._hp = 64
+		r.sentryNum = nil
 	end
+	r.hp = r._hp
 	r.image = res.load("sprite","rock"..math.random(1,3)..".png")
 	r.forces = {{r.s,math.random(0,2*math.pi)}}
 	r.timers = {}
@@ -26,7 +28,7 @@ function rock.make(x,y,s,p)
 	r.a_vol = (math.random()-.5)/200
 	r.heat = 0
 
-	r.p = love.graphics.newParticleSystem(res.load("sprite","particle.png"),2)
+	r.p = love.graphics.newParticleSystem(res.load("sprite","particle.png"),6)
 		r.p:setEmitterLifetime(2)
 		r.p:setParticleLifetime(2)
 		r.p:setEmissionRate(1)
@@ -56,7 +58,7 @@ function rock:draw()
 	love.graphics.point(self.x,self.y)
 	if self.sentry then
 		love.graphics.setColor(255,0,0)
-		self.sentry:draw()
+		self.sentry:draw(self.rot,math.min(255,self.timers.birth*8))
 	end
 end
 
@@ -87,23 +89,44 @@ function rock:update(dt)
 	self.p:setDirection(math.atan2(self.y_vol,self.x_vol)-math.pi)
 	self.p:setColors(237,143-(143*self.heat),77-(77*self.heat))
 
+	if self.x >= state.player.members.a.x - self.r - 12 and
+	self.x <= state.player.members.a.x + self.r + 12 and
+	self.y >= state.player.members.a.y - self.r - 12 and
+	self.y <= state.player.members.a.y + self.r + 12 then
+		state.player:push('a',self.x - state.player.members.a.x,self.y - state.player.members.a.y,-.5)
+	end
+	if self.x >= state.player.members.b.x - self.r - 12 and
+	self.x <= state.player.members.b.x + self.r + 12 and
+	self.y >= state.player.members.b.y - self.r - 12 and
+	self.y <= state.player.members.b.y + self.r + 12 then
+		state.player:push('b',self.x - state.player.members.b.x,self.y - state.player.members.b.y,-.5)
+	end
 	
+	for i,r in ipairs(state.rocks) do
+		if self.id ~= r.id then
+			if self.x >= r.x - 2*r.r and
+			self.x <= r.x + 2*r.r and
+			self.y >= r.y - 2*r.r and
+			self.y <= r.y + 2*r.r then
+				local px,py = self.x_vol,self.y_vol
+				self.x_vol = r.x_vol
+				self.y_vol = r.y_vol
+				r.x_vol = px
+				r.y_vol = py
+			end
+		end
+	end
+
 	self.heat = 1-(self.hp/self._hp)
 	if self.hp < self._hp and self.hp >= self._hp/2 then
-		-- print(math.ceil(6*self.heat))
-		-- if self.p:getBufferSize() ~= self.p:setBufferSize(math.ceil(6*self.heat)) then
-		-- 	self.p:setBufferSize(math.ceil(6*self.heat))
-		-- 	self.p:setEmissionRate(math.ceil(6*self.heat)/2)
-		-- end
-		-- -- self.p:emit(4)
+			self.p:setEmissionRate(math.ceil(6*self.heat)/2)
 		self.p:start()
 	elseif self.hp < self._hp/2 and self.hp > 0 then
-		self.p:setBufferSize(math.ceil(6*self.heat))
 		self.p:setEmissionRate(math.ceil(6*self.heat)/2)
-		-- self.p:emit(4)
 		self.p:start()
 	elseif self.hp <= 0 then
 		cloud.make(self.x,self.y,170,120,85,128)
+		wave.make(self.x,self.y,200,.5,255,255,255,64)
 		love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
 		screen:shake(1,8,false)
 		state.points = state.points + 1
@@ -112,9 +135,17 @@ function rock:update(dt)
 	self.p:update(dt)
 
 
-	if self. sentry then
+	if self.sentry then
 		self.sentry.x, self.sentry.y = self.x, self.y
 		self.sentry:update(dt)
+		if self.sentry.hp > 0 then
+			if self.hp < self._hp then
+				self.sentry.hp = self.sentry.hp - (self._hp - self.hp)
+			end
+				self.hp = self._hp
+		else
+			self.sentry = nil
+		end
 	end
 
 	--
@@ -153,7 +184,7 @@ function crystal:update(dt)
 	end
 	if state.player.distance > math.max(state.player.members.a.attraction,state.player.members.b.attraction) then
 		for ii,m in pairs(state.player.members) do
-			if math.floor((((m.x-self.x)^2)+((m.y-self.y)^2))^.5) <= m.attraction then
+			if math.floor((((m.x-self.x)^2)+((m.y-self.y)^2))^.5) <= m.attraction and m.spawned then
 				self.x = self.x + math.round(math.abs(math.cos(math.atan2((m.y-self.y),(m.x-self.x)))*m.attraction)/((m.x-self.x)),1)
 				self.y = self.y + math.round(math.abs(math.sin(math.atan2((m.y-self.y),(m.x-self.x)))*m.attraction)/((m.y-self.y)),1)
 			end
