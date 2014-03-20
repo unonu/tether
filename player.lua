@@ -20,12 +20,12 @@ function player.make(number)
 			speed = 1.5, 
 			_points = 0, 
 			points = 0, 
-			stats = {hp = 16, energy = 64, deaths = 0}, 
-			hp = 16, 
-			_hp = 16,
+			stats = {hp = 10, energy = 64, deaths = 0}, 
+			hp = 10, 
+			_hp = 10,
 			immunity = 0, 
-			lives = 3,
-			_lives = 3,
+			lives = 2,
+			_lives = 2,
 			energy = 64,
 			spawned = true, 
 			tether = false, 
@@ -52,12 +52,12 @@ function player.make(number)
 			speed = 1.5, 
 			_points = 0, 
 			points = 0, 
-			stats = {hp = 16, energy = 64, deaths = 0}, 
-			hp = 16, 
-			_hp = 16, 
+			stats = {hp = 10, energy = 64, deaths = 0}, 
+			hp = 10, 
+			_hp = 10, 
 			immunity = 0, 
-			lives = 3,
-			_lives = 3,
+			lives = 2,
+			_lives = 2,
 			energy = 64,
 			spawned = true, 
 			tether = false, 
@@ -67,7 +67,7 @@ function player.make(number)
 			lapse = 0, 
 			items = {nil,nil,nil,nil,nil},
 			color = {255, 100, 100}, 
-			keys = {up = 'i',  down = 'k',  left = 'j',  right = 'l',  tether = 'return'}, 
+			keys = {up = 'up',  down = 'down',  left = 'left',  right = 'right',  tether = 'kp0'}, 
 			timers = {spawn = 0, 
 						hp = 0}, 
 		}
@@ -131,9 +131,15 @@ function player:drawMember(member, x, y, s)
 	if member.spawned then
 		--hp
 		love.graphics.setColor(255,255,255,64)
-		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),member.stats.hp)
+		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
 		love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
-		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),member.stats.hp)
+		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
+		--hp
+		-- love.graphics.setLineWidth(8)
+		-- love.graphics.setColor(255,255,255,64)
+		-- love.graphics.curve("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),28)
+		-- love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
+		-- love.graphics.curve("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),28)
 
 		--energy
 		love.graphics.setColor(0,0,255,64)
@@ -285,6 +291,8 @@ if member.timers.spawn == 0 then
 	member._lives = member.lives
 
 	member._points = member.points
+	member.tether = false 
+
 if not state.grabPlayer then
 	if love.keyboard.isDown(member.keys.tether) then
 		if member.energy > 0 then 
@@ -294,7 +302,6 @@ if not state.grabPlayer then
 			member.tether = false 
 		end 
 	else
-		member.tether = false 
 		member.energy = math.min(member.stats.energy,member.energy + .2) 
 	end
 
@@ -316,10 +323,10 @@ if not state.grabPlayer then
 	if love.keyboard.isDown(member.keys.up) and love.keyboard.isDown(member.keys.left, member.keys.right) then 
 		member.y_vol = math.round(member.y_vol -.34*member.speed, 4) end
 	-- 
-	if member.x < 0 then self:push(member.name, -member.x) end
-	if member.x > screen.width then self:push(member.name, screen.width-member.x) end
-	if member.y < 0 then self:push(member.name, 0, -member.y) end
-	if member.y > screen.height then self:push(member.name, 0, screen.height-member.y) end
+	if member.x < 0 then self:push(member.name, -member.x/2) end
+	if member.x > screen.width then self:push(member.name, (screen.width-member.x)/2) end
+	if member.y < 0 then self:push(member.name, 0, -member.y/2) end
+	if member.y > screen.height then self:push(member.name, 0, (screen.height-member.y)/2) end
 
 	if member.x > self.members[member.other].x-24 and
 	member.x < self.members[member.other].x+24 and
@@ -344,19 +351,19 @@ end
 	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 5, colorExtreme(member.color, 255), "edge") end
 		love.audio.play(self.sounds.adanger)
-		if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
-			member.lapse = 0
-			self:giveHealth(member.name)
-		end
+		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
+		-- 	member.lapse = 0
+		-- 	self:giveHealth(member.name)
+		-- end
 	end
 	if member.hp <= member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 10, colorExtreme(member.color, 255), "edge") end
 		if math.random(1, 3) == 2 then screen:aberate(math.random(1, 3), math.random(0, 2)) end
 		love.audio.play(self.sounds.acritical)
-		if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
-			member.lapse = 0
-			self:giveHealth(member.name)
-		end
+		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
+		-- 	member.lapse = 0
+		-- 	self:giveHealth(member.name)
+		-- end
 	end
 	if member.hp <= 0 then
 		member.lives = member.lives - 1
@@ -365,7 +372,7 @@ end
 		shimmer.make(member.x,member.y,member.rot)
 		screen:shake(1, 12)
 		for ii=1,  math.min(member.points, 100) do
-			table.insert(state.crystals,  crystal.make(member.x+math.random(-48, 48), member.y+math.random(-48, 48)))
+			table.insert(state.crystals,  crystal.make(member.x+math.random(-64, 64), member.y+math.random(-64, 64)))
 		end
 		member.points = math.max(0, member.points-100)
 		messages:new("Player "..self.number.." died", member.x, member.y, 'up', -1, {0, 128, 90}, 'medium')
@@ -376,6 +383,7 @@ end
 		love.audio.play(self.sounds.aDie)
 	end
 	
+	member.hp = math.min(member.stats.hp, member.hp + (member.hp/(member.stats.hp*600)))
 
 	if member.immunity > 0 then member.immunity = member.immunity - .1;else member.immunity = 0 end
 end
@@ -471,8 +479,9 @@ function player:update()
 		local remove = false
 		if self.members.a.immunity == 0 and b.owner == 'enemy' and b.x >= self.members.a.x-8 and b.x <= self.members.a.x+8 and b.y >= self.members.a.y-8 and b.y <= self.members.a.y+8 then
 			self.members.a.hp = self.members.a.hp - 1
-			self.members.a.lapse = 0
-			self:push('a', math.cos(b.d), math.sin(b.d), -2)
+			self.members.a.immunity = 4
+			-- self.members.a.lapse = 0
+			self:push('a', math.cos(b.d), math.sin(b.d), -1)
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.a.color, 255), "edge") end
 			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
@@ -480,8 +489,9 @@ function player:update()
 		end
 		if self.members.b.immunity == 0 and b.owner == 'enemy' and b.x >= self.members.b.x-8 and b.x <= self.members.b.x+8 and b.y >= self.members.b.y-8 and b.y <= self.members.b.y+8 then
 			self.members.b.hp = self.members.b.hp - 1
-			self.members.b.lapse = 0
-			self:push('b', math.cos(b.d), math.sin(b.d), -2)
+			self.members.b.immunity = 4
+			-- self.members.b.lapse = 0
+			self:push('b', math.cos(b.d), math.sin(b.d), -1)
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.b.color, 255), "edge") end
 			love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
@@ -539,10 +549,10 @@ function player:update()
 	self.members.b.x = self.members.b.x + self.members.b.x_vol
 	self.members.b.y = self.members.b.y + self.members.b.y_vol
 
-	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = math.trunc(self.members.a.x_vol - (self.members.a.x_vol*.07), 4) end
-	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = math.trunc(self.members.a.y_vol - (self.members.a.y_vol*.07), 4) end
-	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = math.trunc(self.members.b.x_vol - (self.members.b.x_vol*.07), 4) end
-	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = math.trunc(self.members.b.y_vol - (self.members.b.y_vol*.07), 4) end
+	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = math.trunc(self.members.a.x_vol - (self.members.a.x_vol*.08), 4) end
+	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = math.trunc(self.members.a.y_vol - (self.members.a.y_vol*.08), 4) end
+	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = math.trunc(self.members.b.x_vol - (self.members.b.x_vol*.08), 4) end
+	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = math.trunc(self.members.b.y_vol - (self.members.b.y_vol*.08), 4) end
 
 	if math.abs(self.members.a.x_vol) < .001 then self.members.a.x_vol = 0 end
 	if math.abs(self.members.a.y_vol) < .001 then self.members.a.y_vol = 0 end
@@ -558,7 +568,12 @@ function player:update()
 
 end
 
-function player:keyreleased(k)
+function player:keypressed(k)
+	if k == self.members.a.keys.tether then
+		wave.make(self.members.a.x,self.members.a.y,15,1,104,149,255,128)
+	elseif k == self.members.b.keys.tether then
+		wave.make(self.members.b.x,self.members.b.y,15,1,104,149,255,128)
+	end
 end
 
 function player:giveHealth(t, h)

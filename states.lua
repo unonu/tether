@@ -165,17 +165,17 @@ end
 function mainmenu:keypressed(k)
 	if k ~= 'escape' then -- This is sorta messy
 		if self.ready then
-			if k == 'w' or k == 'i' then
+			if k == 'w' or k == 'up' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
 					-- screen:shake(.15,2)
 				end
-			elseif k == 's' or k == 'k' then
+			elseif k == 's' or k == 'down' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
 					-- screen:shake(.15,2)
 				end
-			elseif k == 'return' or k =='lshift' then
+			elseif k == 'return' or k =='lshift' or k == 'kp0' then
 				if self.menu[self.menuIndex] == 'Arcade' then
 					love.graphics.clear()
 					-- screen:shake(.15,2)
@@ -271,17 +271,17 @@ end
 function options:keypressed(k)
 	if k ~= 'escape' then
 	self.ready = true
-		if k == 'w' or k == 'i' then
+		if k == 'w' or k == 'up' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
 				-- screen:shake(.15,2)
 			end
-		elseif k == 's' or k == 'k' then
+		elseif k == 's' or k == 'down' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
 				-- screen:shake(.15,2)
 			end
-		elseif k == 'return' or k =='lshift' then
+		elseif k == 'return' or k =='lshift' or k == 'kp0' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
 				screen.toggleFullscreen()
 			elseif self.menu[self.menuIndex] == 'Music' then
@@ -318,6 +318,7 @@ function game.make(name1,name2)
 	g.bullets = {}
 	g.explosions = {}
 	g.round = 1
+	g.objective = nil
 	g.boss = false
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
@@ -377,13 +378,13 @@ if self.pause == 1 then
 	love.graphics.setFont(fonts.medium)
 	love.graphics.print("ROUND",screen:getCentre('x')-(fonts.roundNumbers:getWidth(self.round)/2)-22,
 		screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round)/2),-math.pi/2)
-	if not self.boss then
+	if self.objective then
+		love.graphics.print(self.objective,screen:getCentre('x')-fonts.medium:getWidth(self.objective)/2,
+			screen:getCentre('y')+4+(fonts.roundNumbers:getHeight(self.round))/2)
+	else
 		local remainder = self.quota-math.fmod(self.stats.rocksRound,self.quota)
 		love.graphics.print(remainder.." LEFT",screen:getCentre('x')-fonts.medium:getWidth(remainder.." LEFT")/2,
 			screen:getCentre('y')+4+(fonts.roundNumbers:getHeight(self.round))/2)
-	else
-		love.graphics.print("BOSS",screen:getCentre('x')-fonts.medium:getWidth("BOSS")/2,
-			screen:getCentre('y')+(fonts.roundNumbers:getHeight(self.round))/2)
 	end
 	--time
 	local time = self.time.hours..':'..self.time.minutes..':'..self.time.seconds
@@ -470,10 +471,10 @@ elseif self.pause == 3 then
 	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
 		love.graphics.setColor(255,255,255)
 		love.graphics.setFont(fonts.large)
-	local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
-		if _x ~= 0 or _y ~= 0 then
-			screen:aberate(.1,math.rsign(1))
-		end
+	-- local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
+	-- 	if _x ~= 0 or _y ~= 0 then
+	-- 		screen:aberate(.1,math.rsign(1))
+	-- 	end
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
 			love.graphics.setColor(255,255,255)
@@ -575,6 +576,7 @@ end
 
 function game:keypressed(k)
 if self.pause == 1 then
+	self.player:keypressed(k)
 	if k == 'x' then
 		self.stats.rocks = self.stats.rocks+self.quota
 		self.stats.rocksRound = self.quota
@@ -609,12 +611,12 @@ elseif self.pause == 3 then
 	if k == 'w' or k == 'i' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
-			-- screen:shake(.15,2)
+			screen:shake(.15,2,false)
 		end
 	elseif k == 's' or k == 'k' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
-			-- screen:shake(.15,2)
+			screen:shake(.15,2,false)
 		end
 	elseif k == 'return' or k =='lshift' then
 		if self.menu[self.menuIndex] == 'Continue' then
@@ -644,6 +646,7 @@ heaven.__index = heaven
 function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 	love.graphics.setFont(fonts.large)
 	love.audio.stop()
+	love.keyboard.setKeyRepeat(true)
 	messages:clear()
 	local h = {}
 	setmetatable(h,heaven)
@@ -902,6 +905,7 @@ if not self.confirm then
 		love.filesystem.append(self.record,toAppend)
 		self.scores = loadScores(self.record)
 		table.sort(self.scores,sortScoresCombo)
+		love.keyboard.setKeyRepeat(false)
 	end
 else
 	if self.timers.winnerFlyin > -1.5 then self.timers.winnerFlyin = self.timers.winnerFlyin - .1 end

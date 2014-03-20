@@ -117,12 +117,22 @@ end
 
 screen = {}
 screen.__index = screen
-function screen.init(w,h,f)
+function screen.init(w,h,f,v,a)
 	local s = {}
 	setmetatable(s,screen)
 	s.width = w or 1280
 	s.height = h or 720
-	love.window.setMode(s.width,s.height)
+	s.flags = {fullscreen = f or false,
+				fullscreentype = "desktop",
+				vsync = v or "false",
+				fsaa = a or 0,
+				resizable = false,
+				borderless = true,
+				centered = true,
+				display = 1,
+				minwidth = 16,
+				minheight = 9,}
+	love.window.setMode(s.width,s.height,s.flags)
 	s.images = {}
 		s.images.flash = res.load("image","flash.png")
 		s.images.background = res.load("image","background.png")

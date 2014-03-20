@@ -52,11 +52,12 @@ function drawScores(scores,limit)
 		else
 			love.graphics.setColor(128,128,128,128)
 		end
-		love.graphics.rectangle("fill",0,(i-1)*58,screen.width,58)
-		love.graphics.setColor(0,0,0,128)
-		love.graphics.line(0,(i-1)*58,screen.width,(i-1)*58)
-		love.graphics.print(i..'. '..s.name,4,(i-1)*58)
-		love.graphics.print(s.winnerPoints+s.loserPoints,272,(i-1)*58)
+		love.graphics.rectangle("fill",0,(i-1)*40,screen.width,40)
+		love.graphics.setColor(255,255,255,128)
+		love.graphics.line(0,(i-1)*40,screen.width,(i-1)*40)
+		love.graphics.setColor(255,255,255)
+		love.graphics.print(i..'. '..s.name,4,(i-1)*40)
+		love.graphics.print(s.winnerPoints+s.loserPoints,272,(i-1)*40)
 		if i == (limit or 100) then break end
 	end
 end

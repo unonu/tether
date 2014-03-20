@@ -23,7 +23,7 @@ function love.load()
 	love.graphics.setFont(fonts.small)
 	love.audio.setVolume(0) -- 0.-1.
 	res.init()
-	screen.init(1024,720)
+	screen.init(1280,720,false,false,2)
 	print(ansicolors.yellow..'Done Loading. Took '..(love.timer.getTime()-stime)..' seconds to load.\n'..ansicolors.clear)
 
 	state = intro.make(80)
@@ -48,8 +48,11 @@ function love.draw()
 	screen:drawFlash()
 	
 	if screen.abberating then screen:releaseChromaticFilter() end
-	screen:capFPS()
-	--love.graphics.print(love.timer.getFPS(),0,0)
+
+	-- screen:capFPS()
+	-- love.graphics.print(love.timer.getFPS(),0,0)
+	-- local frames = love.timer.getFPS()
+	-- if frames < 24 then print("Dropping frames fast:"..frames) end
 end
 
 function love.keypressed(k)

@@ -100,9 +100,11 @@ function sentry:draw(rockRot,a)
 		love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
 		self._shield = self.shield
 	else
-		love.graphics.setColor(255,0,0,math.min(a,math.random(164,200))*self.shield)
+		love.graphics.setColor(255,0,0,math.min(a,math.random(128,164))*self.shield)
 	end
 	love.graphics.circle("fill",self.x,self.y,34,36)
+		love.graphics.setColor(0,0,0,math.min(a,128))
+	love.graphics.circle("line",self.x,self.y,32,36)
 		love.graphics.setColor(255,255,255,a)
 	love.graphics.draw(self.image,res.quads["sentry1"],self.x,self.y,rockRot,-1,1,17,17)
 		-- love.graphics.setColor(255,0,0,a)
@@ -142,9 +144,9 @@ function dash.make()
 	end
 
 	e.r = math.random(0,2)*math.pi
-	e.timer = 50
+	e.timer = 16
 	e.locked = false
-	e.r = 8
+	e.r = 16
 	e.rot = 0
 	e.hp = 2
 	e.dir = math.rsign()
@@ -153,7 +155,8 @@ function dash.make()
 	e.drop = true
 	e.bounty = math.random(8,12)
 	e.class = 'dash'
-	e.image = res.load("sprite","sentry.png")
+	e.image = res.load("sprite","dash.png")
+	e.grad = res.load("image","healthbar.png")
 	e.aimgle = math.pi/2
 	e.v = 0
 	e.collideable = true
@@ -177,7 +180,7 @@ function dash:update( dt )
 	if self.locked then
 		if self.v == 0 then self.timer = self.timer -1 end
 		if self.timer < 0 then
-			self.timer = 50
+			self.timer = 16
 			self.v = 32
 		end
 		if self.v > 0 then
@@ -191,22 +194,27 @@ function dash:update( dt )
 		end
 		if self.aimgle > 0 then self.aimgle= self.aimgle-(math.pi/24) end
 	end
-	for i,r in ipairs(state.rocks) do
-		if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
-			r.hp = 0
-		end
-	end
+	-- for i,r in ipairs(state.rocks) do
+	-- 	if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
+	-- 		r.hp = 0
+	-- 	end
+	-- end
 end
 
 function dash:draw()
-	love.graphics.setColor(255,255,255,64)
-	love.graphics.arc("fill",self.x,self.y,-600,self.r-(math.pi/48),self.r+(math.pi/48),6)
-	love.graphics.setColor(255,0,0)
-	love.graphics.arc("fill",self.x,self.y,24,self.r-(math.pi/12),self.r+(math.pi/12),2)
 	if self.locked then
-		love.graphics.line(self.x,self.y,self.x+math.cos(self.r+self.aimgle)*-600,self.y+math.sin(self.r+self.aimgle)*-600)
-		love.graphics.line(self.x,self.y,self.x+math.cos(self.r-self.aimgle)*-600,self.y+math.sin(self.r-self.aimgle)*-600)
+		love.graphics.setColor(255,255,255,32)
+		love.graphics.arc("fill",self.x,self.y,-600,self.r-self.aimgle,self.r+self.aimgle,6)
+		love.graphics.setColor(255,0,0)
+		love.graphics.draw(self.grad,self.x,self.y,self.r+self.aimgle+math.pi/2,4,32,0)
+		love.graphics.draw(self.grad,self.x,self.y,self.r-self.aimgle+math.pi/2,4,32,1)
+		
+	else
+		love.graphics.setColor(255,255,255,32)
+		love.graphics.arc("fill",self.x,self.y,-600,self.r-(math.pi/48),self.r+(math.pi/48),6)
 	end
+	love.graphics.setColor(255,0,0)
+	love.graphics.draw(self.image,self.x,self.y,self.r-math.pi/2,1,1,10,24)
 end
 
 keeper = {}
