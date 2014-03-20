@@ -24,12 +24,12 @@ function rounder()
 			state.rocks = {}
 			state.enemies = {}
 			screen:flash(1,20,{255,255,255},"full")
-			table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),256))
+			table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),512))
 			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",3,{255,255,255},'boomLarge')
 			state.objective = "BOSS"
 		elseif state.round == 11 then
 			state.objective = nil
-			state.quota = 8
+			state.quota = 6
 			state.boss = false
 			state.grabPlayer = false
 			state.player:giveHealth('both',16)

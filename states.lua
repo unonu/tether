@@ -311,7 +311,7 @@ function game.make(name1,name2)
 	end
 	g.grabPlayer = false
 	g.distance = 100
-	g.quota = 6
+	g.quota = 4
 	g.points = 0
 	g.crystals = {}
 	g.enemies = {}
@@ -426,21 +426,21 @@ if self.pause == 1 then
 
 		--items
 
-		love.graphics.push()
-		love.graphics.translate(-10,screen.height-116)
-		for i=1,5 do
-			if self.player.members.a.items[i] then
-				love.graphics.setColor(255,255,255)
-			else
-				love.graphics.setColor(255,255,255,128)
-			end
-			if i < 3 then
-				love.graphics.draw(self.res.itemRing,i*58,0)
-			else
-				love.graphics.draw(self.res.itemRing,(i*58)-145,58)
-			end
-		end
-		love.graphics.pop()
+		-- love.graphics.push()
+		-- love.graphics.translate(-10,screen.height-116)
+		-- for i=1,5 do
+		-- 	if self.player.members.a.items[i] then
+		-- 		love.graphics.setColor(255,255,255)
+		-- 	else
+		-- 		love.graphics.setColor(255,255,255,128)
+		-- 	end
+		-- 	if i < 3 then
+		-- 		love.graphics.draw(self.res.itemRing,i*58,0)
+		-- 	else
+		-- 		love.graphics.draw(self.res.itemRing,(i*58)-145,58)
+		-- 	end
+		-- end
+		-- love.graphics.pop()
 
 elseif self.pause == 2 then
 	local xy = screen:getCentre()

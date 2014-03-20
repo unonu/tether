@@ -13,10 +13,10 @@ function rock.make(x,y,s,p)
 	r.y_vol = 0
 	r.r = 24
 	r.s = math.random(1,2)/10
-	r._hp = 48
+	r._hp = 36
 	if s and math.random(1,(p or 1))==1 then
 		r.sentry = sentry.make(x,y)
-		r._hp = 64
+		r._hp = 48
 		r.sentryNum = nil
 	end
 	r.hp = r._hp

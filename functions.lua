@@ -158,7 +158,6 @@ function screen.init(w,h,f,v,a)
 	s.flashSpeed = 1
 	s.background = {255,255,255}
 	s.fps = 1/60
-	s.fullscreen = f or false
 	table.sort(s.modes, function(a, b) return a.width*a.height < b.width*b.height end)
 	s.chromeWhenShake = true
 	
