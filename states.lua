@@ -359,6 +359,8 @@ function game.make(name1,name2)
 				minutes = 0,
 				seconds = 0,
 			}
+
+	g.timers = {intro = {0,1,"state.timers.intro[1] = (state.timers.intro[1] + (state.timers.intro[2]-state.timers.intro[1])/24)"}}
 	
 	return g
 end
@@ -368,6 +370,10 @@ function game:draw()
 	love.graphics.draw(self.res.background,0,0,0,screen.width/1280,screen.height/720)
 
 if self.pause == 1 then
+	love.graphics.push()
+	-- love.graphics.translate((screen.width/2)-(screen.width*self.timers.intro[1])/2,0)
+	love.graphics.translate((screen.width/2)*(1-self.timers.intro[1]),(screen.height/2)*(1-self.timers.intro[1]))
+	love.graphics.scale(self.timers.intro[1],self.timers.intro[1])
 
 	--round
 	love.graphics.setColor(255,255,255,200)
@@ -440,7 +446,7 @@ if self.pause == 1 then
 		-- 		love.graphics.draw(self.res.itemRing,(i*58)-145,58)
 		-- 	end
 		-- end
-		-- love.graphics.pop()
+		love.graphics.pop()
 
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
@@ -487,6 +493,14 @@ end
 end
 
 function game:update(dt)
+	for i,t in pairs(self.timers) do
+		if type(t[3]) == "number" then
+			t[1] = math.min(t[1]+t[3],t[2])
+		elseif type(t[3]) == "string" then
+			assert(loadstring(t[3]))()
+		end	
+	end
+
 if self.pause == 1 then
 	self.time.elapsed = love.timer.getTime()-self.time.startTime
 	self.time.seconds = math.floor(self.time.elapsed)-(60*self.time.minutes)-(3600*self.time.hours)
@@ -717,7 +731,8 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 				wY = screen.height,
 				lY = 0,
 				winnerFlyin = 1,
-				loserFlyin = -1,}
+				loserFlyin = -1,
+				pc = {r=0,g=0,b=255,timer = 0},}
 
 	if not love.filesystem.exists("records/highScores.txt") then
 		print("No high scores found. Making")
@@ -803,7 +818,7 @@ elseif self.ready and self.confirm then
 		love.graphics.translate((screen.width/2),8)
 
 		--name
-		love.graphics.setColor(255,255,255)
+		love.graphics.setColor(self.timers.pc.r,self.timers.pc.g,self.timers.pc.b)
 		local tag = findScore(self.scores,#self.scores)..". "..self.name.." "..(self.player.members.a.points + self.player.members.b.points)
 		love.graphics.print(tag,-fonts.large:getWidth(tag)/2,0)
 
@@ -811,7 +826,7 @@ elseif self.ready and self.confirm then
 
 		love.graphics.push()
 		love.graphics.translate(0,62)
-	drawScores(self.scores,10)
+	drawScores(self.scores,20,self.timers.pc.r,self.timers.pc.g,self.timers.pc.b)
 		love.graphics.pop()
 
 	love.graphics.setColor(0,0,0,220)
@@ -827,7 +842,18 @@ elseif self.ready and self.confirm then
 		love.graphics.print(m,0+x,screen.height-34)
 		x = x+love.graphics.getFont():getWidth(m)+24
 	end
-	
+	if self.timers.pc.r > 0 and self.timers.pc.g < 255 and self.timers.pc.b == 0 then
+		self.timers.pc.r = self.timers.pc.r -1
+		self.timers.pc.g = self.timers.pc.g +1
+	elseif self.timers.pc.r == 0 and self.timers.pc.g > 0 and self.timers.pc.b < 255 then
+		self.timers.pc.g = self.timers.pc.g -1
+		self.timers.pc.b = self.timers.pc.b +1
+	elseif self.timers.pc.r < 255 and self.timers.pc.g == 0 and self.timers.pc.b > 0 then
+		self.timers.pc.b = self.timers.pc.b -1
+		self.timers.pc.r = self.timers.pc.r +1
+	end
+	if self.timers.pc.timer < 30 then self.timers.pc.timer = self.timers.pc.timer +1 end
+
 elseif not self.ready then
 
 	local frac = (100-self.timers.gameFade[1])/100
@@ -1076,7 +1102,8 @@ function credits:update(dt)
 
 	local i = math.random()
 	if math.random(0,40) == 40 then
-		local o = {res.load("sprite",self.files[math.random(1,#self.files)]),math.random(0,screen.width),0,i,i/2,0,i*math.pi/100,math.random(64,196)}
+		-- makes random sprites: image,x,y,fall speed,scale,rotation,direction/speed,alpha
+		local o = {res.load("sprite",self.files[math.random(1,#self.files)]),math.random(0,screen.width),0,i,i/2,0,i*math.pi/100*math.rsign(),math.random(64,196)}
 		o[3] = -o[1]:getHeight()
 		table.insert(self.particles,o)
 	end

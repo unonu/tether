@@ -66,14 +66,14 @@ function drone:update(dt)
 	if self.fire == 0 then
 		local closest = state.player:closest(self.x,self.y)
 		local x,y = self.x,self.y
-		bullet.make(x,y,math.atan2(y-closest.y,x-closest.x),6,'enemy')
+		bullet.make(x,y,math.atan2(y-closest.y,x-closest.x),6,0,'enemy')
 	end
 end
 
 sentry = {}
 sentry.__index = sentry
 
-function sentry.make(x,y)
+function sentry.make(x,y,p,s)
 	local e = {}
 	setmetatable(e,sentry)
 	e.x,e.y = x,y
@@ -91,6 +91,12 @@ function sentry.make(x,y)
 	e.image = res.load("sprite","sentry.png")
 	e.shield = 1
 	e._shield = 1
+	e.parent = p or 1
+	e.s = s or 1
+	e.r = e.r*e.s
+
+	e.birth = 0
+	e.intro = 0
 	
 	return e
 end
@@ -99,32 +105,44 @@ function sentry:draw(rockRot,a)
 	if self.shield ~= self._shield then
 		love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
 		self._shield = self.shield
+	elseif self.birth > 1 and self.birth < 2 then
+		love.graphics.setColor(255,0,0,255*(1-self.birth))
 	else
 		love.graphics.setColor(255,0,0,math.min(a,math.random(128,164))*self.shield)
 	end
-	love.graphics.circle("fill",self.x,self.y,34,36)
-		love.graphics.setColor(0,0,0,math.min(a,128))
-	love.graphics.circle("line",self.x,self.y,32,36)
+	if self.birth > 1 then
+		love.graphics.circle("fill",self.x,self.y,34*self.s,36)
+			love.graphics.setColor(0,0,0,math.min(a,128))
+	end
+	love.graphics.setLineWidth(4*self.s)
+	love.graphics.curve(self.x,self.y,32*self.s,0,math.pi*self.intro,36)
 		love.graphics.setColor(255,255,255,a)
-	love.graphics.draw(self.image,res.quads["sentry1"],self.x,self.y,rockRot,-1,1,17,17)
-		-- love.graphics.setColor(255,0,0,a)
-	love.graphics.draw(self.image,res.quads["sentry2"],self.x,self.y,self.rot-math.pi,-1,1,12,8)
+	local sf = math.min(1,self.birth)*self.s
+	love.graphics.draw(self.image,res.quads["sentry1"],self.x,self.y,rockRot,-1*sf,1*sf,17,17)
+	love.graphics.draw(self.image,res.quads["sentry2"],self.x,self.y,self.rot-math.pi,-1*sf,1*sf,12,8)
 end
 
-function sentry:update(dt)
+function sentry:update(dt,shoot)
+	if self.birth < 1 then self.birth = math.min(1,self.birth + .02) 
+	elseif self.intro < 2 then self.intro = math.min(2,self.intro + .04)
+	elseif self.birth < self.intro then self.birth = math.min(self.intro,self.birth + .02) end
+
 	if self.hp <= 0 then
 		state.points = state.points + 1
 	end
 
 	self.shield = self.hp/self._hp
 
+	if not shoot then
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
 	if self.fire == 0 then
-		local closest = state.player:closest(self.x,self.y)
-		local x,y = self.x+math.cos(self.rot)*self.orbit,self.y+math.sin(self.rot)*self.orbit
-		bullet.make(x,y,math.atan2(y-closest.y,x-closest.x),4,'enemy')
+		-- local closest = state.player:closest(self.x,self.y)
+		-- bullet.make(self.x,self.y,math.atan2(self.y-closest.y,self.x-closest.x),4,30,"sentry")
+		bullet.make(self.x,self.y,self.rot,4,30,"sentry")
 	end
+	end
+
 	self.rot = self.rot + (math.pi/128)*self.dir
 end
 
@@ -165,9 +183,7 @@ function dash.make()
 	return e
 end
 
-function dash:update( dt )
-	--
-	-- print(self.r,self.x,self.y)
+function dash:update(dt)
 	if not self.locked then
 		self.r = math.round(math.loop(-math.pi,self.r-(math.pi/256),math.pi),2)
 	end
@@ -194,11 +210,6 @@ function dash:update( dt )
 		end
 		if self.aimgle > 0 then self.aimgle= self.aimgle-(math.pi/24) end
 	end
-	-- for i,r in ipairs(state.rocks) do
-	-- 	if self.x >= r.x-r.r and self.x <= r.x+r.r and self.y >= r.y-r.r and self.y <= r.y+r.r then
-	-- 		r.hp = 0
-	-- 	end
-	-- end
 end
 
 function dash:draw()
@@ -251,6 +262,91 @@ undead = {}
 --------------------------------------------------------------
 -- BOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSSBOSS --
 --------------------------------------------------------------
+
+sentinel = {}
+sentinel.__index = sentinel
+
+function sentinel.make()
+	local s = {}
+	setmetatable(s,sentinel)
+	s.core = nil
+	s.rot = 0
+	s.x,s.y = unpack(screen:getCentre())
+	s.members = {{nil,128,0},{nil,0,-128},{nil,-128,0},{nil,0,128}}
+	s.hp = 24
+	s.drop = false
+	s.kill = false
+
+	s.timers = {intro = 0,
+				arm1Intro = 0,
+				arm2Intro = 0,
+				arm3Intro = 0,
+				arm4Intro = 0,}
+
+	return s
+end
+
+function sentinel:draw()
+	for i,m in ipairs(self.members) do
+		if m[1] then 
+			m[1]:draw(0,255)
+		end
+	end
+
+	if self.core then
+		self.core:draw(0,255)
+	end
+	love.graphics.print(self.timers.intro,self.x,self.y)
+	
+end
+
+function sentinel:update(dt)
+	if self.timers.intro < 600 then
+		if self.timers.intro == 0 then
+			self.core = sentry.make(self.x,self.y,-1,3)
+		end
+		if self.timers.intro == 100 then
+			self.members[1][1] = sentry.make(self.x,self.y,-1,1)
+		elseif self.timers.arm1Intro < 1 then
+			self.timers.arm1Intro = self.timers.arm1Intro + .01
+		end
+		if self.timers.intro == 200 then
+			self.members[2][1] = sentry.make(self.x,self.y,-1,1)
+		elseif self.timers.arm2Intro < 1 then
+			self.timers.arm2Intro = self.timers.arm2Intro + .01
+		end
+		if self.timers.intro == 300 then
+			self.members[3][1] = sentry.make(self.x,self.y,-1,1)
+		elseif self.timers.arm3Intro < 1 then
+			self.timers.arm3Intro = self.timers.arm3Intro + .01
+		end
+		if self.timers.intro == 400 then
+			self.members[4][1] = sentry.make(self.x,self.y,-1,1)
+		elseif self.timers.arm4Intro < 1 then
+			self.timers.arm4Intro = self.timers.arm4Intro + .01
+		end
+		self.timers.intro = self.timers.intro+1
+	else
+		state.grabPlayer = false
+		self.rot = self.rot + math.pi/128
+	end
+	------------------------------------------------------------------
+	------------------------------------------------------------------
+	if self.core then
+		self.core.x,self.core.y = self.x,self.y
+		self.core:update(dt,true)
+	end
+	for i,m in ipairs(self.members) do
+		if m[1] then
+			m[1].x,m[1].y = self.x+(m[2]*(self.timers["arm"..i.."Intro"])*math.cos(self.rot)),self.y+(m[3]*(self.timers["arm"..i.."Intro"])*math.sin(self.rot))
+			m[1]:update(dt,true)
+			if m[1].hp > 0 then
+				self.core.hp = self.core._hp
+			end
+		end
+	end
+end
+
 
 torrent = {}
 torrent.__index = torrent
@@ -334,7 +430,7 @@ if self.timers.intro == 0 then
 	end
 	if self.timers.pause > 0 and self.timers.fire > 0 then
 		if math.fmod(self.timers.fire,4) == 0 then
-			bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,'enemy')
+			bullet.make(self.x,self.y,math.atan2(self.y-state.player:closest(self.x,self.y).y,self.x-state.player:closest(self.x,self.y).x),4,4,'enemy')
 		end
 		self.timers.fire = self.timers.fire - 1
 --	else

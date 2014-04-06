@@ -15,7 +15,7 @@ function rock.make(x,y,s,p)
 	r.s = math.random(1,2)/10
 	r._hp = 36
 	if s and math.random(1,(p or 1))==1 then
-		r.sentry = sentry.make(x,y)
+		r.sentry = sentry.make(x,y,r.id)
 		r._hp = 48
 		r.sentryNum = nil
 	end
@@ -64,7 +64,7 @@ end
 
 function rock:update(dt)
 	for i,b in ipairs(state.bullets) do
-		if b.x >= self.x-self.r and b.x <= self.x+self.r and b.y >= self.y-self.r and b.y <= self.y+self.r then
+		if b.life > 10 and b.x >= self.x-self.r and b.x <= self.x+self.r and b.y >= self.y-self.r and b.y <= self.y+self.r then
 --			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 			table.insert(self.forces,{-b.s/100,b.d})
 			table.remove(state.bullets,i)
@@ -126,7 +126,7 @@ function rock:update(dt)
 		self.p:start()
 	elseif self.hp <= 0 then
 		cloud.make(self.x,self.y,170,120,85,128)
-		wave.make(self.x,self.y,200,.8,255,255,255,64)
+		wave.make(self.x,self.y,150,2,255,255,255,48)
 		love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
 		screen:shake(1,8,false)
 		state.points = state.points + 1

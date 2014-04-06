@@ -111,3 +111,27 @@ function wave.make(x,y,l,s,r,g,b,a)
  
 	table.insert(particles,w)
 end
+
+ring = {}
+ring.__index = ring
+function ring.make(x,y,l,s,r,g,b,a)
+	local w = {}
+	setmetatable(w,ring)
+	w.x,w.y = x,y
+	w._life = l or -1
+	w.life = l or -1
+	w.speed = s or 1
+	w.scale = 0
+	-- w.r = 0
+	w.d = math.rsign()
+	w.isActive = function (self) return self.life > 0 end
+	w.color = {r or 255,g or 255,b or 255,a or 255}
+	w.image = res.load("sprite","ring.png")
+	ring.draw = function (self)
+		love.graphics.setColor(self.color[1],self.color[2],self.color[3],(self.color[4]*self.life/self._life));
+		 love.graphics.draw(self.image,self.x,self.y,0,self.scale,self.scale,32,32) end
+	ring.update = function (self,dt) self.scale = self.scale + .1*self.speed; self.life = self.life - 1 end
+	ring.start = function (self) end
+ 
+	table.insert(particles,w)
+end

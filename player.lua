@@ -20,9 +20,9 @@ function player.make(number)
 			speed = 1.5, 
 			_points = 0, 
 			points = 0, 
-			stats = {hp = 10, energy = 64, deaths = 0}, 
+			stats = {hp = 10, energy = 64, deaths = 0, speed = 1.5}, 
 			hp = 10, 
-			_hp = 10,
+			_hp = 0,
 			immunity = 0, 
 			lives = 2,
 			_lives = 2,
@@ -52,9 +52,9 @@ function player.make(number)
 			speed = 1.5, 
 			_points = 0, 
 			points = 0, 
-			stats = {hp = 10, energy = 64, deaths = 0}, 
+			stats = {hp = 10, energy = 64, deaths = 0, speed = 1.5}, 
 			hp = 10, 
-			_hp = 10, 
+			_hp = 0, 
 			immunity = 0, 
 			lives = 2,
 			_lives = 2,
@@ -102,6 +102,7 @@ function player.make(number)
 	p.image = res.load("sprite", "player.png")
 	p.imageLarge = res.load("sprite", "playerLarge.png")
 	p.tetherImage = res.load("image","tether.png")
+	p.gradient = res.load("image","healthbar.png")
 	return p
 end
 
@@ -129,20 +130,26 @@ end
 
 function player:drawMember(member, x, y, s)
 	if member.spawned then
+		local otherRot = math.atan2(member.y-self.members[member.other].y,member.x-self.members[member.other].x)+(math.pi/2)
 		--hp
-		love.graphics.setColor(255,255,255,64)
-		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
-		love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
-		love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
-		--hp
-		-- love.graphics.setLineWidth(8)
 		-- love.graphics.setColor(255,255,255,64)
-		-- love.graphics.curve("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),28)
+		-- love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
 		-- love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
-		-- love.graphics.curve("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),28)
+		-- love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
+		--hp
+		love.graphics.setLineWidth(8)
+		love.graphics.setColor(255,255,255,64)
+		love.graphics.curve(member.x,member.y,52,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
+		love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
+		love.graphics.curve(member.x,member.y,52,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
 
 		--energy
-		love.graphics.setColor(0,0,255,64)
+		if member.tether then
+			love.graphics.setColor(230,230,255,math.random(200,255))
+		else
+			love.graphics.setColor(96,96,255,96)
+		end
+		if member.energy < member.stats.energy/4 then love.graphics.setColor(255,0,0,math.random(200,255)) end
 		love.graphics.setLineWidth(4)
 		love.graphics.curve(member.x,member.y,72,0,math.pi*(member.energy/member.stats.energy),member.stats.energy)
 
@@ -159,6 +166,11 @@ function player:drawMember(member, x, y, s)
 				love.graphics.draw(self.image, res.quads["player3"], x or member.x, y or member.y, member.rot, 1, 1, 24, 24)
 			end
 		else
+			if member.tether then
+				love.graphics.setColor(14, 59, 255, 128*(60-member.timers.spawn)/60)
+				love.graphics.draw(self.gradient,member.x,member.y,otherRot,6,12)
+			end
+
 			love.graphics.setColor(0, 0, 0, 128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge, res.quads["playerLarge3"], x or member.x, y or member.y, member.rot, 1, 1, 144, 144)
@@ -184,6 +196,11 @@ function player:drawMember(member, x, y, s)
 				love.graphics.draw(self.image, res.quads["player4"], x or member.x, y or member.y, member.rot, 1, 1, 24, 24)
 			end
 		else
+			if member.tether then
+				love.graphics.setColor(14, 59, 255, 128*(60-member.timers.spawn)/60)
+				love.graphics.draw(self.gradient,member.x,member.y,otherRot,6,12)
+			end
+
 			love.graphics.setColor(0, 0, 0, 128*(60-member.timers.spawn)/60)
 			if s then
 				love.graphics.draw(self.imageLarge, res.quads["playerLarge4"], x or member.x, y or member.y, member.rot, 1, 1, 144, 144)
@@ -306,22 +323,22 @@ if not state.grabPlayer then
 	end
 
 	if love.keyboard.isDown(member.keys.right) and not love.keyboard.isDown(member.keys.left, member.keys.up, member.keys.down) then 
-		member.x_vol = math.round(member.x_vol +.4*member.speed, 4) end
+		member.x_vol = math.max(member.x_vol +.6*member.speed, -.3*member.x_vol +.3*member.speed) end
 	if love.keyboard.isDown(member.keys.left) and not love.keyboard.isDown(member.keys.right, member.keys.up, member.keys.down) then 
-		member.x_vol = math.round(member.x_vol -.4*member.speed, 4) end
+		member.x_vol = math.min(member.x_vol -.6*member.speed, -.3*member.x_vol -.3*member.speed) end
 	if love.keyboard.isDown(member.keys.down) and not love.keyboard.isDown(member.keys.up, member.keys.left, member.keys.right) then 
-		member.y_vol = math.round(member.y_vol +.4*member.speed, 4) end
+		member.y_vol = math.max(member.y_vol +.6*member.speed, -.3*member.y_vol +.3*member.speed) end
 	if love.keyboard.isDown(member.keys.up) and not love.keyboard.isDown(member.keys.down, member.keys.left, member.keys.right) then 
-		member.y_vol = math.round(member.y_vol -.4*member.speed, 4) end
+		member.y_vol = math.min(member.y_vol -.6*member.speed, -.3*member.y_vol -.3*member.speed) end
 
 	if love.keyboard.isDown(member.keys.right) and love.keyboard.isDown(member.keys.up, member.keys.down) then 
-		member.x_vol = math.round(member.x_vol +.34*member.speed, 4) end
+		member.x_vol = math.round(member.x_vol +.42*member.speed, 4) end
 	if love.keyboard.isDown(member.keys.left) and love.keyboard.isDown(member.keys.up, member.keys.down) then 
-		member.x_vol = math.round(member.x_vol -.34*member.speed, 4) end
+		member.x_vol = math.round(member.x_vol -.42*member.speed, 4) end
 	if love.keyboard.isDown(member.keys.down) and love.keyboard.isDown(member.keys.left, member.keys.right) then 
-		member.y_vol = math.round(member.y_vol +.34*member.speed, 4) end	
+		member.y_vol = math.round(member.y_vol +.42*member.speed, 4) end	
 	if love.keyboard.isDown(member.keys.up) and love.keyboard.isDown(member.keys.left, member.keys.right) then 
-		member.y_vol = math.round(member.y_vol -.34*member.speed, 4) end
+		member.y_vol = math.round(member.y_vol -.42*member.speed, 4) end
 	-- 
 	if member.x < 0 then self:push(member.name, -member.x/2) end
 	if member.x > screen.width then self:push(member.name, (screen.width-member.x)/2) end
@@ -339,11 +356,13 @@ if not state.grabPlayer then
 	end
 
 ------------------------------------------------------>
+	member.speed = member.stats.speed
 	if member.tether then
 		if self.distance > self.tetherDistance then
-			self:push(member.other, member.x-self.members[member.other].x, member.y-self.members[member.other].y, math.round(48/math.abs(self.distance), 2))
+			self:push(member.other, member.x-self.members[member.other].x, member.y-self.members[member.other].y, math.round(12/math.abs(self.distance), 2))
 			self:push(member.name, self.members[member.other].x-member.x, self.members[member.other].y-member.y, math.round(32/math.abs(self.distance), 2))
 		end
+		member.speed = member.stats.speed/2
 	end
 end
 ------------------------------------------------------>
@@ -477,7 +496,7 @@ function player:update()
 
 	for i, b in ipairs(state.bullets) do
 		local remove = false
-		if self.members.a.immunity == 0 and b.owner == 'enemy' and b.x >= self.members.a.x-8 and b.x <= self.members.a.x+8 and b.y >= self.members.a.y-8 and b.y <= self.members.a.y+8 then
+		if self.members.a.immunity == 0 and b.owner ~= 'player' and b.x >= self.members.a.x-8 and b.x <= self.members.a.x+8 and b.y >= self.members.a.y-8 and b.y <= self.members.a.y+8 then
 			self.members.a.hp = self.members.a.hp - 1
 			self.members.a.immunity = 4
 			-- self.members.a.lapse = 0
@@ -487,7 +506,7 @@ function player:update()
 			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 			remove = true
 		end
-		if self.members.b.immunity == 0 and b.owner == 'enemy' and b.x >= self.members.b.x-8 and b.x <= self.members.b.x+8 and b.y >= self.members.b.y-8 and b.y <= self.members.b.y+8 then
+		if self.members.b.immunity == 0 and b.owner ~= 'player' and b.x >= self.members.b.x-8 and b.x <= self.members.b.x+8 and b.y >= self.members.b.y-8 and b.y <= self.members.b.y+8 then
 			self.members.b.hp = self.members.b.hp - 1
 			self.members.b.immunity = 4
 			-- self.members.b.lapse = 0
@@ -549,10 +568,10 @@ function player:update()
 	self.members.b.x = self.members.b.x + self.members.b.x_vol
 	self.members.b.y = self.members.b.y + self.members.b.y_vol
 
-	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = math.trunc(self.members.a.x_vol - (self.members.a.x_vol*.08), 4) end
-	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = math.trunc(self.members.a.y_vol - (self.members.a.y_vol*.08), 4) end
-	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = math.trunc(self.members.b.x_vol - (self.members.b.x_vol*.08), 4) end
-	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = math.trunc(self.members.b.y_vol - (self.members.b.y_vol*.08), 4) end
+	if self.members.a.x_vol ~= 0 then self.members.a.x_vol = math.trunc(self.members.a.x_vol - (self.members.a.x_vol*.07), 4) end
+	if self.members.a.y_vol ~= 0 then self.members.a.y_vol = math.trunc(self.members.a.y_vol - (self.members.a.y_vol*.07), 4) end
+	if self.members.b.x_vol ~= 0 then self.members.b.x_vol = math.trunc(self.members.b.x_vol - (self.members.b.x_vol*.07), 4) end
+	if self.members.b.y_vol ~= 0 then self.members.b.y_vol = math.trunc(self.members.b.y_vol - (self.members.b.y_vol*.07), 4) end
 
 	if math.abs(self.members.a.x_vol) < .001 then self.members.a.x_vol = 0 end
 	if math.abs(self.members.a.y_vol) < .001 then self.members.a.y_vol = 0 end
@@ -580,11 +599,11 @@ function player:giveHealth(t, h)
 	if t=='both' then
 		self.members.a.hp = math.min(self.members.a.hp + (h or self.members.a.stats.hp-self.members.a.hp), 16)
 		self.members.b.hp = math.min(self.members.b.hp + (h or self.members.b.stats.hp-self.members.b.hp), 16)
-		messages:new("Health Up!", self.members.a.x, self.members.a.y, 'up', 3, {0, 128, 0})
-		messages:new("Health Up!", self.members.b.x, self.members.b.y, 'up', 3, {0, 128, 0})
+		messages:new("Health Up!", self.members.a.x, self.members.a.y, 'up', 3, {30, 255, 30})
+		messages:new("Health Up!", self.members.b.x, self.members.b.y, 'up', 3, {30, 255, 30})
 	else
 		self.members[t].hp = math.min(self.members[t].hp + (h or self.members[t].stats.hp-self.members[t].hp), 16)
-		messages:new("Health Up!", self.members[t].x, self.members[t].y, 'up', 3, {0, 128, 0})
+		messages:new("Health Up!", self.members[t].x, self.members[t].y, 'up', 3, {30, 255, 30})
 	end
 end
 

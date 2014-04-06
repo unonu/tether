@@ -18,12 +18,12 @@ function love.load()
 	love.window.setIcon(love.image.newImageData('res/sprites/rock1.png'))
 	-------------------------
 	initFS()
-	-- love.mouse.setVisible(false)
+	love.mouse.setVisible(false)
 	fonts = loadFonts()
 	love.graphics.setFont(fonts.small)
 	love.audio.setVolume(0) -- 0.-1.
 	res.init()
-	screen.init(1920,1080,true,false,2)
+	screen.init(1280,720,false,false,0)
 	print(ansicolors.yellow..'Done Loading. Took '..(love.timer.getTime()-stime)..' seconds to load.\n'..ansicolors.clear)
 
 	state = intro.make(80)
