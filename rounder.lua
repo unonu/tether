@@ -1,7 +1,7 @@
 function rounder()
 	local progress = {}
 	--per round
-	progress[1],progress[2] = math.abs(math.modf(state.stats.rocksRound/state.quota))
+	progress[1],progress[2] = math.modf(state.stats.rocksRound/state.quota)
 	if progress[1] == 1 then
 		state.player:givePoints('both',100)
 		state.round = state.round+1
@@ -24,7 +24,8 @@ function rounder()
 			state.rocks = {}
 			state.enemies = {}
 			screen:flash(1,20,{255,255,255},"full")
-			table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),512))
+			-- table.insert(state.enemies,torrent.make(screen:getCentre('x'),screen:getCentre('y'),512))
+			table.insert(state.enemies,sentinel.make())
 			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",3,{255,255,255},'boomLarge')
 			state.objective = "BOSS"
 		elseif state.round == 11 then

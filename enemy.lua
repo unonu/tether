@@ -272,10 +272,11 @@ function sentinel.make()
 	s.core = nil
 	s.rot = 0
 	s.x,s.y = unpack(screen:getCentre())
-	s.members = {{nil,128,0},{nil,0,-128},{nil,-128,0},{nil,0,128}}
-	s.hp = 24
+	s.members = {{nil,128},{nil,128},{nil,128},{nil,128}}
+	s.hp = 256
 	s.drop = false
 	s.kill = false
+	s.r = 12
 
 	s.timers = {intro = 0,
 				arm1Intro = 0,
@@ -301,6 +302,10 @@ function sentinel:draw()
 end
 
 function sentinel:update(dt)
+	if self.core then
+		self.hp = self.core.hp
+	end
+
 	if self.timers.intro < 600 then
 		if self.timers.intro == 0 then
 			self.core = sentry.make(self.x,self.y,-1,3)
@@ -338,7 +343,9 @@ function sentinel:update(dt)
 	end
 	for i,m in ipairs(self.members) do
 		if m[1] then
-			m[1].x,m[1].y = self.x+(m[2]*(self.timers["arm"..i.."Intro"])*math.cos(self.rot)),self.y+(m[3]*(self.timers["arm"..i.."Intro"])*math.sin(self.rot))
+			m[1].x = self.x+m[2]*(self.timers["arm"..i.."Intro"])*math.cos(self.rot+((i-1)*math.pi/2))
+			m[1].y = self.y+m[2]*(self.timers["arm"..i.."Intro"])*math.sin(self.rot+((i-1)*math.pi/2))
+
 			m[1]:update(dt,true)
 			if m[1].hp > 0 then
 				self.core.hp = self.core._hp

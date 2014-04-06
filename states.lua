@@ -199,6 +199,7 @@ function mainmenu:keypressed(k)
 			self.timers.screenR = screen.width
 			self.timers.gameFade = {100,100,100,100,100,100}
 			self.timers.bg = screen.width
+			self.timers.tetherRise = (screen.height/2)-16
 			screen:clearEffects('flash')
 		else
 			love.event.quit()
@@ -402,7 +403,6 @@ if self.pause == 1 then
 	for i,r in ipairs(self.rocks) do
 		r:draw()
 	end
-	
 	for i,c in ipairs(self.crystals) do
 		c:draw()
 	end
@@ -477,10 +477,6 @@ elseif self.pause == 3 then
 	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
 		love.graphics.setColor(255,255,255)
 		love.graphics.setFont(fonts.large)
-	-- local _x,_y = (math.floor(math.random(0,100)/100)*math.random(4,6)),(math.floor(math.random(0,100)/100)*math.random(4,6))
-	-- 	if _x ~= 0 or _y ~= 0 then
-	-- 		screen:aberate(.1,math.rsign(1))
-	-- 	end
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
 			love.graphics.setColor(255,255,255)
@@ -602,13 +598,8 @@ if self.pause == 1 then
 	elseif k == 'M' then
 		love.audio.setVolume(math.abs(love.audio.getVolume()-1))
 	elseif k == 'escape' then
-		print("drew pause canvas")
 		love.graphics.setCanvas(self.canvases.pauseCanvas)
-		-- love.graphics.setColorMask(false,false,false,true)
-			-- love.graphics.setBlendMode("premultiplied")
 			self:draw()
-			-- love.graphics.setBlendMode("alpha")
-		-- love.graphics.setColorMask()
 		love.graphics.setCanvas()
 		self.pause = 3
 		love.audio.pause()
@@ -622,12 +613,12 @@ elseif self.pause == 2 then
 		love.audio.resume()
 	end
 elseif self.pause == 3 then
-	if k == 'w' or k == 'i' then
+	if k == 'w' or k == 'up' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
 			screen:shake(.15,2,false)
 		end
-	elseif k == 's' or k == 'k' then
+	elseif k == 's' or k == 'down' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
 			screen:shake(.15,2,false)
@@ -637,10 +628,10 @@ elseif self.pause == 3 then
 			love.audio.resume()
 			self.pause = 1
 		elseif self.menu[self.menuIndex] == 'Restart' then
-			-- screen:shake(.15,2)
+			screen:shake(.15,2,false)
 			state = game.make()
 		elseif self.menu[self.menuIndex] == 'Exit to Menu' then
-			-- screen:shake(.15,2)
+			screen:shake(.15,2,false)
 			state = mainmenu.make(true)
 		elseif self.menu[self.menuIndex] == 'Resign' then
 			print("You lasted "..self.round.." rounds.")
