@@ -318,8 +318,10 @@ function game.make(name1,name2)
 	g.enemies = {}
 	g.bullets = {}
 	g.explosions = {}
+	g.tethers = {}
 	g.round = 1
 	g.objective = nil
+	g.cinematic = false
 	g.boss = false
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
@@ -447,7 +449,11 @@ if self.pause == 1 then
 		-- 	end
 		-- end
 		love.graphics.pop()
-
+		if self.cinematic then
+			love.graphics.setColor(0,0,0)
+			love.graphics.rectangle("fill",0,0,screen.width,86)
+			love.graphics.rectangle("fill",0,screen.height-86,screen.width,86)
+		end
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
 		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
@@ -475,6 +481,8 @@ elseif self.pause == 3 then
 	--------------
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
+	love.graphics.stippledLine(screen.width,xy[2]-((#self.menu/2)*72)-32,screen.width - screen.width*(self.pc.timer/30),xy[2]-((#self.menu/2)*72)-32,12,12)
+	love.graphics.stippledLine(screen.width,xy[2]+((#self.menu/2)*72),screen.width - screen.width*(self.pc.timer/30),xy[2]+((#self.menu/2)*72),12,12)
 		love.graphics.setColor(255,255,255)
 		love.graphics.setFont(fonts.large)
 	for i,m in ipairs(self.menu) do
@@ -511,6 +519,7 @@ if self.pause == 1 then
 		state = heaven.make(self.player,self.round,self.stats.rocks,self.stats.enemies,self.time.elapsed,self.name1,self.name2)
 		return
 	end
+
 	for i,e in ipairs(self.enemies) do
 		e:update(dt)
 		if e.hp <= 0 or e.kill then
@@ -550,6 +559,13 @@ if self.pause == 1 then
 		c:update(dt)
 		if c.got or c.dead then
 			table.remove(self.drops,i)
+		end
+	end
+
+	for i,t in ipairs(self.tethers) do
+		t.life = t.life - 1
+		if t.life == 0 then
+			table.remove(self.tethers,i)
 		end
 	end
 	

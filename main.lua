@@ -13,6 +13,8 @@ require("scores")
 require("ansicolours")
 
 function love.load()
+	love.graphics.print("Loading...",0,0)
+	love.graphics.present()
 	print('Loading...')
 	local stime = love.timer.getTime()
 	love.window.setIcon(love.image.newImageData('res/sprites/rock1.png'))

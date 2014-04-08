@@ -5,7 +5,6 @@ function rock.make(x,y,s,p)
 	local r = {}
 	setmetatable(r,rock)
 	r.id = #state.rocks + 1
-	-- r.dhp = 48
 	r.kill = false
 	r.killTimer = 90
 	r.x,r.y = x,y
@@ -22,7 +21,7 @@ function rock.make(x,y,s,p)
 	r.hp = r._hp
 	r.image = res.load("sprite","rock"..math.random(1,3)..".png")
 	r.forces = {{r.s,math.random(0,2*math.pi)}}
-	r.timers = {}
+	r.timers = {anim = {0,0}}
 	r.timers.birth = 0
 	r.rot = (math.random()-.5)*math.pi
 	r.a_vol = (math.random()-.5)/200
@@ -52,7 +51,7 @@ function rock:draw()
 		self.timers.birth = self.timers.birth + 1
 		love.graphics.setColor(237,143-(143*self.heat),77-(77*self.heat),self.timers.birth*8)
 	else
-		love.graphics.setColor(237,143-(143*self.heat),77-(77*self.heat))
+		love.graphics.setColor(237,143-(143*self.heat*math.max(self.timers.anim[1],.5)),77-(77*self.heat*math.max(self.timers.anim[1],.5)))
 	end
 	love.graphics.draw(self.image,self.x,self.y,self.rot,1,1,50,50)
 	love.graphics.point(self.x,self.y)
@@ -101,6 +100,8 @@ function rock:update(dt)
 	self.y <= state.player.members.b.y + self.r + 12 then
 		state.player:push('b',self.x - state.player.members.b.x,self.y - state.player.members.b.y,-.5)
 	end
+
+	--collissions 
 	
 	for i,r in ipairs(state.rocks) do
 		if self.id ~= r.id then
@@ -117,6 +118,22 @@ function rock:update(dt)
 		end
 	end
 
+	for i,t in ipairs(state.tethers) do
+		--[[if the distance between projection's x and y and the rock's x and y
+		is less than the sum of their radii, then collision]]
+		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+			self.hp = self.hp - t.strength
+			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+			screen:shake(.15, 4, false)
+		end
+	end
+
+	--damage
+
 	self.heat = 1-(self.hp/self._hp)
 	if self.hp < self._hp and self.hp >= self._hp/2 then
 			self.p:setEmissionRate(math.ceil(6*self.heat)/2)
@@ -132,28 +149,37 @@ function rock:update(dt)
 		state.points = state.points + 1
 	end
 
-	self.p:update(dt)
+	--sentry
 
+	self.p:update(dt)
 
 	if self.sentry then
 		self.sentry.x, self.sentry.y = self.x, self.y
 		self.sentry:update(dt)
 		if self.sentry.hp > 0 then
-			if self.hp < self._hp then
-				self.sentry.hp = self.sentry.hp - (self._hp - self.hp)
-			end
-				self.hp = self._hp
+			self.hp = self._hp
 		else
 			self.sentry = nil
 		end
 	end
 
-	--
+	--timers
+	if self.timers.anim[2] == 0 then
+		self.timers.anim[1] = math.round(self.timers.anim[1] + .01,3)
+		if self.timers.anim[1] == 1 then self.timers.anim[2] = 1 end
+	elseif self.timers.anim[2] == 1 then
+		self.timers.anim[1] = math.round(self.timers.anim[1] - .01,3)
+		if self.timers.anim[1] == 0 then self.timers.anim[2] = 0 end
+	end
+
+	--forces
+
 	if ((self.x_vol^2)+(self.y_vol^2))^(1.5) > self.s then
 		self.x_vol = self.x_vol - (self.x_vol*.1)
 		self.y_vol = self.y_vol - (self.y_vol*.1)
 	end
 	self.forces = {}
+
 end
 
 crystal = {}

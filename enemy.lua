@@ -58,6 +58,20 @@ function drone:update(dt)
 	self.x = self._x + (math.cos(self.r)*self.orbit)
 	self.y = self._y + (math.sin(self.r)*self.orbit)
 	
+	for i,t in ipairs(state.tethers) do
+		--[[if the distance between projection's x and y and the rock's x and y
+		is less than the sum of their radii, then collision]]
+		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+			self.hp = self.hp - t.strength
+			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+			screen:shake(.15, 4, false)
+		end
+	end
+
 	if self.hp <= 0 then
 		state.points = state.points + 1
 	end
@@ -73,14 +87,14 @@ end
 sentry = {}
 sentry.__index = sentry
 
-function sentry.make(x,y,p,s)
+function sentry.make(x,y,p,s,h)
 	local e = {}
 	setmetatable(e,sentry)
 	e.x,e.y = x,y
 	e.r = 24
 	e.rot = math.random(-math.pi,math.pi)
 	e.orbit = 32
-	e._hp = 86
+	e._hp = h or 128
 	e.hp = e._hp
 	e.dir = math.rsign()
 	e.fireLimit = 320
@@ -127,12 +141,6 @@ function sentry:update(dt,shoot)
 	elseif self.intro < 2 then self.intro = math.min(2,self.intro + .04)
 	elseif self.birth < self.intro then self.birth = math.min(self.intro,self.birth + .02) end
 
-	if self.hp <= 0 then
-		state.points = state.points + 1
-	end
-
-	self.shield = self.hp/self._hp
-
 	if not shoot then
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
@@ -141,6 +149,28 @@ function sentry:update(dt,shoot)
 		-- bullet.make(self.x,self.y,math.atan2(self.y-closest.y,self.x-closest.x),4,30,"sentry")
 		bullet.make(self.x,self.y,self.rot,4,30,"sentry")
 	end
+	end
+
+	if self.parent > 0 then
+		for i,t in ipairs(state.tethers) do
+			--[[if the distance between projection's x and y and the rock's x and y
+			is less than the sum of their radii, then collision]]
+			local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+			local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+			if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+				and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+				and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+				self.hp = self.hp - t.strength
+				sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+				screen:shake(.15, 4, false)
+			end
+		end
+	end
+
+	self.shield = self.hp/self._hp
+
+	if self.hp <= 0 then
+		state.points = state.points + 1
 	end
 
 	self.rot = self.rot + (math.pi/128)*self.dir
@@ -210,6 +240,20 @@ function dash:update(dt)
 		end
 		if self.aimgle > 0 then self.aimgle= self.aimgle-(math.pi/24) end
 	end
+
+	for i,t in ipairs(state.tethers) do
+		--[[if the distance between projection's x and y and the rock's x and y
+		is less than the sum of their radii, then collision]]
+		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+			self.hp = self.hp - t.strength
+			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+			screen:shake(.15, 4, false)
+		end
+	end
 end
 
 function dash:draw()
@@ -249,7 +293,19 @@ function keeper:draw()
 end
 
 function keeper:update(dt)
-
+	for i,t in ipairs(state.tethers) do
+		--[[if the distance between projection's x and y and the rock's x and y
+		is less than the sum of their radii, then collision]]
+		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+			self.hp = self.hp - t.strength
+			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+			screen:shake(.15, 4, false)
+		end
+	end
 end
 
 quirk = {}
@@ -271,8 +327,10 @@ function sentinel.make()
 	setmetatable(s,sentinel)
 	s.core = nil
 	s.rot = 0
+	s.rotSpeed = 1
 	s.x,s.y = unpack(screen:getCentre())
-	s.members = {{nil,128},{nil,128},{nil,128},{nil,128}}
+	s.members = {}
+	s.arms = {}
 	s.hp = 256
 	s.drop = false
 	s.kill = false
@@ -282,15 +340,19 @@ function sentinel.make()
 				arm1Intro = 0,
 				arm2Intro = 0,
 				arm3Intro = 0,
-				arm4Intro = 0,}
+				arm4Intro = 0,
+				measure = 4}
+	state.cinematic = true
 
 	return s
 end
 
 function sentinel:draw()
-	for i,m in ipairs(self.members) do
-		if m[1] then 
-			m[1]:draw(0,255)
+	for i,a in ipairs(self.arms) do
+		for ii,m in ipairs(a) do
+			if m[1] then 
+				m[1]:draw(0,255)
+			end
 		end
 	end
 
@@ -305,51 +367,127 @@ function sentinel:update(dt)
 	if self.core then
 		self.hp = self.core.hp
 	end
-
+	--intro animations
 	if self.timers.intro < 600 then
 		if self.timers.intro == 0 then
-			self.core = sentry.make(self.x,self.y,-1,3)
+			self.core = sentry.make(self.x,self.y,-1,3,4096)
 		end
 		if self.timers.intro == 100 then
-			self.members[1][1] = sentry.make(self.x,self.y,-1,1)
-		elseif self.timers.arm1Intro < 1 then
+			self.arms[1] = {}
+			if self.core.hp == self.core._hp then
+				table.insert(self.arms[1],{sentry.make(self.x,self.y,-1,1,1024),128})
+			end
+		elseif self.timers.intro > 100 and self.timers.arm1Intro < 1 then
 			self.timers.arm1Intro = self.timers.arm1Intro + .01
 		end
 		if self.timers.intro == 200 then
-			self.members[2][1] = sentry.make(self.x,self.y,-1,1)
-		elseif self.timers.arm2Intro < 1 then
+			self.arms[2] = {}
+			if self.core.hp == self.core._hp then
+				table.insert(self.arms[2],{sentry.make(self.x,self.y,-1,1,1024),128})
+			end
+		elseif self.timers.intro > 200 and self.timers.arm2Intro < 1 then
 			self.timers.arm2Intro = self.timers.arm2Intro + .01
 		end
 		if self.timers.intro == 300 then
-			self.members[3][1] = sentry.make(self.x,self.y,-1,1)
-		elseif self.timers.arm3Intro < 1 then
+			self.arms[3] = {}
+			if self.core.hp == self.core._hp then
+				table.insert(self.arms[3],{sentry.make(self.x,self.y,-1,1,1024),128})
+			end
+		elseif self.timers.intro > 300 and self.timers.arm3Intro < 1 then
 			self.timers.arm3Intro = self.timers.arm3Intro + .01
 		end
 		if self.timers.intro == 400 then
-			self.members[4][1] = sentry.make(self.x,self.y,-1,1)
-		elseif self.timers.arm4Intro < 1 then
+			self.arms[4] = {}
+			if self.core.hp == self.core._hp then
+				table.insert(self.arms[4],{sentry.make(self.x,self.y,-1,1,1024),128})
+			end
+		elseif self.timers.intro > 400 and self.timers.arm4Intro < 1 then
 			self.timers.arm4Intro = self.timers.arm4Intro + .01
 		end
 		self.timers.intro = self.timers.intro+1
 	else
+		state.cinematic = false
 		state.grabPlayer = false
-		self.rot = self.rot + math.pi/128
+		self.rot = self.rot + (math.pi/256)*self.rotSpeed
+
+		if self.core.hp < self.core._hp/2 and #self.arms == 0 then
+			for i=1,4 do
+				self.arms[i] = {}
+				self.timers["arm"..i.."Intro"] = 0
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),176,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),224,i})
+			end
+				self.timers.intro = 100
+		elseif self.core.hp < self.core._hp*3/4 and #self.arms == 0 then
+			for i=1,1 do
+				self.arms[i] = {}
+				self.timers["arm"..i.."Intro"] = 0
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),176,i})
+			end
+				self.timers.intro = 100
+		end
+
+		if #self.arms ~= self.timers.measure then
+			if #self.arms < self.timers.measure then
+				self.timers.measure = math.max(self.timers.measure-(.02),0)
+			elseif #self.arms > self.timers.measure then
+				self.timers.measure = math.min(self.timers.measure+(.02),#self.arms)
+			end
+		end
 	end
 	------------------------------------------------------------------
 	------------------------------------------------------------------
 	if self.core then
 		self.core.x,self.core.y = self.x,self.y
-		self.core:update(dt,true)
+		self.core:update(dt,(self.timers.intro < 600))
+		if #self.members == 0 then
+			for i,t in ipairs(state.tethers) do
+				--[[if the distance between projection's x and y and the rock's x and y
+				is less than the sum of their radii, then collision]]
+				local proj = math.projection(t.x1,t.y1,self.core.x,self.core.y,t.x2,t.y2)
+				local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+				if math.dist(self.core.x,self.core.y,projX,projY) <= self.core.r+t.width
+					and self.core.x+self.core.r >= math.min(t.x1,t.x2) and self.core.y+self.core.r >= math.min(t.y1,t.y2)
+					and self.core.x-self.core.r <= math.max(t.x1,t.x2) and self.core.y-self.core.r <= math.max(t.y1,t.y2) then
+					self.core.hp = self.core.hp - t.strength
+					sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+					screen:shake(.15, 5, false)
+				end
+			end
+		end
 	end
-	for i,m in ipairs(self.members) do
-		if m[1] then
-			m[1].x = self.x+m[2]*(self.timers["arm"..i.."Intro"])*math.cos(self.rot+((i-1)*math.pi/2))
-			m[1].y = self.y+m[2]*(self.timers["arm"..i.."Intro"])*math.sin(self.rot+((i-1)*math.pi/2))
+	for i,a in ipairs(self.arms) do 
+		for ii,m in ipairs(a) do
+			--weird radius orbital bug. Fix it
+			m[1].x = self.x+m[2]*math.cos(self.rot+((i-1)*2*math.pi/(self.timers.measure)))*self.timers["arm"..i.."Intro"]
+			m[1].y = self.y+m[2]*math.sin(self.rot+((i-1)*2*math.pi/(self.timers.measure)))*self.timers["arm"..i.."Intro"]
+			print(m[2],m[1].x,m[1].y)
 
-			m[1]:update(dt,true)
+			m[1]:update(dt,(self.timers.intro < 600))
 			if m[1].hp > 0 then
 				self.core.hp = self.core._hp
 			end
+			for iii,t in ipairs(state.tethers) do
+				--[[if the distance between projection's x and y and the rock's x and y
+				is less than the sum of their radii, then collision]]
+				local proj = math.projection(t.x1,t.y1,m[1].x,m[1].y,t.x2,t.y2)
+				local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+				if math.dist(m[1].x,m[1].y,projX,projY) <= m[1].r+t.width
+					and m[1].x+m[1].r >= math.min(t.x1,t.x2) and m[1].y+m[1].r >= math.min(t.y1,t.y2)
+					and m[1].x-m[1].r <= math.max(t.x1,t.x2) and m[1].y-m[1].r <= math.max(t.y1,t.y2) then
+					m[1].hp = m[1].hp - t.strength
+					sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+					screen:shake(.15, 2, false)
+				end
+			end
+			if m[1].hp <= 0 then
+				table.remove(a,ii)
+			end
+		end
+		if #a == 0 then
+			table.remove(self.arms,i)
 		end
 	end
 end
@@ -442,6 +580,20 @@ if self.timers.intro == 0 then
 		self.timers.fire = self.timers.fire - 1
 --	else
 --		self.fire =
+	end
+
+	for i,t in ipairs(state.tethers) do
+		--[[if the distance between projection's x and y and the rock's x and y
+		is less than the sum of their radii, then collision]]
+		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
+		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+			self.hp = self.hp - t.strength
+			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+			screen:shake(.15, 4, false)
+		end
 	end
 	-----------------------------
 	-----------------------------

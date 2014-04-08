@@ -132,11 +132,6 @@ function player:drawMember(member, x, y, s)
 	if member.spawned then
 		local otherRot = math.atan2(member.y-self.members[member.other].y,member.x-self.members[member.other].x)+(math.pi/2)
 		--hp
-		-- love.graphics.setColor(255,255,255,64)
-		-- love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
-		-- love.graphics.setColor(member.color[1],member.color[2],member.color[3],64)
-		-- love.graphics.arc("fill",member.x,member.y,64,-math.pi/2,(-(member.hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
-		--hp
 		love.graphics.setLineWidth(8)
 		love.graphics.setColor(255,255,255,64)
 		love.graphics.curve(member.x,member.y,52,-math.pi/2,(-(member._hp/member.stats.hp)*math.pi*2)-(math.pi/2),32)
@@ -155,7 +150,6 @@ function player:drawMember(member, x, y, s)
 
 	--drawing
 	if not love.keyboard.isDown(member.keys.up, member.keys.down, member.keys.left, member.keys.right) or state.grabPlayer then --stationary
-	-- if member.x_vol == 0 and member.y_vol == 0 then --stationary
 			member.rot = member.rot-(math.pi/128)
 		--tether effect
 		if self.distance < self.tetherDistance then
@@ -302,7 +296,7 @@ end
 
 function player:updateMember(member, dt)
 if member.timers.spawn == 0 then
-	if not member.spawned then self:centre(member.name); member.spawned = true end
+	if not member.spawned then self:centre(member.name); member.spawned = true; print(member.spawned) end
 	if member.lives == 0 and member._lives ~= member.lives then messages:new("LAST LIFE!", member.x, member.y, 'up', -1, {255,0,0}, 'medium') end
 
 	member._lives = member.lives
@@ -397,7 +391,7 @@ end
 		messages:new("Player "..self.number.." died", member.x, member.y, 'up', -1, {0, 128, 90}, 'medium')
 		print(member.lives.." lives left.")
 		member.immunity = 18
-		member.timers.spawn = 60
+		member.timers.spawn = 600
 		member.spawned = false
 		love.audio.play(self.sounds.aDie)
 	end
@@ -417,7 +411,7 @@ end
 		member.target.scale = member.target.scale - .2
 	end
 
-	if member.timers.spawn > 0 then member.timers.spawn = member.timers.spawn - 1 end
+	if member.timers.spawn > 0 then member.timers.spawn = member.timers.spawn - 1; member.tether = false end
 end
 
 function player:update()
@@ -440,26 +434,27 @@ function player:update()
 		local tetherSrength = self.tetherDistance/self.distance
 		if self.members.a.tether and self.members.b.tether then
 			if self.distance <= self.tetherDistance then
-				for i, r in ipairs(state.enemies) do
-					if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
-					or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
-						local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
-						local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
-						sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
-						r.hp = r.hp - tetherSrength
-						screen:shake(.15, 1, false)
-					end
-				end
-				for i, r in ipairs(state.rocks) do
-					if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
-					or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
-						local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
-						local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
-						sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
-						r.hp = r.hp - tetherSrength
-						screen:shake(.15, 4, false)
-					end
-				end
+				-- for i, r in ipairs(state.enemies) do
+				-- 	if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
+				-- 	or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
+				-- 		local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
+				-- 		local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
+				-- 		sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
+				-- 		r.hp = r.hp - tetherSrength
+				-- 		screen:shake(.15, 1, false)
+				-- 	end
+				-- end
+				-- for i, r in ipairs(state.rocks) do
+				-- 	if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
+				-- 	or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
+				-- 		local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
+				-- 		local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
+				-- 		sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
+				-- 		r.hp = r.hp - tetherSrength
+				-- 		screen:shake(.15, 4, false)
+				-- 	end
+				-- end
+				makeTether(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y,math.floor(24-24*self.distance/self.tetherDistance),tetherSrength)
 			end
 			if self.distance <= self.syncDistance then
 				self.sync.syncing = true
@@ -621,4 +616,20 @@ end
 
 function player:centre(m)
 	self.members[m].x, self.members[m].y = screen:getCentre('x'), screen:getCentre('y')
+end
+
+function makeTether(x1,y1,x2,y2,w,s,l)
+	local t = {}
+	t.x1 = x1
+	t.x2 = x2
+	t.y1 = y1
+	t.y2 = y2
+	t.length = ((x1-x2)^2+(y1-y2)^2)^.5
+	t.width = w/2
+	t.strength = s
+	t.angle = math.atan2(y2-y1,x2-x1)
+	t.life = l or 2
+	--[[ maybe I'll want colours to affect effects so add
+	that here. Do any necessary math here.]]
+	table.insert(state.tethers,t)
 end

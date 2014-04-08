@@ -87,8 +87,25 @@ function math.getPerpIntercept(lp1,lp2,p3)
 end
 
 function math.getPerpDistance(lp1,lp2,p3)
+-- function math.getPerpDistance(lp1,lp2,p3)
   local h = math.dist(lp1[1],lp1[2],p3[1],p3[2])
   local phi = math.atan2(lp2[2]-lp1[2],lp2[1]-lp1[1])
   local the = math.atan2(p3[2]-lp1[2],p3[1]-lp1[1]) - phi
   return h*math.sin(the)
+  --
+
+end
+
+function math.projection(ox,oy,x1,y1,x2,y2)
+  --[[first minus second is positive]]
+  local h1 = math.dist(ox,oy,x1,y1)
+  -- local h2 = math.dist(ox,oy,x2,y2)
+  -- local a1 = x1-ox
+  -- local a2 = x2-ox
+  -- local phi = math.acos(a1/h1)*math.sign(oy-y1)
+  -- local the = math.acos(a2/h2)*math.sign(oy-y2)
+  local phi = math.atan2(y1-oy,x1-ox)
+  local the = math.atan2(y2-oy,x2-ox)
+  -- print(phi,the)
+  return math.cos(phi-the)*h1
 end
