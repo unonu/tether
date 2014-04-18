@@ -168,17 +168,14 @@ function mainmenu:keypressed(k)
 			if k == 'w' or k == 'up' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
-					-- screen:shake(.15,2)
 				end
 			elseif k == 's' or k == 'down' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
-					-- screen:shake(.15,2)
 				end
 			elseif k == 'return' or k =='lshift' or k == 'kp0' then
 				if self.menu[self.menuIndex] == 'Arcade' then
 					love.graphics.clear()
-					-- screen:shake(.15,2)
 					love.graphics.setColor(0,0,0)
 					love.graphics.rectangle('fill',0,0,screen.width,screen.height)
 					state = game.make()
@@ -275,12 +272,10 @@ function options:keypressed(k)
 		if k == 'w' or k == 'up' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
-				-- screen:shake(.15,2)
 			end
 		elseif k == 's' or k == 'down' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
-				-- screen:shake(.15,2)
 			end
 		elseif k == 'return' or k =='lshift' or k == 'kp0' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
@@ -374,7 +369,6 @@ function game:draw()
 
 if self.pause == 1 then
 	love.graphics.push()
-	-- love.graphics.translate((screen.width/2)-(screen.width*self.timers.intro[1])/2,0)
 	love.graphics.translate((screen.width/2)*(1-self.timers.intro[1]),(screen.height/2)*(1-self.timers.intro[1]))
 	love.graphics.scale(self.timers.intro[1],self.timers.intro[1])
 
@@ -396,7 +390,7 @@ if self.pause == 1 then
 			screen:getCentre('y')+4+(fonts.roundNumbers:getHeight(self.round))/2)
 	end
 	--time
-	local time = self.time.hours..':'..self.time.minutes..':'..self.time.seconds
+	local time = love.graphics.fillJustify(self.time.hours,1,0)..':'..love.graphics.fillJustify(self.time.minutes,1,0)..':'..love.graphics.fillJustify(self.time.seconds,1,0)
 	love.graphics.print(time, screen:getCentre('x')-fonts.medium:getWidth(time)/2, 32)
 
 
@@ -680,10 +674,6 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 		love.graphics.setCanvas(h.screen)
 		love:draw()
 		love.graphics.setCanvas()
-		-- love.graphics.setColor(255,0,0)
-		-- love.graphics.draw(h.screen)
-		-- love:draw()
-		-- love.timer.sleep(.5)
 	screen:clearEffects()
 	screen:shake(.8,3)
 	h.winner = 'a'
@@ -833,7 +823,7 @@ elseif self.ready and self.confirm then
 
 		love.graphics.push()
 		love.graphics.translate(0,62)
-	drawScores(self.scores,20,self.timers.pc.r,self.timers.pc.g,self.timers.pc.b)
+	drawScores(self.scores,15,self.timers.pc.r,self.timers.pc.g,self.timers.pc.b)
 		love.graphics.pop()
 
 	love.graphics.setColor(0,0,0,220)
@@ -865,13 +855,15 @@ elseif not self.ready then
 
 	local frac = (100-self.timers.gameFade[1])/100
 
-	love.graphics.setColor(255,0,0)
-	love.graphics.draw(self.screen)
+	-- love.graphics.setColor(255,0,0)
+	-- love.graphics.draw(self.screen)
 
 	love.graphics.setColor(0,0,0)
 	love.graphics.circle("fill",screen:getCentre('x'),screen:getCentre('y'),screen.width*frac,36)
 
+	love.graphics.setShader(shaders.monochrome)
 	self.player:draw()
+	love.graphics.setShader()
 
 	love.graphics.setFont(fonts.large)
 

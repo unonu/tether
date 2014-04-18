@@ -9,11 +9,15 @@ require("states")
 require("rounder")
 require("drops")
 require("particles")
+require("shaders")
 require("scores")
 require("ansicolours")
 
 function love.load()
-	love.graphics.print("Loading...",0,0)
+	love.graphics.setColor(0,0,0)
+	love.graphics.rectangle("fill",0,0,love.window.getWidth(),love.window.getHeight())
+	love.graphics.setColor(255,255,255)
+	love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
 	love.graphics.present()
 	print('Loading...')
 	local stime = love.timer.getTime()
@@ -42,7 +46,6 @@ end
 function love.draw()
 	if screen.abberating then screen:setChromaticFilter() end
 
---	screen:drawShake()
 	screen:draw()
 	if state.draw then
 		state:draw()
@@ -51,10 +54,12 @@ function love.draw()
 	
 	if screen.abberating then screen:releaseChromaticFilter() end
 
-	-- screen:capFPS()
-	-- love.graphics.print(love.timer.getFPS(),0,0)
-	-- local frames = love.timer.getFPS()
-	-- if frames < 24 then print("Dropping frames fast:"..frames) end
+	love.graphics.setPointSize(2)
+	love.graphics.setColor(255,255,255,128)
+	love.graphics.point(love.mouse.getPosition())
+	love.graphics.setColor(0,0,0,128)
+	love.graphics.rectangle("line",love.mouse.getX()-2,love.mouse.getY()-2,4,4)
+	love.graphics.setPointSize(1)
 end
 
 function love.keypressed(k)

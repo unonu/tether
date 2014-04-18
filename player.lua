@@ -391,7 +391,7 @@ end
 		messages:new("Player "..self.number.." died", member.x, member.y, 'up', -1, {0, 128, 90}, 'medium')
 		print(member.lives.." lives left.")
 		member.immunity = 18
-		member.timers.spawn = 600
+		member.timers.spawn = 60
 		member.spawned = false
 		love.audio.play(self.sounds.aDie)
 	end
@@ -434,26 +434,6 @@ function player:update()
 		local tetherSrength = self.tetherDistance/self.distance
 		if self.members.a.tether and self.members.b.tether then
 			if self.distance <= self.tetherDistance then
-				-- for i, r in ipairs(state.enemies) do
-				-- 	if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
-				-- 	or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
-				-- 		local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
-				-- 		local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
-				-- 		sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
-				-- 		r.hp = r.hp - tetherSrength
-				-- 		screen:shake(.15, 1, false)
-				-- 	end
-				-- end
-				-- for i, r in ipairs(state.rocks) do
-				-- 	if math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y-r.r}, {r.x+r.r, r.y+r.r})
-				-- 	or math.checkIntersect({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x-r.r, r.y+r.r}, {r.x+r.r, r.y-r.r}) then
-				-- 		local perp_x,  perp_y = math.getPerpIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y})
-				-- 		local int_x,  int_y = math.getIntercept({self.members.a.x, self.members.a.y}, {self.members.b.x, self.members.b.y}, {r.x, r.y}, {perp_x, perp_y})
-				-- 		sparks.make(int_x, int_y, math.random(130, 140), math.random(230, 240), 255, 255-(128*self.distance/self.tetherDistance))
-				-- 		r.hp = r.hp - tetherSrength
-				-- 		screen:shake(.15, 4, false)
-				-- 	end
-				-- end
 				makeTether(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y,math.floor(24-24*self.distance/self.tetherDistance),tetherSrength)
 			end
 			if self.distance <= self.syncDistance then
@@ -475,7 +455,7 @@ function player:update()
 			self.sync.synced = false
 		end
 	end
-	if self.sync.syncing and (self.members.a.vol <= 0.1 and self.members.b.vol <= 0.1) then
+	if self.sync.syncing and (self.members.a.vol <= 1 and self.members.b.vol <= 1) then
 		if self.sync.percentage < 1 then self.sync.percentage = self.sync.percentage + .002 
 		else messages:new("SYNCED!", self.members.a.x-(self.members.a.x-self.members.b.x)/2, 
 			self.members.a.y-(self.members.a.y-self.members.b.y)/2, 'up', 1, {255, 0, 0}); self.sync.synced = true end
@@ -611,6 +591,18 @@ function player:givePoints(t, h)
 	else
 		self.members[t].points = self.members[t].points + (h or 0)
 		messages:new("+"..h, self.members[t].x, self.members[t].y, 'up', 3, {128, 128, 0})
+	end
+end
+
+function player:giveLife(t,l)
+	if t=='both' then
+		self.members.a.lives = math.min(self.members.a.lives + (h or 1), 6)
+		self.members.b.lives = math.min(self.members.b.lives + (h or 1), 6)
+		messages:new("Extra Life!", self.members.a.x, self.members.a.y, 'up', 3, {255,255,255})
+		messages:new("Extra Life!", self.members.b.x, self.members.b.y, 'up', 3, {255,255,255})
+	else
+		self.members[t].lives = math.min(self.members[t].lives + (h or 1), 6)
+		messages:new("Extra Life!", self.members[t].x, self.members[t].y, 'up', 3, {255,255,255})
 	end
 end
 

@@ -278,8 +278,8 @@ keeper.__index = keeper
 function keeper.make()
 	local k = {}
 	setmetatable(k,keeper)
-	-- k.x
-	-- k.y
+	k.x = 0
+	k.y = 0
 	-- k.x_vol
 	-- k.y_vol
 	-- k.prime
@@ -289,7 +289,7 @@ function keeper.make()
 end
 
 function keeper:draw()
-	love.graphics.draw()
+	love.graphics.circle("fill",self.x,self.y,50,16)
 end
 
 function keeper:update(dt)
@@ -328,20 +328,25 @@ function sentinel.make()
 	s.core = nil
 	s.rot = 0
 	s.rotSpeed = 1
+	s.rotDir = 1
 	s.x,s.y = unpack(screen:getCentre())
+	s.dir = 1
 	s.members = {}
 	s.arms = {}
 	s.hp = 256
 	s.drop = false
 	s.kill = false
 	s.r = 12
+	s.invincible = true
 
 	s.timers = {intro = 0,
 				arm1Intro = 0,
 				arm2Intro = 0,
 				arm3Intro = 0,
 				arm4Intro = 0,
-				measure = 4}
+				measure = 4,
+				stage = 1,
+				t = 0}
 	state.cinematic = true
 
 	return s
@@ -359,90 +364,116 @@ function sentinel:draw()
 	if self.core then
 		self.core:draw(0,255)
 	end
-	love.graphics.print(self.timers.intro,self.x,self.y)
-	
 end
 
 function sentinel:update(dt)
-	if self.core then
-		self.hp = self.core.hp
-	end
 	--intro animations
 	if self.timers.intro < 600 then
+		self.invincible = true
 		if self.timers.intro == 0 then
 			self.core = sentry.make(self.x,self.y,-1,3,4096)
+			self.core.fireLimit = 100
+			self.core.image = res.load("sprite","sentinel.png")
+			self.core.draw = function (self,rockrot,a) 
+				if self.shield ~= self._shield then
+					love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
+					self._shield = self.shield
+				elseif self.birth > 1 and self.birth < 2 then
+					love.graphics.setColor(255,0,0,255*(1-self.birth))
+				else
+					love.graphics.setColor(255,0,0,math.min(a,math.random(128,164))*self.shield)
+				end
+				if self.birth > 1 then
+					love.graphics.circle("fill",self.x,self.y,34*self.s,36)
+						love.graphics.setColor(0,0,0,math.min(a,128))
+				end
+				love.graphics.setLineWidth(4*self.s)
+				love.graphics.curve(self.x,self.y,32*self.s,0,math.pi*self.intro,36)
+					love.graphics.setColor(255,255,255,a)
+				local sf = math.min(1,self.birth)
+				love.graphics.draw(self.image,res.quads["sentinel1"],self.x,self.y,rockRot,-1*sf,1*sf,50,51)
+				love.graphics.draw(self.image,res.quads["sentinel2"],self.x,self.y,self.rot-math.pi,-1*sf,1*sf,39,24)
+			end
 		end
 		if self.timers.intro == 100 then
-			self.arms[1] = {}
 			if self.core.hp == self.core._hp then
-				table.insert(self.arms[1],{sentry.make(self.x,self.y,-1,1,1024),128})
+				self.arms[1] = {}
+				self.arms[2] = {}
+				self.arms[3] = {}
+				self.arms[4] = {}
+				print("a")
+				table.insert(self.arms[1],{sentry.make(self.x,self.y,-1,1,1024),128,1})
+				table.insert(self.arms[2],{sentry.make(self.x,self.y,-1,1,1024),128,2})
+				table.insert(self.arms[3],{sentry.make(self.x,self.y,-1,1,1024),128,3})
+				table.insert(self.arms[4],{sentry.make(self.x,self.y,-1,1,1024),128,4})
 			end
 		elseif self.timers.intro > 100 and self.timers.arm1Intro < 1 then
 			self.timers.arm1Intro = self.timers.arm1Intro + .01
 		end
-		if self.timers.intro == 200 then
-			self.arms[2] = {}
-			if self.core.hp == self.core._hp then
-				table.insert(self.arms[2],{sentry.make(self.x,self.y,-1,1,1024),128})
-			end
-		elseif self.timers.intro > 200 and self.timers.arm2Intro < 1 then
+		if self.timers.intro > 200 and self.timers.arm2Intro < 1 then
 			self.timers.arm2Intro = self.timers.arm2Intro + .01
 		end
-		if self.timers.intro == 300 then
-			self.arms[3] = {}
-			if self.core.hp == self.core._hp then
-				table.insert(self.arms[3],{sentry.make(self.x,self.y,-1,1,1024),128})
-			end
-		elseif self.timers.intro > 300 and self.timers.arm3Intro < 1 then
+		if self.timers.intro > 300 and self.timers.arm3Intro < 1 then
 			self.timers.arm3Intro = self.timers.arm3Intro + .01
 		end
-		if self.timers.intro == 400 then
-			self.arms[4] = {}
-			if self.core.hp == self.core._hp then
-				table.insert(self.arms[4],{sentry.make(self.x,self.y,-1,1,1024),128})
-			end
-		elseif self.timers.intro > 400 and self.timers.arm4Intro < 1 then
+		if self.timers.intro > 400 and self.timers.arm4Intro < 1 then
 			self.timers.arm4Intro = self.timers.arm4Intro + .01
 		end
 		self.timers.intro = self.timers.intro+1
 	else
+		self.invincible = false
 		state.cinematic = false
 		state.grabPlayer = false
-		self.rot = self.rot + (math.pi/256)*self.rotSpeed
 
-		if self.core.hp < self.core._hp/2 and #self.arms == 0 then
+		--rotation
+		if math.random(1,3000/self.timers.stage) == 1 then
+			self.rotDir = -self.rotDir
+		end
+		self.rot = self.rot + (math.pi/256)*self.rotSpeed*self.rotDir
+
+		if self.core.hp < self.core._hp*2/3 and self.timers.stage == 1 and #self.arms == 0 then
 			for i=1,4 do
 				self.arms[i] = {}
 				self.timers["arm"..i.."Intro"] = 0
 				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
-				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),176,i})
-				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),224,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,768),176,i})
 			end
 				self.timers.intro = 100
-		elseif self.core.hp < self.core._hp*3/4 and #self.arms == 0 then
-			for i=1,1 do
+				self.timers.stage = 2
+				self.rotSpeed = 1.3
+				self.core.fireLimit = 50
+		elseif self.core.hp < self.core._hp*1/3 and self.timers.stage == 2 and #self.arms == 0 then
+			for i=1,4 do
 				self.arms[i] = {}
 				self.timers["arm"..i.."Intro"] = 0
 				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
-				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),176,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,768),176,i})
+				table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,512),224,i})
 			end
 				self.timers.intro = 100
+				self.timers.stage = 3
+				self.rotSpeed = 1.6
+				self.core.fireLimit = 25
 		end
 
-		if #self.arms ~= self.timers.measure then
-			if #self.arms < self.timers.measure then
-				self.timers.measure = math.max(self.timers.measure-(.02),0)
-			elseif #self.arms > self.timers.measure then
-				self.timers.measure = math.min(self.timers.measure+(.02),#self.arms)
-			end
-		end
+	end
+
+	if self.core then
+		self.hp = self.core.hp
+	end
+
+	--spacing
+	if #self.arms < self.timers.measure then
+		self.timers.measure = math.max(self.timers.measure-(.02),#self.arms)
+	elseif #self.arms > self.timers.measure then
+		self.timers.measure = math.min(self.timers.measure+(.02),#self.arms)
 	end
 	------------------------------------------------------------------
 	------------------------------------------------------------------
 	if self.core then
 		self.core.x,self.core.y = self.x,self.y
-		self.core:update(dt,(self.timers.intro < 600))
-		if #self.members == 0 then
+		self.core:update(dt,(#self.arms ~= 0))
+		if #self.arms == 0 then
 			for i,t in ipairs(state.tethers) do
 				--[[if the distance between projection's x and y and the rock's x and y
 				is less than the sum of their radii, then collision]]
@@ -451,38 +482,37 @@ function sentinel:update(dt)
 				if math.dist(self.core.x,self.core.y,projX,projY) <= self.core.r+t.width
 					and self.core.x+self.core.r >= math.min(t.x1,t.x2) and self.core.y+self.core.r >= math.min(t.y1,t.y2)
 					and self.core.x-self.core.r <= math.max(t.x1,t.x2) and self.core.y-self.core.r <= math.max(t.y1,t.y2) then
-					self.core.hp = self.core.hp - t.strength
+					self.core.hp = math.floor(self.core.hp - t.strength)
 					sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
 					screen:shake(.15, 5, false)
 				end
 			end
 		end
 	end
-	for i,a in ipairs(self.arms) do 
+	for i,a in ipairs(self.arms) do
+	if self.timers.intro > i*100 then
 		for ii,m in ipairs(a) do
-			--weird radius orbital bug. Fix it
-			m[1].x = self.x+m[2]*math.cos(self.rot+((i-1)*2*math.pi/(self.timers.measure)))*self.timers["arm"..i.."Intro"]
-			m[1].y = self.y+m[2]*math.sin(self.rot+((i-1)*2*math.pi/(self.timers.measure)))*self.timers["arm"..i.."Intro"]
-			print(m[2],m[1].x,m[1].y)
+			m[1].x = self.x+m[2]*math.cos(self.rot+(m[3])*math.pi/2)*self.timers["arm"..i.."Intro"]
+			m[1].y = self.y+m[2]*math.sin(self.rot+(m[3])*math.pi/2)*self.timers["arm"..i.."Intro"]
 
 			m[1]:update(dt,(self.timers.intro < 600))
-			if m[1].hp > 0 then
-				self.core.hp = self.core._hp
-			end
-			for iii,t in ipairs(state.tethers) do
-				--[[if the distance between projection's x and y and the rock's x and y
-				is less than the sum of their radii, then collision]]
-				local proj = math.projection(t.x1,t.y1,m[1].x,m[1].y,t.x2,t.y2)
-				local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
-				if math.dist(m[1].x,m[1].y,projX,projY) <= m[1].r+t.width
-					and m[1].x+m[1].r >= math.min(t.x1,t.x2) and m[1].y+m[1].r >= math.min(t.y1,t.y2)
-					and m[1].x-m[1].r <= math.max(t.x1,t.x2) and m[1].y-m[1].r <= math.max(t.y1,t.y2) then
-					m[1].hp = m[1].hp - t.strength
-					sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
-					screen:shake(.15, 2, false)
+			if ii == #a and not self.invincible then
+				for iii,t in ipairs(state.tethers) do
+					--[[if the distance between projection's x and y and the rock's x and y
+					is less than the sum of their radii, then collision]]
+					local proj = math.projection(t.x1,t.y1,m[1].x,m[1].y,t.x2,t.y2)
+					local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+					if math.dist(m[1].x,m[1].y,projX,projY) <= m[1].r+t.width
+						and m[1].x+m[1].r >= math.min(t.x1,t.x2) and m[1].y+m[1].r >= math.min(t.y1,t.y2)
+						and m[1].x-m[1].r <= math.max(t.x1,t.x2) and m[1].y-m[1].r <= math.max(t.y1,t.y2) then
+						m[1].hp = m[1].hp - t.strength*2
+						sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+						screen:shake(.15, 2, false)
+					end
 				end
 			end
 			if m[1].hp <= 0 then
+				self.rotDir = -self.rotDir
 				table.remove(a,ii)
 			end
 		end
@@ -490,8 +520,25 @@ function sentinel:update(dt)
 			table.remove(self.arms,i)
 		end
 	end
-end
+	end
 
+
+	if #self.arms == 0 and self.timers.intro > 100 then
+		self.timers.t = self.timers.t+(.01*self.dir)
+		if self.timers.t > 1 or self.timers.t < -1 then self.dir = -self.dir end
+		--
+		self.x = screen:getCentre('x') + self.timers.t*512
+		self.y = screen:getCentre('y') + math.sin(math.pi*self.timers.t*self.dir)*self.timers.stage*64
+	else
+		if self.x ~= screen:getCentre('x') then
+			self.x = math.floor(self.x+(screen:getCentre('x')-self.x)/12)
+		end
+		if self.y ~= screen:getCentre('y') then
+			self.y = math.floor(self.y+(screen:getCentre('y')-self.y)/12)
+		end
+		self.timers.t = 0
+	end
+end
 
 torrent = {}
 torrent.__index = torrent

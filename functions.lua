@@ -92,6 +92,28 @@ function love.graphics.curve(x,y,r,b,e,s)
 	love.graphics.line(unpack(points))
 end
 
+function love.graphics.fillJustify(i,w,f)
+	local value = ''..i
+	if type(i) == "number" then
+		local t = i
+		for j = 1, w do
+			t = t/10
+			if t < 1 then
+				value = f..value
+			end
+		end
+	elseif type(i) == "string" then
+		if #i > w then return i end
+		for j = 1, w-#i do
+			t = t/10
+			if t < 1 then
+				value = f..value
+			end
+		end
+	end
+	return value
+end
+
 function initFS(name)
 	print(ansicolors.yellow.."INIT FIlesystem, please hold..."..ansicolors.clear)
 	if not love.filesystem.exists("tether") then
