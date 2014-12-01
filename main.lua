@@ -14,29 +14,59 @@ require("scores")
 require("ansicolours")
 
 function love.load()
-	love.graphics.setColor(0,0,0)
-	love.graphics.rectangle("fill",0,0,love.window.getWidth(),love.window.getHeight())
+	love.graphics.setBackgroundColor(0,0,0)
 	love.graphics.setColor(255,255,255)
-	love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
-	love.graphics.present()
 	print('Loading...')
 	local stime = love.timer.getTime()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Setting Identity",0,0)
+		love.graphics.present()
 	love.window.setIcon(love.image.newImageData('res/sprites/rock1.png'))
+		love.graphics.clear()
 	-------------------------
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Finding Files",0,0)
+		love.graphics.present()
 	initFS()
+		love.graphics.clear()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Exterminating Mice",0,0)
+		love.graphics.present()
 	love.mouse.setVisible(false)
+		love.graphics.clear()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Hiring Scribes",0,0)
+		love.graphics.present()
 	fonts = loadFonts()
 	love.graphics.setFont(fonts.small)
+		love.graphics.clear()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Adjusting Hearing Aid",0,0)
+		love.graphics.present()
 	love.audio.setVolume(0) -- 0.-1.
+		love.graphics.clear()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Outsourcing Artwork",0,0)
+		love.graphics.present()
 	res.init()
-	screen.init(1280,720,false,false,0)
+		love.graphics.clear()
+		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
+		love.graphics.print("Heightening Definition",0,0)
+		love.graphics.present()
+	screen.init(1280,720,false,true,0)
 	print(ansicolors.yellow..'Done Loading. Took '..(love.timer.getTime()-stime)..' seconds to load.\n'..ansicolors.clear)
 
 	state = intro.make(80)
+	_state = nil
 	-------------------------
 end
 
 function love.update(dt)
+	if (state.name or tostring(state)) ~= _state then
+		print(ansicolors.yellow.."Changing State: "..(_state or "NIL").." to "..(state.name or tostring(state))..ansicolors.clear)
+		_state = state.name or tostring(state)
+	end
+	-------------------------
 	if state.update then
 		state:update(dt)
 	end
@@ -60,6 +90,8 @@ function love.draw()
 	love.graphics.setColor(0,0,0,128)
 	love.graphics.rectangle("line",love.mouse.getX()-2,love.mouse.getY()-2,4,4)
 	love.graphics.setPointSize(1)
+
+	-- love.graphics.print(love.timer.getFPS(),0,0)
 end
 
 function love.keypressed(k)

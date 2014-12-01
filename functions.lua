@@ -146,7 +146,7 @@ function screen.init(w,h,f,v,a)
 	s.height = h or 720
 	s.flags = {fullscreen = f or false,
 				fullscreentype = "desktop",
-				vsync = v or "false",
+				vsync = v or false,
 				fsaa = a or 0,
 				resizable = false,
 				borderless = true,
@@ -298,26 +298,13 @@ end
 
 function screen:releaseChromaticFilter()
 	love.graphics.setCanvas()
+	shaders.chromaticAberation:send("focus",self.focus)
+	love.graphics.setShader(shaders.chromaticAberation)
 
 	love.graphics.setColor(255,255,255)
-	love.graphics.setBlendMode("additive")
-	love.graphics.push()
-		--red
-			love.graphics.translate(-4*self.focus,0)
-			love.graphics.setColorMask( true, false, false)
-			love.graphics.draw(self.canvases.buffer)
-		--green
-			love.graphics.translate(4*self.focus,-4*self.focus)
-			love.graphics.setColorMask( false, true, false)
-			love.graphics.draw(self.canvases.buffer)
-		--blue
-			love.graphics.translate(4*self.focus,4*self.focus)
-			love.graphics.setColorMask( false, false, true)
-			love.graphics.draw(self.canvases.buffer)
-	love.graphics.pop()
-	love.graphics.setBlendMode("alpha")
-	love.graphics.setColorMask()
+	love.graphics.draw(self.canvases.buffer)
 	self.canvases.buffer:clear()
+	love.graphics.setShader()
 end
 
 function screen:capFPS()
@@ -379,33 +366,35 @@ end
 
 function messages:update(dt)
 	for i,m in ipairs(self.messages) do
-		if m.mode == 'up' then
-			m.y = m.y - 4
-			if m.y < -fonts[m.font]:getHeight(m.text) then
-				table.remove(self.messages,i)
+		if m.life < 100 then
+			if m.mode == 'up' then
+				m.y = m.y - 4
+				-- m.y = m.y - (-m.life^2)/8
+				if m.y < -fonts[m.font]:getHeight(m.text) then
+					table.remove(self.messages,i)
+				end
+			elseif m.mode == 'down' then
+				m.y = m.y + 4
+				if m.y > screen.height+fonts[m.font]:getHeight(m.text) then
+					table.remove(self.messages,i)
+				end
+			elseif m.mode == 'left' then
+				m.x = m.x - 4
+				if m.x < -fonts[m.font]:getWidth(m.text) then
+					table.remove(self.messages,i)
+				end
+			elseif m.mode == 'right' then
+				m.x = m.x + 4
+				if m.x > screen.width+fonts[m.font]:getWidth(m.text) then
+					table.remove(self.messages,i)
+				end
 			end
-		elseif m.mode == 'down' then
-			m.y = m.y + 4
-			if m.y > screen.height+fonts[m.font]:getHeight(m.text) then
-				table.remove(self.messages,i)
-			end
-		elseif m.mode == 'left' then
-			m.x = m.x - 4
-			if m.x < -fonts[m.font]:getWidth(m.text) then
-				table.remove(self.messages,i)
-			end
-		elseif m.mode == 'right' then
-			m.x = m.x + 4
-			if m.x > screen.width+fonts[m.font]:getWidth(m.text) then
-				table.remove(self.messages,i)
-			end
-		-- elseif m.mode == 'still' then
 		end
-			if m.life > 0 then
-				m.life = m.life - 1
-			elseif m.life == 0 then
-				table.remove(self.messages,i)
-			end
+		if m.life > 0 then
+			m.life = m.life - 1
+		elseif m.life == 0 then
+			table.remove(self.messages,i)
+		end
 	end
 	love.graphics.setFont(fonts.small)
 end

@@ -51,11 +51,11 @@ function shimmer.make(x,y,d,r,g,b,a)
 		c:setColors(r or 255, g or 255, b or 128, a or 255, r or 255, g or 255, b or 255, 0)
 		c:setEmitterLifetime(4)
 		c:setParticleLifetime(4)
-		c:setEmissionRate(10)
+		c:setEmissionRate(100)
 		c:setSpeed(28,32)
 		-- c:setRadialAcceleration(-24,-8,-24,8)
 		-- c:setLinearAcceleration(math.cos(d),math.sin(d))
-		c:setDirection(-math.pi/2)
+		c:setDirection(r or -math.pi/2)
 		c:setAreaSpread("uniform",12,12) --set to radius of object
 		c:setSpread(math.pi/3) --raidans
 		c:setSpin(0,0,math.pi/4,math.pi/4,math.pi/4)
@@ -129,7 +129,7 @@ function ring.make(x,y,l,s,r,g,b,a)
 	w.image = res.load("sprite","ring.png")
 	ring.draw = function (self)
 		love.graphics.setColor(self.color[1],self.color[2],self.color[3],(self.color[4]*self.life/self._life));
-		 love.graphics.draw(self.image,self.x,self.y,0,self.scale,self.scale,32,32) end
+		 love.graphics.draw(self.image,self.x,self.y,0,self.scale,self.scale,24,24) end
 	ring.update = function (self,dt) self.scale = self.scale + .1*self.speed; self.life = self.life - 1 end
 	ring.start = function (self) end
  

@@ -17,7 +17,7 @@
    inkscape:export-filename="/home/unonu/Projects/tether/res/images/enemySheet.png"
    inkscape:export-xdpi="314.14999"
    inkscape:export-ydpi="314.14999"
-   sodipodi:docname="New document 1">
+   sodipodi:docname="enemies.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="164.43994"
-     inkscape:cy="72.964033"
+     inkscape:zoom="7.919596"
+     inkscape:cx="66.3484"
+     inkscape:cy="24.955812"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -39,10 +39,13 @@
      fit-margin-right="4"
      fit-margin-bottom="4"
      inkscape:window-width="1920"
-     inkscape:window-height="1056"
+     inkscape:window-height="1022"
      inkscape:window-x="0"
-     inkscape:window-y="24"
-     inkscape:window-maximized="1">
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:object-nodes="true"
+     inkscape:object-paths="true"
+     inkscape:snap-intersection-paths="true">
     <inkscape:grid
        type="xygrid"
        id="grid2985"
@@ -229,7 +232,19 @@
        sodipodi:cy="49.862183"
        sodipodi:rx="2.5"
        sodipodi:ry="2.5"
-       d="m 305,49.862183 a 2.5,2.5 0 1 1 -5,0 2.5,2.5 0 1 1 5,0 z"
+       d="m 305,49.862183 c 0,1.380711 -1.11929,2.5 -2.5,2.5 -1.38071,0 -2.5,-1.119289 -2.5,-2.5 0,-1.380712 1.11929,-2.5 2.5,-2.5 1.38071,0 2.5,1.119288 2.5,2.5 z"
        transform="matrix(0.61111111,0,0,0.61122419,114.13889,15.886228)" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 74.570368,70.395833 1.948149,5.899072 0,15.730856 -1.948149,5.899072 5.844445,-1.966357 15.585187,0 5.84446,1.966357 -1.948152,-5.899072 0,-15.730856 1.948152,-5.899072 L 96,72.36219 l -15.585187,0 z"
+       id="path2987-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccccc" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 115.48147,70.395833 -5.84445,5.899072 5.84445,5.899069 -0.3111,-2.899069 3,2 9,-5 -9,-5 -3,2 z"
+       id="path2989-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccc" />
   </g>
 </svg>

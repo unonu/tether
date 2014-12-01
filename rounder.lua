@@ -53,10 +53,23 @@ function rounder()
 			end
 		elseif state.round == 19 then
 			state.quota = -1
-			for i = 1, 8-#state.enemies do
+			for i = 1, 8 do
 				table.insert(state.enemies,drone.make())
 			end
 			state.objective = "DEFEAT ALL ENEMIES"
+		elseif state.round == 20 then
+			state.quota = -1
+			state.boss = true
+			state.grabPlayer = true
+			state.player.members.a.x,state.player.members.a.y = screen:getCentre('x')/2,screen:getCentre('y')
+			state.player.members.b.x,state.player.members.b.y = screen:getCentre('x')*1.5,screen:getCentre('y')
+			state.player:giveHealth('both',8)
+			state.rocks = {}
+			state.enemies = {}
+			screen:flash(1,20,{255,255,255},"full")
+			table.insert(state.enemies,swarm.make())
+			messages:new('DEFEAT THE BOSS!',screen:getCentre('x'),screen:getCentre('y')+48,"still",3,{255,255,255},'boomLarge')
+			state.objective = "BOSS"
 		elseif state.round == 21 then
 			state.objective = nil
 			state.quota = 10
@@ -136,26 +149,26 @@ function rounder()
 	--first cycle
 	if state.round <= 2 then
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100))) end
-		if math.random(0,10000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
 	elseif state.round > 2 and state.round <= 4 then
-		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,3)) end
-		if math.random(0,10000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
-	elseif state.round > 4 and state.round <= 6 then
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,2)) end
-		if math.random(0,10000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+	elseif state.round > 4 and state.round <= 6 then
+		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
 	elseif state.round > 6 and state.round <= 8 then
 		if #state.rocks < 8 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
-		if math.random(0,10000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
 	elseif state.round == 9 then
 		if #state.rocks < 14 then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),true,1)) end
-		if math.random(0,10000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
 	elseif state.round == 10 then
 		--boss
-		if #state.rocks < 6 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
+		if state.enemies[1] and state.enemies[1].timers.intro == 600 and #state.rocks < 6 and math.random(0,200) == math.random(0,200) then table.insert(state.rocks,rock.make(math.random(100, screen.width-100),math.random(100, screen.height-100),false,3)) end
 		if #state.enemies == 0 then
 			state.stats.rocksRound = state.quota
 		end
-		if math.random(0,9500) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
+		if math.random(0,1000) == 1 then health.make(math.random(24,screen.width-24),math.random(24,screen.height-24)) end
 	--second cycle
 	elseif state.round > 10 and state.round <= 11 then
 		if #state.enemies < 1 then

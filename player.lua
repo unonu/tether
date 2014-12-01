@@ -30,14 +30,14 @@ function player.make(number)
 			spawned = true, 
 			tether = false, 
 			perks = {}, 
-			attraction = 100, 
+			attraction = 200, 
 			target = {rot = 0,  scale = 1}, 
 			lapse = 0,
 			items = {nil,nil,nil,nil,nil},
 			color = {100, 255, 100}, 
 			keys = {up = 'w',  down = 's',  left = 'a',  right = 'd',  tether = 'lshift'}, 
 			timers = {spawn = 0, 
-						hp = 0}, 
+						hp = 0},
 		}
 		p.members.b = {
 			name = 'b', 
@@ -62,14 +62,14 @@ function player.make(number)
 			spawned = true, 
 			tether = false, 
 			perks = {}, 
-			attraction = 100, 
+			attraction = 200, 
 			target = {rot = 0,  scale = 1}, 
 			lapse = 0, 
 			items = {nil,nil,nil,nil,nil},
 			color = {255, 100, 100}, 
 			keys = {up = 'up',  down = 'down',  left = 'left',  right = 'right',  tether = 'kp0'}, 
 			timers = {spawn = 0, 
-						hp = 0}, 
+						hp = 0},
 		}
 
 	if number > 0 then
@@ -122,15 +122,19 @@ end
 
 function player:closest(x, y)
 	if ((self.members.a.x-x)^2+(self.members.a.y-y)^2)^(.5) <= ((self.members.b.x-x)^2+(self.members.b.y-y)^2)^(.5) then
-		return {x=self.members.a.x, y=self.members.a.y}
+		return {x=self.members.a.x, y=self.members.a.y, a = self.members.a.attraction}, self.members.a
 	else
-		return {x=self.members.b.x, y=self.members.b.y}
+		return {x=self.members.b.x, y=self.members.b.y, a = self.members.b.attraction}, self.members.b
 	end
 end
 
-function player:drawMember(member, x, y, s)
-	if member.spawned then
-		local otherRot = math.atan2(member.y-self.members[member.other].y,member.x-self.members[member.other].x)+(math.pi/2)
+function player:drawMember(member, hud, x, y, s)
+if member.spawned then
+		
+	local otherRot = math.atan2(member.y-self.members[member.other].y,member.x-self.members[member.other].x)+(math.pi/2)
+	
+	if hud == nil or hud then
+
 		--hp
 		love.graphics.setLineWidth(8)
 		love.graphics.setColor(255,255,255,64)
@@ -147,6 +151,8 @@ function player:drawMember(member, x, y, s)
 		if member.energy < member.stats.energy/4 then love.graphics.setColor(255,0,0,math.random(200,255)) end
 		love.graphics.setLineWidth(4)
 		love.graphics.curve(member.x,member.y,72,0,math.pi*(member.energy/member.stats.energy),member.stats.energy)
+
+	end
 
 	--drawing
 	if not love.keyboard.isDown(member.keys.up, member.keys.down, member.keys.left, member.keys.right) or state.grabPlayer then --stationary
@@ -228,8 +234,10 @@ function player:drawMember(member, x, y, s)
 end
 end
 
-function player:draw()
+function player:draw(hud)
 	love.graphics.setFont(fonts.medium)
+
+if hud == nil or hud then
 
 	if self.members.a.tether and self.members.b.tether then
 		--sync
@@ -255,8 +263,10 @@ function player:draw()
 			love.graphics.setLineWidth(math.floor(24-24*self.distance/self.tetherDistance))
 			love.graphics.setColor(math.random(14, 77), math.random(59, 155), 255, 255-(128*self.distance/self.tetherDistance))
 			love.graphics.line(self.members.a.x, self.members.a.y, self.members.b.x, self.members.b.y)
-			love.graphics.setColor(255,255,255,120)
+			love.graphics.setColor(200,255,255,120)
+			love.graphics.setShader(shaders.chromaticAberation)
 			love.graphics.draw(self.tetherImage,self.members.a.x,self.members.a.y,math.atan2(self.members.a.y-self.members.b.y,self.members.a.x-self.members.b.x)-math.pi,self.distance,love.graphics.getLineWidth()/24,0,12)
+			love.graphics.setShader()
 			love.graphics.setColor(0,0,255,24)
 			love.graphics.setLineWidth(2)
 		else
@@ -281,17 +291,17 @@ function player:draw()
 		love.graphics.stippledLine(self.members.a.x, self.members.a.y, self.members.b.x, self.members.b.y, 8, 8)
 	end
 
-
+end
 
 	--------------
 	-- A member --
 	--------------
-	self:drawMember(self.members.a)
+	self:drawMember(self.members.a,hud)
 
 	--------------
 	-- B member --
 	--------------
-	self:drawMember(self.members.b)
+	self:drawMember(self.members.b,hud)
 end
 
 function player:updateMember(member, dt)
@@ -458,7 +468,10 @@ function player:update()
 	if self.sync.syncing and (self.members.a.vol <= 1 and self.members.b.vol <= 1) then
 		if self.sync.percentage < 1 then self.sync.percentage = self.sync.percentage + .002 
 		else messages:new("SYNCED!", self.members.a.x-(self.members.a.x-self.members.b.x)/2, 
-			self.members.a.y-(self.members.a.y-self.members.b.y)/2, 'up', 1, {255, 0, 0}); self.sync.synced = true end
+			self.members.a.y-(self.members.a.y-self.members.b.y)/2, 'up', 1, {255, 0, 0})
+			self.sync.synced = true
+			state.syncState = true
+		end
 	else
 		self.sync.percentage = 0
 	end
@@ -494,14 +507,20 @@ function player:update()
 		if remove then table.remove(state.bullets, i) end
 	end
 	for i, b in ipairs(state.enemies) do
-		if self.members.a.immunity == 0 and b.collideable and b.x >= self.members.a.x-6 and b.x <= self.members.a.x+6 and b.y >= self.members.a.y-6 and b.y <= self.members.a.y+6 then
+		if self.members.a.immunity == 0 and b.collideable and 
+		((math.dist(b._x or b.x,b._y or b.y, self.members.a.x,self.members.a.y) < math.dist(b._x or b.x,b._y or b.y,b.x,b.y) and
+		math.dist(self.members.a.x,self.members.a.y,b._x or b.x,b._y or b.y) < math.dist(b._x or b.x,b._y or b.y,b.x,b.y)) or
+		(b.x >= self.members.a.x-6 and b.x <= self.members.a.x+6 and b.y >= self.members.a.y-6 and b.y <= self.members.a.y+6)) then
 			self.members.a.hp = self.members.a.hp - b.damage
 			self.members.a.lapse = 0
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.a.color, 255), "edge") end
 			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 		end
-		if self.members.b.immunity == 0 and b.collideable and b.x >= self.members.b.x-12 and b.x <= self.members.b.x+12 and b.y >= self.members.b.y-12 and b.y <= self.members.b.y+12 then
+		if self.members.b.immunity == 0 and b.collideable and 
+		((math.dist(b._x or b.x,b._y or b.y, self.members.b.x,self.members.b.y) < math.dist(b._x or b.x,b._y or b.y,b.x,b.y) and
+		math.dist(self.members.b.x,self.members.b.y,b._x or b.x,b._y or b.y) < math.dist(b._x or b.x,b._y or b.y,b.x,b.y)) or
+		(b.x >= self.members.b.x-6 and b.x <= self.members.b.x+6 and b.y >= self.members.b.y-6 and b.y <= self.members.b.y+6)) then
 			self.members.b.hp = self.members.b.hp - b.damage
 			self.members.b.lapse = 0
 			screen:shake(.5, 4)

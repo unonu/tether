@@ -6,22 +6,23 @@ function drone.make()
 	setmetatable(e,drone)
 	if math.random(0,1) == 0 then
 		local x = math.random(0,1)*screen.width
-		e.x,e.y = x-(512*math.sign(1-x)),math.random(0,screen.height)
+		e.x,e.y = x-(128*math.sign(1-x)),math.random(0,screen.height)
 	else
 		local y = math.random(0,1)*screen.height
-		e.x,e.y = math.random(0,screen.width),y-(512*math.sign(1-y))
+		e.x,e.y = math.random(0,screen.width),y-(128*math.sign(1-y))
 	end
 	e._x = e.x-math.random(0,128)
 	e._y = e.y-math.random(0,128)
-	e.r = math.pi
+	e.rot = math.random()*math.pi
 	e.orbit = math.random(192,256)
 
 	e.image = res.load("sprite","drone.png")
 
 	e.class = 'drone'
 	e.drop = true
-	e.speed = (math.random()+1)*128
+	e.speed = (math.random()+1)*80
 	e.dir = math.rsign()
+	e.r = 18
 	e.hp = 2
 	e.kill = false
 	e.collideable = false
@@ -41,7 +42,7 @@ function drone:update(dt)
 	if self.x < 0 or self.y < 64 or self.x > screen.width or self.y > screen.height then
 		self.dir = -self.dir
 	end
-	self.r = self.r-math.min(0-(math.pi/self.speed),0)*self.dir
+	self.rot = self.rot-math.min(0-(math.pi/self.speed),0)*self.dir
 	if self._x < state.player:closest(self.x,self.y).x then
 		self._x = self._x+1
 	end
@@ -59,7 +60,7 @@ function drone:update(dt)
 	self.y = self._y + (math.sin(self.r)*self.orbit)
 	
 	for i,t in ipairs(state.tethers) do
-		--[[if the distance between projection's x and y and the rock's x and y
+		--[[if the distance between projection's x and y and the drone's x and y
 		is less than the sum of their radii, then collision]]
 		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
 		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
@@ -74,6 +75,7 @@ function drone:update(dt)
 
 	if self.hp <= 0 then
 		state.points = state.points + 1
+		shimmer.make(self.x,self.y,self.rot,255,12,32)
 	end
 	if self.fire > 0 then self.fire = self.fire - 1 else self.fire = self.fireLimit end
 	
@@ -147,7 +149,7 @@ function sentry:update(dt,shoot)
 	if self.fire == 0 then
 		-- local closest = state.player:closest(self.x,self.y)
 		-- bullet.make(self.x,self.y,math.atan2(self.y-closest.y,self.x-closest.x),4,30,"sentry")
-		bullet.make(self.x,self.y,self.rot,4,30,"sentry")
+		bullet.make(self.x,self.y,self.rot,4,15,"sentry")
 	end
 	end
 
@@ -190,6 +192,7 @@ function dash.make()
 		local y = math.random(0,1)*screen.height
 		e.x,e.y = math.random(0,screen.width),y-(512*math.sign(1-y))
 	end
+	e._x,e._y = 0,0
 
 	e.r = math.random(0,2)*math.pi
 	e.timer = 16
@@ -215,7 +218,7 @@ end
 
 function dash:update(dt)
 	if not self.locked then
-		self.r = math.round(math.loop(-math.pi,self.r-(math.pi/256),math.pi),2)
+		self.r = math.round(math.loop(-math.pi,self.r-(math.pi/256)*self.dir,math.pi),2)
 	end
 	if math.round(math.atan2(self.y-state.player:closest(self.x,self.y).y,
 		self.x-state.player:closest(self.x,self.y).x),1) >= math.loop(-math.pi,self.r-(math.pi/48),math.pi)
@@ -223,6 +226,7 @@ function dash:update(dt)
 		self.x-state.player:closest(self.x,self.y).x),1) <= math.loop(-math.pi,self.r+(math.pi/48),math.pi) then
 		self.locked = true
 	end
+	self._x,self._y = self.x,self.y
 	if self.locked then
 		if self.v == 0 then self.timer = self.timer -1 end
 		if self.timer < 0 then
@@ -246,9 +250,10 @@ function dash:update(dt)
 		is less than the sum of their radii, then collision]]
 		local proj = math.projection(t.x1,t.y1,self.x,self.y,t.x2,t.y2)
 		local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
-		if math.dist(self.x,self.y,projX,projY) <= self.r+t.width
-			and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
-			and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2) then
+		if (math.checkIntersect({self.x,self.y},{self._x,self._y},{t.x1,t.y1},{t.x2,t.y2})) or
+			(math.dist(self.x,self.y,projX,projY) <= self.r+t.width
+					and self.x+self.r >= math.min(t.x1,t.x2) and self.y+self.r >= math.min(t.y1,t.y2)
+					and self.x-self.r <= math.max(t.x1,t.x2) and self.y-self.r <= math.max(t.y1,t.y2)) then
 			self.hp = self.hp - t.strength
 			sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
 			screen:shake(.15, 4, false)
@@ -322,7 +327,7 @@ undead = {}
 sentinel = {}
 sentinel.__index = sentinel
 
-function sentinel.make()
+function sentinel.make(x,y,hp,intro)
 	local s = {}
 	setmetatable(s,sentinel)
 	s.core = nil
@@ -334,7 +339,8 @@ function sentinel.make()
 	s.members = {}
 	s.arms = {}
 	s.hp = 256
-	s.drop = false
+	s.drop = true
+	s.bounty = 201
 	s.kill = false
 	s.r = 12
 	s.invincible = true
@@ -374,7 +380,9 @@ function sentinel:update(dt)
 			self.core = sentry.make(self.x,self.y,-1,3,4096)
 			self.core.fireLimit = 100
 			self.core.image = res.load("sprite","sentinel.png")
+			--[[Redefine the draw function]]
 			self.core.draw = function (self,rockrot,a) 
+				-- print(self.s,self)
 				if self.shield ~= self._shield then
 					love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
 					self._shield = self.shield
@@ -394,6 +402,7 @@ function sentinel:update(dt)
 				love.graphics.draw(self.image,res.quads["sentinel1"],self.x,self.y,rockRot,-1*sf,1*sf,50,51)
 				love.graphics.draw(self.image,res.quads["sentinel2"],self.x,self.y,self.rot-math.pi,-1*sf,1*sf,39,24)
 			end
+			--
 		end
 		if self.timers.intro == 100 then
 			if self.core.hp == self.core._hp then
@@ -522,6 +531,18 @@ function sentinel:update(dt)
 	end
 	end
 
+	if self.x >= state.player.members.a.x - 34*self.core.s - 12 and
+	self.x <= state.player.members.a.x + 34*self.core.s + 12 and
+	self.y >= state.player.members.a.y - 34*self.core.s - 12 and
+	self.y <= state.player.members.a.y + 34*self.core.s + 12 then
+		state.player:push('a',self.x - state.player.members.a.x,self.y - state.player.members.a.y,-.8)
+	end
+	if self.x >= state.player.members.b.x - 34*self.core.s - 12 and
+	self.x <= state.player.members.b.x + 34*self.core.s + 12 and
+	self.y >= state.player.members.b.y - 34*self.core.s - 12 and
+	self.y <= state.player.members.b.y + 34*self.core.s + 12 then
+		state.player:push('b',self.x - state.player.members.b.x,self.y - state.player.members.b.y,-.8)
+	end
 
 	if #self.arms == 0 and self.timers.intro > 100 then
 		self.timers.t = self.timers.t+(.01*self.dir)
@@ -540,25 +561,276 @@ function sentinel:update(dt)
 	end
 end
 
+swarm = {}
+swarm.__index = swarm
+
+function swarm.make(x,y,hp,intro)
+	local s = {}
+	setmetatable(s,swarm)
+	s.core = nil
+	s.rot = 0
+	s.rotSpeed = 1
+	s.rotDir = 1
+	s.x,s.y = unpack(screen:getCentre())
+	s.dir = 1
+	s.members = {{0,0},{12,12},{48,48}}
+	s.memberImage = res.load("sprite","drone.png")
+	s.hp = 256
+	s.drop = true
+	s.bounty = 201
+	s.kill = false
+	s.r = 12
+	s.invincible = true
+	s.target = nil
+
+	s.timers = {intro = 0,
+				measure = 4,
+				stage = 1,
+				t = 0,
+				focus = 0}
+	state.cinematic = true
+
+	return s
+end
+
+function swarm:draw()
+	-- for i,a in ipairs(self.arms) do
+	-- 	for ii,m in ipairs(a) do
+	-- 		if m[1] then 
+	-- 			m[1]:draw(0,255)
+	-- 		end
+	-- 	end
+	-- end
+	love.graphics.setColor(255, 0, 0)
+	for i,m in ipairs(self.members) do
+		love.graphics.draw(self.memberImage,self.x+m[1],self.y+m[2],self.rot-(math.pi/2))
+	end
+
+	-- if self.core then
+	-- 	self.core:draw(0,255)
+	-- end
+end
+
+function swarm:update(dt)
+	--intro animations
+	if self.timers.intro < 20 then
+		self.invincible = true
+	-- 	if self.timers.intro == 0 then
+	-- 		self.core = sentry.make(self.x,self.y,-1,3,4096)
+	-- 		self.core.fireLimit = 100
+	-- 		self.core.image = res.load("sprite","swarm.png")
+	-- 		--[[Redefine the draw function]]
+	-- 		self.core.draw = function (self,rockrot,a) 
+	-- 			if self.shield ~= self._shield then
+	-- 				love.graphics.setColor(255,255,255,math.min(a,math.random(0,128)))
+	-- 				self._shield = self.shield
+	-- 			elseif self.birth > 1 and self.birth < 2 then
+	-- 				love.graphics.setColor(255,0,0,255*(1-self.birth))
+	-- 			else
+	-- 				love.graphics.setColor(255,0,0,math.min(a,math.random(128,164))*self.shield)
+	-- 			end
+	-- 			if self.birth > 1 then
+	-- 				love.graphics.circle("fill",self.x,self.y,34*self.s,36)
+	-- 					love.graphics.setColor(0,0,0,math.min(a,128))
+	-- 			end
+	-- 			love.graphics.setLineWidth(4*self.s)
+	-- 			love.graphics.curve(self.x,self.y,32*self.s,0,math.pi*self.intro,36)
+	-- 				love.graphics.setColor(255,255,255,a)
+	-- 			local sf = math.min(1,self.birth)
+	-- 			love.graphics.draw(self.image,res.quads["swarm1"],self.x,self.y,rockRot,-1*sf,1*sf,50,51)
+	-- 			love.graphics.draw(self.image,res.quads["swarm2"],self.x,self.y,self.rot-math.pi,-1*sf,1*sf,39,24)
+	-- 		end
+	-- 		--
+		-- end
+	-- 	if self.timers.intro == 100 then
+	-- 		if self.core.hp == self.core._hp then
+	-- 			self.arms[1] = {}
+	-- 			self.arms[2] = {}
+	-- 			self.arms[3] = {}
+	-- 			self.arms[4] = {}
+	-- 			print("a")
+	-- 			table.insert(self.arms[1],{sentry.make(self.x,self.y,-1,1,1024),128,1})
+	-- 			table.insert(self.arms[2],{sentry.make(self.x,self.y,-1,1,1024),128,2})
+	-- 			table.insert(self.arms[3],{sentry.make(self.x,self.y,-1,1,1024),128,3})
+	-- 			table.insert(self.arms[4],{sentry.make(self.x,self.y,-1,1,1024),128,4})
+	-- 		end
+	-- 	elseif self.timers.intro > 100 and self.timers.arm1Intro < 1 then
+	-- 		self.timers.arm1Intro = self.timers.arm1Intro + .01
+	-- 	end
+	-- 	if self.timers.intro > 200 and self.timers.arm2Intro < 1 then
+	-- 		self.timers.arm2Intro = self.timers.arm2Intro + .01
+	-- 	end
+	-- 	if self.timers.intro > 300 and self.timers.arm3Intro < 1 then
+	-- 		self.timers.arm3Intro = self.timers.arm3Intro + .01
+	-- 	end
+	-- 	if self.timers.intro > 400 and self.timers.arm4Intro < 1 then
+	-- 		self.timers.arm4Intro = self.timers.arm4Intro + .01
+	-- 	end
+		self.timers.intro = self.timers.intro+1
+	else
+		self.invincible = false
+		state.cinematic = false
+		state.grabPlayer = false
+
+	-- 	--rotation
+	-- 	if math.random(1,3000/self.timers.stage) == 1 then
+	-- 		self.rotDir = -self.rotDir
+	-- 	end
+	-- 	self.rot = self.rot + (math.pi/256)*self.rotSpeed*self.rotDir
+
+	-- 	if self.core.hp < self.core._hp*2/3 and self.timers.stage == 1 and #self.arms == 0 then
+	-- 		for i=1,4 do
+	-- 			self.arms[i] = {}
+	-- 			self.timers["arm"..i.."Intro"] = 0
+	-- 			table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
+	-- 			table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,768),176,i})
+	-- 		end
+	-- 			self.timers.intro = 100
+	-- 			self.timers.stage = 2
+	-- 			self.rotSpeed = 1.3
+	-- 			self.core.fireLimit = 50
+	-- 	elseif self.core.hp < self.core._hp*1/3 and self.timers.stage == 2 and #self.arms == 0 then
+	-- 		for i=1,4 do
+	-- 			self.arms[i] = {}
+	-- 			self.timers["arm"..i.."Intro"] = 0
+	-- 			table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,1024),128,i})
+	-- 			table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,768),176,i})
+	-- 			table.insert(self.arms[i],{sentry.make(self.x,self.y,-1,1,512),224,i})
+	-- 		end
+	-- 			self.timers.intro = 100
+	-- 			self.timers.stage = 3
+	-- 			self.rotSpeed = 1.6
+	-- 			self.core.fireLimit = 25
+	-- 	end
+
+	end
+
+	-- set target
+	if self.timers.focus <= 0 then
+		self.timers.focus = 0
+		local x
+		x, self.target = state.player:closest(self.x,self.y)
+		self.timers.focus = 120
+	else
+		self.timers.focus = self.timers.focus - 1
+	end
+
+
+	if self.target and self.target.x and self.target.y then
+		print(self.target.x)
+		local angle = math.atan2(self.y-self.target.y,self.x-self.target.x) - self.rot
+		-- print(angle)
+		if angle > math.pi then
+			self.rot = self.rot + (angle-(2*math.pi))/6
+		elseif angle < -math.pi then
+			self.rot = self.rot + (angle+(2*math.pi))/6
+		else
+			-- self.rot = self.rot + (angle)/6
+			self.rot = self.rot + (angle)/6
+		end
+	end
+
+	-- if self.core then
+	-- 	self.hp = self.core.hp
+	-- end
+
+	-- --spacing
+	-- if #self.arms < self.timers.measure then
+	-- 	self.timers.measure = math.max(self.timers.measure-(.02),#self.arms)
+	-- elseif #self.arms > self.timers.measure then
+	-- 	self.timers.measure = math.min(self.timers.measure+(.02),#self.arms)
+	-- end
+	-- ------------------------------------------------------------------
+	-- ------------------------------------------------------------------
+	-- if self.core then
+	-- 	self.core.x,self.core.y = self.x,self.y
+	-- 	self.core:update(dt,(#self.arms ~= 0))
+	-- 	if #self.arms == 0 then
+	-- 		for i,t in ipairs(state.tethers) do
+	-- 			--[[if the distance between projection's x and y and the rock's x and y
+	-- 			is less than the sum of their radii, then collision]]
+	-- 			local proj = math.projection(t.x1,t.y1,self.core.x,self.core.y,t.x2,t.y2)
+	-- 			local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+	-- 			if math.dist(self.core.x,self.core.y,projX,projY) <= self.core.r+t.width
+	-- 				and self.core.x+self.core.r >= math.min(t.x1,t.x2) and self.core.y+self.core.r >= math.min(t.y1,t.y2)
+	-- 				and self.core.x-self.core.r <= math.max(t.x1,t.x2) and self.core.y-self.core.r <= math.max(t.y1,t.y2) then
+	-- 				self.core.hp = math.floor(self.core.hp - t.strength)
+	-- 				sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+	-- 				screen:shake(.15, 5, false)
+	-- 			end
+	-- 		end
+	-- 	end
+	-- end
+	-- for i,a in ipairs(self.arms) do
+	-- if self.timers.intro > i*100 then
+	-- 	for ii,m in ipairs(a) do
+	-- 		m[1].x = self.x+m[2]*math.cos(self.rot+(m[3])*math.pi/2)*self.timers["arm"..i.."Intro"]
+	-- 		m[1].y = self.y+m[2]*math.sin(self.rot+(m[3])*math.pi/2)*self.timers["arm"..i.."Intro"]
+
+	-- 		m[1]:update(dt,(self.timers.intro < 600))
+	-- 		if ii == #a and not self.invincible then
+	-- 			for iii,t in ipairs(state.tethers) do
+	-- 				--[[if the distance between projection's x and y and the rock's x and y
+	-- 				is less than the sum of their radii, then collision]]
+	-- 				local proj = math.projection(t.x1,t.y1,m[1].x,m[1].y,t.x2,t.y2)
+	-- 				local projX, projY = t.x1+math.cos(t.angle)*proj,t.y1+math.sin(t.angle)*proj
+	-- 				if math.dist(m[1].x,m[1].y,projX,projY) <= m[1].r+t.width
+	-- 					and m[1].x+m[1].r >= math.min(t.x1,t.x2) and m[1].y+m[1].r >= math.min(t.y1,t.y2)
+	-- 					and m[1].x-m[1].r <= math.max(t.x1,t.x2) and m[1].y-m[1].r <= math.max(t.y1,t.y2) then
+	-- 					m[1].hp = m[1].hp - t.strength*2
+	-- 					sparks.make(projX, projY, math.random(130, 140), math.random(230, 240), 255, 255*(t.strength/6))
+	-- 					screen:shake(.15, 2, false)
+	-- 				end
+	-- 			end
+	-- 		end
+	-- 		if m[1].hp <= 0 then
+	-- 			self.rotDir = -self.rotDir
+	-- 			table.remove(a,ii)
+	-- 		end
+	-- 	end
+	-- 	if #a == 0 then
+	-- 		table.remove(self.arms,i)
+	-- 	end
+	-- end
+	-- end
+
+
+	-- if #self.arms == 0 and self.timers.intro > 100 then
+	-- 	self.timers.t = self.timers.t+(.01*self.dir)
+	-- 	if self.timers.t > 1 or self.timers.t < -1 then self.dir = -self.dir end
+	-- 	--
+	-- 	self.x = screen:getCentre('x') + self.timers.t*512
+	-- 	self.y = screen:getCentre('y') + math.sin(math.pi*self.timers.t*self.dir)*self.timers.stage*64
+	-- else
+	-- 	if self.x ~= screen:getCentre('x') then
+	-- 		self.x = math.floor(self.x+(screen:getCentre('x')-self.x)/12)
+	-- 	end
+	-- 	if self.y ~= screen:getCentre('y') then
+	-- 		self.y = math.floor(self.y+(screen:getCentre('y')-self.y)/12)
+	-- 	end
+	-- 	self.timers.t = 0
+	-- end
+end
+
+
 torrent = {}
 torrent.__index = torrent
 
 function torrent.make(x,y,hp,intro)
 	local t = {}
 	setmetatable(t,torrent)
-	t.x = x
-	t.y = y
-	t.r = 8+(hp*.2)
+	t.x, t.y = unpack(screen:getCentre())
+	t.r = 8+((hp or 256)*.2)
 	t.class = 'torrent'
 	t.shield = 100
 	t.primed = false
 	t.drop = true
 	t.stats = {}
-	t.stats.hp = hp
-	t.hp = hp
+	t.stats.hp = hp or 256
+	t.hp = hp or 256
 	t.bounty = 201
 	t.collideable = false
-	t._hp = hp
+	t._hp = hp or 256
 	t.x_vol = 0
 	t.y_vol = 0
 	t.forces = {{2,math.random(0,3.13)}}

@@ -5,13 +5,15 @@ intro.__index = intro
 function intro.make(dt)
 	local i = {}
 	setmetatable(i,intro)
-	i.slides = {res.load("image","orea.png"),}
+	i.slides = {res.load("image","orea.png"),res.load("image","seizureWarning.png")}
 	i.slide = 1
 	i.timerUp = 0
 	i.timerDown = dt or 80
 	i.delay = dt or 80
 	i.alpha = 0
 	i.dt = dt or 80
+	i.name = "Intro"
+
 	return i
 end
 
@@ -42,7 +44,9 @@ function intro:draw()
 		love.timer.sleep(1)
 		state = mainmenu.make()
 	end
-	love.graphics.curve(64,64,24,0,math.pi,16)
+	if self.slide == 1 then
+	love.graphics.curve(screen.width-72,screen.height-72,24,.2,math.pi+.2,16)
+	end
 end
 
 function intro:keypressed(k)
@@ -72,6 +76,7 @@ function mainmenu.make(ready)
 				}
 	m.res = {bg = res.load("image","titleArt.png"),}
 	m.ready = ready or false
+	m.name = "Main Menu"
 
 	return m
 end
@@ -116,16 +121,21 @@ if self.ready then
 	love.graphics.draw(self.res.bg,self.timers.bg,-self.timers.bg*4/7)
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
-			love.graphics.setColor(0,0,0)
+			love.graphics.setColor(0,0,0,255*(1-(self.timers.tetherRise/((screen.height/2)-16))))
 		else
-			love.graphics.setColor(128,128,128)
+			love.graphics.setColor(128,128,128,255*(1-(self.timers.tetherRise/((screen.height/2)-16))))
 		end
-		love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
+		love.graphics.printf(m,0 + ((-1)^i)*(48+(i*128))*((self.timers.tetherRise/((screen.height/2)-16))),(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
 	end
 
 		love.graphics.translate(0,96)
 		love.graphics.setColor(0,0,0)
+		-- if (math.floor(math.random(0,100)/100)*math.random(4,6)) ~= 0 then
+		-- 	love.graphics.setShader(shaders.chromaticAberation)
+		-- 	love.graphics.setColor(255,255,255)
+		-- end
 	love.graphics.print('Tether',(screen.width/2)-90,self.timers.tetherRise)
+		love.graphics.setShader()
 		love.graphics.translate(0,-96)
 
 	if self.timers.screenR > 0 then
@@ -168,17 +178,21 @@ function mainmenu:keypressed(k)
 			if k == 'w' or k == 'up' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
+				else
+					screen:shake(.15,2,false)
 				end
 			elseif k == 's' or k == 'down' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
+				else
+					screen:shake(.15,2,false)
 				end
 			elseif k == 'return' or k =='lshift' or k == 'kp0' then
 				if self.menu[self.menuIndex] == 'Arcade' then
 					love.graphics.clear()
-					love.graphics.setColor(0,0,0)
+					love.graphics.setColor(255,255,255)
 					love.graphics.rectangle('fill',0,0,screen.width,screen.height)
-					state = game.make()
+					state = instructions.make()
 				elseif self.menu[self.menuIndex] == 'Options' then
 					state = options.make()
 				elseif self.menu[self.menuIndex] == 'Credits' then
@@ -213,14 +227,15 @@ function options.make()
 	local o = {}
 	setmetatable(o,options)
 	o.menu = {"Fullscreen","Music","Back"}
-	o.timers = {}
+	-- o.timers = {}
 	o.menuIndex = 1
 	o.timers = {}
 		o.timers.fader = 120
 		o.timers.screenR = 0
-		o.timers.screenR = 0
+		-- o.timers.screenR = 0
 		o.timers.colors = {r=255,g=0,b=0}
-		o.timers.screenR = 0
+		-- o.timers.screenR = 0
+	o.name = "Options"
 
 	return o
 end
@@ -254,14 +269,14 @@ function options:draw()
 	end
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
-			love.graphics.setColor(255,255,255)
+			love.graphics.setColor(255,255,255,255*self.timers.screenR/screen.width)
 		else
-			love.graphics.setColor(128,128,128)
+			love.graphics.setColor(128,128,128,255*self.timers.screenR/screen.width)
 		end
 		if m ==  'Music' then
-			love.graphics.printf(m..autxt,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
+			love.graphics.printf(m..autxt,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)*self.timers.screenR/screen.width),screen.width,'center')
 		else
-			love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
+			love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)*self.timers.screenR/screen.width),screen.width,'center')
 		end
 	end
 end
@@ -272,10 +287,14 @@ function options:keypressed(k)
 		if k == 'w' or k == 'up' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
+			else
+				screen:shake(.15,2,false)
 			end
 		elseif k == 's' or k == 'down' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
+			else
+				screen:shake(.15,2,false)
 			end
 		elseif k == 'return' or k =='lshift' or k == 'kp0' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
@@ -289,6 +308,61 @@ function options:keypressed(k)
 		end
 	else
 		state = mainmenu.make(true)
+	end
+end
+
+instructions = {}
+instructions.__index = instructions
+
+function instructions.make()
+	local i = {}
+	setmetatable(i, instructions)
+	i.name = "Instructions"
+	i.strings = {
+	[[Use the ĆĆĆĆĆ to move your craft.]],
+	[[Press Ā to activate your tether apparatus.
+Both players must tether at the same time to complete the effect.]],
+	[[Ready?]]
+	}
+	i.index = 1
+	i.res = {joystick0 = res.load("image","joystickU.png"),
+			joystick1 = res.load("image","joystickR.png"),
+			joystick2 = res.load("image","joystickD.png"),
+			joystick3 = res.load("image","joystickL.png"),
+			background = res.load("image","greyField.png")}
+	i.timers = {
+		joystick = 0
+	}
+	love.graphics.setFont(fonts.medium)
+	screen:setBackground(i.res.background)
+
+	return i
+end
+
+function instructions:draw()
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.draw(self.res.background,0,0,0,screen.width/1280,screen.height/720)
+
+	love.graphics.printf(self.strings[self.index],0,(screen.height/2) - (fonts.medium:getHeight(self.strings[self.index])/2),screen.width,"center")
+	if self.index == 1 then
+		local image = self.res["joystick"..math.floor(self.timers.joystick)]
+		love.graphics.draw(image,560-image:getWidth()/2,(screen.height/2)-45)
+	end
+end
+
+function instructions:update()
+	self.timers.joystick = (self.timers.joystick + .02)%4
+	if self.index == 0 then
+		state = game.make()
+	end
+end
+
+function instructions:keypressed(k)
+	if k == "escape" then
+		self.index = 0
+	else
+		self.index = (self.index + 1)%(#self.strings + 1)
+
 	end
 end
 
@@ -321,8 +395,11 @@ function game.make(name1,name2)
 	g.stats = {rocks = 0, enemies = 0, rocksRound = 0}
 	g.pc = {r=255,g=0,b=0,timer = 0}
 	g.canvases = {
+		pauseBuffer = love.graphics.newCanvas(),
 		pauseCanvas = love.graphics.newCanvas(),
+		motionBlur = love.graphics.newCanvas(),
 	}
+	g.blurSample = 3
 	g.res = {	bullet = res.load("sprite","shot.png"),
 				crystal = res.load("sprite","point.png"),
 				target = res.load("sprite","target.png"),
@@ -358,8 +435,14 @@ function game.make(name1,name2)
 				seconds = 0,
 			}
 
-	g.timers = {intro = {0,1,"state.timers.intro[1] = (state.timers.intro[1] + (state.timers.intro[2]-state.timers.intro[1])/24)"}}
+	g.timers = {intro = {0,1,"state.timers.intro[1] = (state.timers.intro[1] + (state.timers.intro[2]-state.timers.intro[1])/24)"},
+				colors = {r=255,g=0,b=0},
+				}
 	
+	g.name = "Main Game"
+
+	g.syncState = false
+
 	return g
 end
 
@@ -368,6 +451,9 @@ function game:draw()
 	love.graphics.draw(self.res.background,0,0,0,screen.width/1280,screen.height/720)
 
 if self.pause == 1 then
+
+if not self.syncState then
+	--normal game
 	love.graphics.push()
 	love.graphics.translate((screen.width/2)*(1-self.timers.intro[1]),(screen.height/2)*(1-self.timers.intro[1]))
 	love.graphics.scale(self.timers.intro[1],self.timers.intro[1])
@@ -426,37 +512,52 @@ if self.pause == 1 then
 	----------------------
 	messages:draw()
 
-		--items
-
-		-- love.graphics.push()
-		-- love.graphics.translate(-10,screen.height-116)
-		-- for i=1,5 do
-		-- 	if self.player.members.a.items[i] then
-		-- 		love.graphics.setColor(255,255,255)
-		-- 	else
-		-- 		love.graphics.setColor(255,255,255,128)
-		-- 	end
-		-- 	if i < 3 then
-		-- 		love.graphics.draw(self.res.itemRing,i*58,0)
-		-- 	else
-		-- 		love.graphics.draw(self.res.itemRing,(i*58)-145,58)
-		-- 	end
-		-- end
 		love.graphics.pop()
 		if self.cinematic then
 			love.graphics.setColor(0,0,0)
 			love.graphics.rectangle("fill",0,0,screen.width,86)
 			love.graphics.rectangle("fill",0,screen.height-86,screen.width,86)
 		end
+
+else
+
+	--syncState
+	love.graphics.setBlendMode("additive")
+	love.graphics.setColor(self.timers.colors.r,self.timers.colors.g,self.timers.colors.b)
+	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
+	love.graphics.setBlendMode("alpha")
+
+	love.graphics.setShader(shaders.monochrome)
+	self.player:draw(false)
+	love.graphics.setShader()
+
+	love.graphics.push()
+	love.graphics.translate(-10,screen.height-116)
+	for i=1,5 do
+		if self.player.members.a.items[i] then
+			love.graphics.setColor(255,255,255)
+		else
+			love.graphics.setColor(255,255,255,128)
+		end
+		if i < 3 then
+			love.graphics.draw(self.res.itemRing,i*58,0)
+		else
+			love.graphics.draw(self.res.itemRing,(i*58)-145,58)
+		end
+	end
+	love.graphics.pop()
+
+end
+
 elseif self.pause == 2 then
 	local xy = screen:getCentre()
 		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
 
-	love.graphics.draw(self.canvases.pauseCanvas)
+	love.graphics.draw(self.canvases.pauseBuffer)
 
 	--------------
-	self.player:drawMember(self.player.members.a,150,150,'Large')
-	self.player:drawMember(self.player.members.b,screen.width-150,screen.height-150,'Large')
+	self.player:drawMember(self.player.members.a,false,150,150,'Large')
+	self.player:drawMember(self.player.members.b,false,screen.width-150,screen.height-150,'Large')
 	--------------
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,xy[2]-48,screen.width*(self.pc.timer/30),96)
@@ -470,8 +571,24 @@ elseif self.pause == 2 then
 
 elseif self.pause == 3 then
 	local xy = screen:getCentre()
-		love.graphics.setColor(self.pc.r,self.pc.g,self.pc.b)
+	love.graphics.setShader()
+
+		love.graphics.setCanvas(self.canvases.pauseCanvas)
+	love.graphics.draw(self.canvases.pauseBuffer)
+
+		love.graphics.setShader(shaders.blurX)
 	love.graphics.draw(self.canvases.pauseCanvas)	
+
+		love.graphics.setShader(shaders.blurY)
+	love.graphics.draw(self.canvases.pauseCanvas)	
+		love.graphics.setShader()
+		love.graphics.setCanvas()
+	love.graphics.draw(self.canvases.pauseCanvas)	
+
+		love.graphics.setBlendMode("multiplicative")
+	love.graphics.setColor(128 + self.pc.r/2,128 + self.pc.g/2,128 + self.pc.b/2)
+	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
+		love.graphics.setBlendMode("alpha")
 	--------------
 		love.graphics.setColor(0,0,0)
 	love.graphics.rectangle("fill",0,xy[2]-((#self.menu/2)*72)-16,screen.width*(self.pc.timer/30),((#self.menu)*72))
@@ -481,11 +598,11 @@ elseif self.pause == 3 then
 		love.graphics.setFont(fonts.large)
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
-			love.graphics.setColor(255,255,255)
+			love.graphics.setColor(255,255,255,255*(self.pc.timer/30))
 		else
-			love.graphics.setColor(128,128,128)
+			love.graphics.setColor(128,128,128,255*(self.pc.timer/30))
 		end
-		love.graphics.printf(m,0,(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
+		love.graphics.printf(m,0 + ((-1)^i)*(48+(i*128))*(1-(self.pc.timer/30)),(screen:getCentre('y')-((#self.menu/2)*72))+(72*(i-1)),screen.width,'center')
 	end
 end
 end
@@ -500,6 +617,10 @@ function game:update(dt)
 	end
 
 if self.pause == 1 then
+
+	--normal game
+if not self.syncState then
+
 	self.time.elapsed = love.timer.getTime()-self.time.startTime
 	self.time.seconds = math.floor(self.time.elapsed)-(60*self.time.minutes)-(3600*self.time.hours)
 	if self.time.seconds > 59.99 then self.time.seconds = 0; self.time.minutes = self.time.minutes + 1 end
@@ -578,7 +699,24 @@ if self.pause == 1 then
 			table.remove(particles,i)
 		end
 	end
+
+else
+	--synce state
+	if self.timers.colors.r > 0 and self.timers.colors.g < 255 and self.timers.colors.b == 0 then
+		self.timers.colors.r = self.timers.colors.r -1
+		self.timers.colors.g = self.timers.colors.g +1
+	elseif self.timers.colors.r == 0 and self.timers.colors.g > 0 and self.timers.colors.b < 255 then
+		self.timers.colors.g = self.timers.colors.g -1
+		self.timers.colors.b = self.timers.colors.b +1
+	elseif self.timers.colors.r < 255 and self.timers.colors.g == 0 and self.timers.colors.b > 0 then
+		self.timers.colors.b = self.timers.colors.b -1
+		self.timers.colors.r = self.timers.colors.r +1
+	end
+	self.grabPlayer = true
+
+end
 	self.pc.timer = 0
+
 else
 	if self.pc.r > 0 and self.pc.g < 255 and self.pc.b == 0 then
 		self.pc.r = self.pc.r -1
@@ -608,9 +746,10 @@ if self.pause == 1 then
 	elseif k == 'M' then
 		love.audio.setVolume(math.abs(love.audio.getVolume()-1))
 	elseif k == 'escape' then
-		love.graphics.setCanvas(self.canvases.pauseCanvas)
-			self:draw()
+		love.graphics.setCanvas(self.canvases.pauseBuffer)
+			love.draw()
 		love.graphics.setCanvas()
+		screen:clearEffects()
 		self.pause = 3
 		love.audio.pause()
 	elseif k == 'backspace' then
@@ -626,11 +765,13 @@ elseif self.pause == 3 then
 	if k == 'w' or k == 'up' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
+		else
 			screen:shake(.15,2,false)
 		end
 	elseif k == 's' or k == 'down' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
+		else
 			screen:shake(.15,2,false)
 		end
 	elseif k == 'return' or k =='lshift' then
@@ -734,7 +875,7 @@ function heaven.make(player,rounds,rocks,enemies,time,name1,name2)
 	if not love.filesystem.exists("records/highScores.txt") then
 		print("No high scores found. Making")
 		h.record = love.filesystem.newFile("records/highScores.txt",'w')
-		h.record:write("#high scores\n#name|points|points|lives|lives|rounds|rocks|enemies")
+		h.record:write("#high scores!\n#name|points|points|lives|lives|rounds|rocks|enemies")
 		h.record:close()
 	end
 	h.record = "records/highScores.txt"
@@ -823,7 +964,7 @@ elseif self.ready and self.confirm then
 
 		love.graphics.push()
 		love.graphics.translate(0,62)
-	drawScores(self.scores,15,self.timers.pc.r,self.timers.pc.g,self.timers.pc.b)
+	drawScores(self.scores,15,{self.timers.pc.r,self.timers.pc.g,self.timers.pc.b})
 		love.graphics.pop()
 
 	love.graphics.setColor(0,0,0,220)
@@ -1056,6 +1197,8 @@ function credits.make()
 			table.insert(c.files,f)
 		end
 	end
+
+	c.name = "Credits"
 
 	return c
 end
