@@ -37,7 +37,7 @@ function rock.make(x,y,s,p)
 		r.p:setSpread(math.pi/6) --raidans
 		r.p:setSpin(-math.pi,-math.pi,0)
 		r.p:setSizes(1,1,0)
-		r.p:setColors(237,143-(143*r.heat),77-(77*r.heat))
+		r.p:setColors(158,143-(143*r.heat),132-(132*r.heat))
 		r.p:setPosition(0,0)
 		r.p:setDirection(0)
 		r.p:stop()
@@ -49,9 +49,9 @@ function rock:draw()
 	love.graphics.draw(self.p)
 	if self.timers.birth < 31 then
 		self.timers.birth = self.timers.birth + 1
-		love.graphics.setColor(237,143-(143*self.heat),77-(77*self.heat),self.timers.birth*8)
+		love.graphics.setColor(158,143-(143*self.heat),132-(132*self.heat),self.timers.birth*8)
 	else
-		love.graphics.setColor(237,143-(143*self.heat*math.max(self.timers.anim[1],.5)),77-(77*self.heat*math.max(self.timers.anim[1],.5)))
+		love.graphics.setColor(158,143-(143*self.heat*math.max(self.timers.anim[1],.5)),132-(132*self.heat*math.max(self.timers.anim[1],.5)))
 	end
 	love.graphics.draw(self.image,self.x,self.y,self.rot,1,1,50,50)
 	love.graphics.point(self.x,self.y)
@@ -86,7 +86,7 @@ function rock:update(dt)
 	self.y = self.y + self.y_vol
 	self.p:setPosition(self.x,self.y)
 	self.p:setDirection(math.atan2(self.y_vol,self.x_vol)-math.pi)
-	self.p:setColors(237,143-(143*self.heat),77-(77*self.heat))
+	self.p:setColors(158,143-(143*self.heat),132-(132*self.heat))
 
 	if self.x >= state.player.members.a.x - self.r - 12 and
 	self.x <= state.player.members.a.x + self.r + 12 and
@@ -142,7 +142,7 @@ function rock:update(dt)
 		self.p:setEmissionRate(math.ceil(6*self.heat)/2)
 		self.p:start()
 	elseif self.hp <= 0 then
-		cloud.make(self.x,self.y,170,120,85,128)
+		cloud.make(self.x,self.y,158,143,132,128)
 		wave.make(self.x,self.y,150,2,255,255,255,48)
 		love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
 		screen:shake(1,8,false)

@@ -129,7 +129,9 @@ function ring.make(x,y,l,s,r,g,b,a)
 	w.image = res.load("sprite","ring.png")
 	ring.draw = function (self)
 		love.graphics.setColor(self.color[1],self.color[2],self.color[3],(self.color[4]*self.life/self._life));
-		 love.graphics.draw(self.image,self.x,self.y,0,self.scale,self.scale,24,24) end
+		love.graphics.setLineWidth(12);
+		love.graphics.circle("line",self.x,self.y,48*self.scale,64);
+		love.graphics.setLineWidth(1) end
 	ring.update = function (self,dt) self.scale = self.scale + .1*self.speed; self.life = self.life - 1 end
 	ring.start = function (self) end
  

@@ -4,6 +4,26 @@
 		"selected_items":
 		[
 			[
+				"setLin",
+				"love.graphics.setLineWidth"
+			],
+			[
+				"texte",
+				"texture_coords"
+			],
+			[
+				"screen_",
+				"screen_coords"
+			],
+			[
+				"texture",
+				"texture_coords"
+			],
+			[
+				"textur",
+				"texture"
+			],
+			[
 				"camera",
 				"cameraChannel"
 			],
@@ -494,26 +514,6 @@
 			[
 				"upda",
 				"updateWeather"
-			],
-			[
-				"down",
-				"downpoor"
-			],
-			[
-				"col",
-				"colorCorrection"
-			],
-			[
-				"color",
-				"colorCorrection"
-			],
-			[
-				"colo",
-				"colors"
-			],
-			[
-				"mon",
-				"monthIndex"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "bullet.lua",
 			"settings":
 			{
-				"buffer_size": 631,
+				"buffer_size": 647,
 				"line_ending": "Unix"
 			}
 		},
@@ -531,7 +531,7 @@
 			"file": "drops.lua",
 			"settings":
 			{
-				"buffer_size": 1982,
+				"buffer_size": 2003,
 				"line_ending": "Unix"
 			}
 		},
@@ -539,7 +539,7 @@
 			"file": "enemy.lua",
 			"settings":
 			{
-				"buffer_size": 21546,
+				"buffer_size": 31343,
 				"line_ending": "Unix"
 			}
 		},
@@ -547,8 +547,17 @@
 			"file": "functions.lua",
 			"settings":
 			{
-				"buffer_size": 10902,
+				"buffer_size": 10505,
 				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "fonts/tether.font",
+			"settings":
+			{
+				"buffer_size": 5,
+				"line_ending": "Unix",
+				"name": "tehr"
 			}
 		},
 		{
@@ -571,7 +580,7 @@
 			"file": "particles.lua",
 			"settings":
 			{
-				"buffer_size": 4526,
+				"buffer_size": 4583,
 				"line_ending": "Unix"
 			}
 		},
@@ -579,7 +588,7 @@
 			"file": "player.lua",
 			"settings":
 			{
-				"buffer_size": 26656,
+				"buffer_size": 27804,
 				"line_ending": "Unix"
 			}
 		},
@@ -603,7 +612,7 @@
 			"file": "rock.lua",
 			"settings":
 			{
-				"buffer_size": 5737,
+				"buffer_size": 5746,
 				"line_ending": "Unix"
 			}
 		},
@@ -611,7 +620,7 @@
 			"file": "rounder.lua",
 			"settings":
 			{
-				"buffer_size": 12320,
+				"buffer_size": 12994,
 				"line_ending": "Unix"
 			}
 		},
@@ -627,7 +636,7 @@
 			"file": "shaders.lua",
 			"settings":
 			{
-				"buffer_size": 4530,
+				"buffer_size": 6286,
 				"line_ending": "Unix"
 			}
 		},
@@ -635,7 +644,15 @@
 			"file": "states.lua",
 			"settings":
 			{
-				"buffer_size": 40813,
+				"buffer_size": 43399,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "fonts/medium.font",
+			"settings":
+			{
+				"buffer_size": 101,
 				"line_ending": "Unix"
 			}
 		}
@@ -820,6 +837,15 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"cos",
+			"1000",
+			"77",
+			"237",
+			"32",
+			"1388",
+			"078125",
+			" - 4*focus",
+			"texture_coords",
 			"_y",
 			"_x",
 			"tile",
@@ -938,10 +964,7 @@
 			"tempPoints",
 			"getMicroTime",
 			"mkdir",
-			"enumerate",
-			"mkdir\nmkdir\nmkdir",
-			"mkdir",
-			"joystickConfigurations"
+			"enumerate"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1001,7 +1024,7 @@
 	"groups":
 	[
 		{
-			"selected": 7,
+			"selected": 8,
 			"sheets":
 			[
 				{
@@ -1010,15 +1033,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 631,
+						"buffer_size": 647,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								602,
+								602
 							]
 						],
 						"settings":
@@ -1030,7 +1053,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -1039,15 +1062,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1982,
+						"buffer_size": 2003,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1915,
+								1915
 							]
 						],
 						"settings":
@@ -1056,10 +1079,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 59.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -1068,15 +1091,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 21546,
+						"buffer_size": 31343,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								5262,
+								5262
 							]
 						],
 						"settings":
@@ -1085,10 +1108,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3036.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -1097,15 +1120,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10902,
+						"buffer_size": 10505,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								8005,
+								8005
 							]
 						],
 						"settings":
@@ -1114,14 +1137,43 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 6762.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
 					"buffer": 4,
+					"file": "fonts/tether.font",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5,
+								5
+							]
+						],
+						"settings":
+						{
+							"auto_name": "tehr",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "main.lua",
 					"semi_transient": false,
 					"settings":
@@ -1133,8 +1185,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								2996,
+								2996
 							]
 						],
 						"settings":
@@ -1143,14 +1195,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1242.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 6,
 					"file": "maths.lua",
 					"semi_transient": false,
 					"settings":
@@ -1176,53 +1228,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "particles.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4526,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
 					"buffer": 7,
-					"file": "player.lua",
+					"file": "particles.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 26656,
+						"buffer_size": 4583,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								15147,
-								15147
+								4408,
+								4408
 							]
 						],
 						"settings":
@@ -1231,14 +1254,43 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 11550.0,
+						"translation.y": 1597.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "player.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 27804,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								20518,
+								20518
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 11385.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "README.txt",
 					"semi_transient": false,
 					"settings":
@@ -1262,11 +1314,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "res.lua",
 					"semi_transient": false,
 					"settings":
@@ -1291,53 +1343,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "rock.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5737,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
 					"buffer": 11,
-					"file": "rounder.lua",
+					"file": "rock.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12320,
+						"buffer_size": 5746,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								4763,
+								4763
 							]
 						],
 						"settings":
@@ -1346,14 +1369,43 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1873.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 12,
+					"file": "rounder.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12994,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5263,
+								5263
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2833.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
 					"file": "scores.lua",
 					"semi_transient": false,
 					"settings":
@@ -1378,24 +1430,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 14,
 					"file": "shaders.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4530,
+						"buffer_size": 6286,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								5454,
+								5454
 							]
 						],
 						"settings":
@@ -1404,27 +1456,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2819.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 15,
 					"file": "states.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 40813,
+						"buffer_size": 43399,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								14343,
-								14343
+								7079,
+								7079
 							]
 						],
 						"settings":
@@ -1432,11 +1484,39 @@
 							"syntax": "Packages/Lua/Lua.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 60.0,
-						"translation.y": 5742.0,
+						"translation.x": 0.0,
+						"translation.y": 4702.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "fonts/medium.font",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 101,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								99,
+								99
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
 					"type": "text"
 				}
 			]
@@ -1511,6 +1591,7 @@
 		],
 		"width": 0.0
 	},
+	"selected_group": 0,
 	"settings":
 	{
 	},

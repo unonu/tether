@@ -67,7 +67,7 @@ function health:draw()
 	if self.intro < 1 then
 		love.graphics.setColor(255,255,255,self.intro*255)
 	end
-	love.graphics.draw(state.res.health,self.x,self.y,0,1+(1-self.intro),1+(1-self.intro),12,12)
+	love.graphics.draw(state.res.health,self.x,self.y,(self.life/64)%math.pi,1+(1-self.intro),1+(1-self.intro),12,12)
 end
 
 function health:update(dt)

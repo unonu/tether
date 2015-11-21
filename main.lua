@@ -19,13 +19,13 @@ function love.load()
 	print('Loading...')
 	local stime = love.timer.getTime()
 		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
-		love.graphics.print("Setting Identity",0,0)
+		love.graphics.print("Stealing Identity",0,0)
 		love.graphics.present()
 	love.window.setIcon(love.image.newImageData('res/sprites/rock1.png'))
 		love.graphics.clear()
 	-------------------------
 		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
-		love.graphics.print("Finding Files",0,0)
+		love.graphics.print("Forgeing Paperwork",0,0)
 		love.graphics.present()
 	initFS()
 		love.graphics.clear()
@@ -43,7 +43,7 @@ function love.load()
 		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
 		love.graphics.print("Adjusting Hearing Aid",0,0)
 		love.graphics.present()
-	love.audio.setVolume(0) -- 0.-1.
+	love.audio.setVolume(1.0) -- 0.-1.
 		love.graphics.clear()
 		love.graphics.print("Loading...",love.window.getWidth()/2-40,love.window.getHeight()/2)
 		love.graphics.print("Outsourcing Artwork",0,0)
@@ -81,7 +81,7 @@ function love.draw()
 		state:draw()
 	end
 	screen:drawFlash()
-	
+
 	if screen.abberating then screen:releaseChromaticFilter() end
 
 	love.graphics.setPointSize(2)
@@ -90,8 +90,6 @@ function love.draw()
 	love.graphics.setColor(0,0,0,128)
 	love.graphics.rectangle("line",love.mouse.getX()-2,love.mouse.getY()-2,4,4)
 	love.graphics.setPointSize(1)
-
-	-- love.graphics.print(love.timer.getFPS(),0,0)
 end
 
 function love.keypressed(k)

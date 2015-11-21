@@ -140,3 +140,91 @@ shaders = {}
 	]]
 
 	shaders.chromaticAberation = love.graphics.newShader(pixelcode, vertexcode)
+
+	local pixelcode = [[
+	// adapted from http://www.youtube.com/watch?v=qNM0k522R7o
+	 
+	extern vec2 size = vec2(8,8);
+	extern int samples = 10; // pixels per axis; higher = bigger glow, worse performance
+	extern float quality = 4; // lower = smaller glow, better quality
+	 
+	vec4 effect(vec4 colour, Image tex, vec2 tc, vec2 sc)
+	{
+	  vec4 source = Texel(tex, tc);
+	  vec4 sum = vec4(0);
+	  int diff = (samples - 1) / 2;
+	  vec2 sizeFactor = vec2(1) / size * quality;
+	  
+	  for (int x = -diff; x <= diff; x++)
+	  {
+	    for (int y = -diff; y <= diff; y++)
+	    {
+	      vec2 offset = vec2(x, y) * sizeFactor;
+	      sum += Texel(tex, tc + offset);
+	    }
+	  }
+	  
+	  return ((sum / (samples * samples)) + source) * colour;
+	}
+	]]
+
+	local vertexcode = [[
+		vec4 position( mat4 transform_projection, vec4 vertex_position )
+		{
+			return transform_projection * vertex_position;
+		}
+	]]
+
+	shaders.bloom = love.graphics.newShader(pixelcode,vertexcode)
+
+	local pixelcode = [[
+	vec4 effect(vec4 colour, Image tex, vec2 tc, vec2 sc)
+	{
+	  vec4 texcolor = texture2D(tex, tc);
+
+	  // neighbour colours
+	  vec4 n1 = texture2D(tex, vec2(sc[0]-1, sc[1]));
+	  vec4 n2 = texture2D(tex, vec2(sc[0]+1, sc[1]));
+	  if ( abs(n1[0]-n2[0]) > 64 || abs(n1[1]-n2[1]) > 64 || abs(n1[2]-n2[2]) > 64 )
+	  {
+	  	texcolor[0] = 1.0;
+	  	texcolor[1] = 0.0;
+	  	texcolor[2] = 0.0;
+	  }
+	  n1 = texture2D(tex, vec2(sc[0], sc[1]-1));
+	  n2 = texture2D(tex, vec2(sc[0], sc[1]+1));
+	  if ( abs(n1[0]-n2[0]) > 64 || abs(n1[1]-n2[1]) > 64 || abs(n1[2]-n2[2]) > 64 )
+	  {
+	  	texcolor[0] = 0.0;
+	  	texcolor[1] = 0.0;
+	  	texcolor[2] = 0.0;
+	  }
+	  n1 = texture2D(tex, vec2(sc[0]-1, sc[1]-1));
+	  n2 = texture2D(tex, vec2(sc[0]+1, sc[1]+1));
+	  if ( abs(n1[0]-n2[0]) > 64 || abs(n1[1]-n2[1]) > 64 || abs(n1[2]-n2[2]) > 64 )
+	  {
+	  	texcolor[0] = 0.0;
+	  	texcolor[1] = 0.0;
+	  	texcolor[2] = 0.0;
+	  }
+	  n1 = texture2D(tex, vec2(sc[0]+1, sc[1]-1));
+	  n2 = texture2D(tex, vec2(sc[0]-1, sc[1]+1));
+	  if ( abs(n1[0]-n2[0]) > 64 || abs(n1[1]-n2[1]) > 64 || abs(n1[2]-n2[2]) > 64 )
+	  {
+	  	texcolor[0] = 0.0;
+	  	texcolor[1] = 0.0;
+	  	texcolor[2] = 0.0;
+	  }
+	  
+	  return texcolor*colour;
+	}
+	]]
+
+	local vertexcode = [[
+		vec4 position( mat4 transform_projection, vec4 vertex_position )
+		{
+			return transform_projection * vertex_position;
+		}
+	]]
+
+	shaders.line = love.graphics.newShader(pixelcode,vertexcode)

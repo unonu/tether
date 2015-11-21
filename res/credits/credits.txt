@@ -1,11 +1,17 @@
 #!large
 Credits
-#!medium
-Lucas
-Dodger
 
-#?#0000FF
-Credits
+#!medium
+Game Design:
+
+Lucas Zarate
+Andrew Cage
+Matt Sprague
+
+Music By:
+Dr. Congo
+#?#252525
+soundcloud.com/dr-congo
 
 #?#83c0f0
 This game was made with
