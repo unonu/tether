@@ -216,17 +216,17 @@ elseif self.pause == 3 then
 	local xy = screen:getCentre()
 	love.graphics.setShader()
 
-		love.graphics.setCanvas(self.canvases.pauseCanvas)
-	love.graphics.draw(self.canvases.pauseBuffer)
+	-- 	love.graphics.setCanvas(self.canvases.pauseCanvas)
+	-- love.graphics.draw(self.canvases.pauseBuffer)
 
-		love.graphics.setShader(shaders.blurX)
-	love.graphics.draw(self.canvases.pauseCanvas)
+	-- 	love.graphics.setShader(shaders.blurX)
+	-- love.graphics.draw(self.canvases.pauseCanvas)
 
-		love.graphics.setShader(shaders.blurY)
-	love.graphics.draw(self.canvases.pauseCanvas)
-		love.graphics.setShader()
-		love.graphics.setCanvas()
-	love.graphics.draw(self.canvases.pauseCanvas)
+	-- 	love.graphics.setShader(shaders.blurY)
+	-- love.graphics.draw(self.canvases.pauseCanvas)
+	-- 	love.graphics.setShader()
+	-- 	love.graphics.setCanvas()
+	-- love.graphics.draw(self.canvases.pauseCanvas)
 
 		love.graphics.setBlendMode("multiplicative")
 	love.graphics.setColor(128 + self.pc.r/2,128 + self.pc.g/2,128 + self.pc.b/2)

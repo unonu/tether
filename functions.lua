@@ -147,7 +147,7 @@ function screen.init(w,h,f,v,a)
 	s.flags = {fullscreen = f or false,
 				fullscreentype = "desktop",
 				vsync = v or false,
-				fsaa = a or 0,
+				msaa = a or 0,
 				resizable = false,
 				borderless = true,
 				centered = true,
@@ -182,7 +182,7 @@ function screen.init(w,h,f,v,a)
 	s.fps = 1/60
 	table.sort(s.modes, function(a, b) return a.width*a.height < b.width*b.height end)
 	s.chromeWhenShake = true
-	
+
 	s.next_time = love.timer.getTime()
 	screen = s
 end
@@ -198,7 +198,7 @@ function screen:draw()
 		end
 	else self.shaking = false
 	end
-	
+
 	if self.timers.chrome ~= 0 then
 		if self.chromeWhenShake and self.timers.shake > 0 then
 			self.focus = math.random(-self.delta,self.delta)
@@ -290,6 +290,7 @@ end
 
 function screen:setChromaticFilter()
 	love.graphics.setCanvas(self.canvases.buffer)
+	love.graphics.clear()
 end
 
 function screen:setBackground(arg)
@@ -303,7 +304,6 @@ function screen:releaseChromaticFilter()
 
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(self.canvases.buffer)
-	self.canvases.buffer:clear()
 	love.graphics.setShader()
 end
 
@@ -351,7 +351,7 @@ function messages:new(text,x,y,mode,life,color,font)
 	m.life = math.max(((life or -1)*60),-1)
 	m.color = color or {255,255,255}
 	m.font = font or 'medium'
-	
+
 	print("sending message: "..text)
 	table.insert(self.messages,m)
 end

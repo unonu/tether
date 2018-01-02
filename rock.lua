@@ -37,7 +37,7 @@ function rock.make(x,y,s,p)
 		r.p:setSpread(math.pi/6) --raidans
 		r.p:setSpin(-math.pi,-math.pi,0)
 		r.p:setSizes(1,1,0)
-		r.p:setColors(158,143-(143*r.heat),132-(132*r.heat))
+		r.p:setColors(158,143-(143*r.heat),132-(132*r.heat), 255)
 		r.p:setPosition(0,0)
 		r.p:setDirection(0)
 		r.p:stop()
@@ -54,7 +54,7 @@ function rock:draw()
 		love.graphics.setColor(158,143-(143*self.heat*math.max(self.timers.anim[1],.5)),132-(132*self.heat*math.max(self.timers.anim[1],.5)))
 	end
 	love.graphics.draw(self.image,self.x,self.y,self.rot,1,1,50,50)
-	love.graphics.point(self.x,self.y)
+	love.graphics.points(self.x,self.y)
 	if self.sentry then
 		love.graphics.setColor(255,0,0)
 		self.sentry:draw(self.rot,math.min(255,self.timers.birth*8))
@@ -86,7 +86,7 @@ function rock:update(dt)
 	self.y = self.y + self.y_vol
 	self.p:setPosition(self.x,self.y)
 	self.p:setDirection(math.atan2(self.y_vol,self.x_vol)-math.pi)
-	self.p:setColors(158,143-(143*self.heat),132-(132*self.heat))
+	self.p:setColors(158,143-(143*self.heat),132-(132*self.heat), 255)
 
 	if self.x >= state.player.members.a.x - self.r - 12 and
 	self.x <= state.player.members.a.x + self.r + 12 and
@@ -101,8 +101,8 @@ function rock:update(dt)
 		state.player:push('b',self.x - state.player.members.b.x,self.y - state.player.members.b.y,-.5)
 	end
 
-	--collissions 
-	
+	--collissions
+
 	for i,r in ipairs(state.rocks) do
 		if self.id ~= r.id then
 			if self.x >= r.x - 2*r.r and

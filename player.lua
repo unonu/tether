@@ -86,10 +86,10 @@ function player.make(number)
 	p.sounds = {
 		aHit = res.load("sound", "damage", "new"),
 		bHit = res.load("sound", "damage", "new"),
-		adanger = res.load("sound", "danger", "new"),
-		acritical = res.load("sound", "critical", "new"),
-		bdanger = res.load("sound", "danger", "new"),
-		bcritical = res.load("sound", "critical", "new"),
+		aDanger = res.load("sound", "danger", "new"),
+		aCritical = res.load("sound", "critical", "new"),
+		bDanger = res.load("sound", "danger", "new"),
+		bCritical = res.load("sound", "critical", "new"),
 		aDie = res.load("sound", "dead", "new"),
 		bDie = res.load("sound", "dead", "new"),
 		aEngage = res.load("sound", "tetherEngage", "new"),
@@ -371,8 +371,8 @@ if not state.grabPlayer then
 	member.speed = member.stats.speed
 	if member.tether then
 		if self.distance > self.tetherDistance then
-			self:push(member.other, member.x-self.members[member.other].x, member.y-self.members[member.other].y, math.round(12/math.abs(self.distance), 2))
-			self:push(member.name, self.members[member.other].x-member.x, self.members[member.other].y-member.y, math.round(32/math.abs(self.distance), 2))
+			self:push(member.other, member.x-self.members[member.other].x, member.y-self.members[member.other].y, math.round(100/math.abs(self.distance), 2))
+			self:push(member.name, self.members[member.other].x-member.x, self.members[member.other].y-member.y, math.round(100/math.abs(self.distance), 2))
 		-- else
 		-- 	if self.members[member.other].tether then
 		-- 		local angle = math.abs(math.atan2(member.y-self.members[member.other].y, member.x-self.members[member.other].x))
@@ -387,7 +387,7 @@ end
 	if member._hp ~= member.hp then member._hp = member._hp - (member._hp - member.hp)/12 end
 	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 5, colorExtreme(member.color, 255), "edge") end
-		love.audio.play(self.sounds.adanger)
+		love.audio.play(self.sounds.aDanger)
 		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
 		-- 	member.lapse = 0
 		-- 	self:giveHealth(member.name)
@@ -396,7 +396,7 @@ end
 	if member.hp <= member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 10, colorExtreme(member.color, 255), "edge") end
 		if math.random(1, 3) == 2 then screen:aberate(math.random(1, 3), math.random(0, 2)) end
-		love.audio.play(self.sounds.acritical)
+		love.audio.play(self.sounds.aCritical)
 		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
 		-- 	member.lapse = 0
 		-- 	self:giveHealth(member.name)

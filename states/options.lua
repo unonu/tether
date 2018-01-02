@@ -9,16 +9,18 @@ love.graphics.setFont(fonts.large)
 	o.menu = {"Fullscreen","Music","Back"}
 	-- o.timers = {}
 	o.menuIndex = 1
-	o.timers = {}
-		o.timers.fader = 120
-		o.timers.screenR = 0
-		-- o.timers.screenR = 0
-		o.timers.colors = {r=255,g=0,b=0}
-		-- o.timers.screenR = 0
-	o.sounds = {tock = res.load("sound","menuTock"),
-				distort = res.load("sound","distortTock"),
-				click = res.load("sound","menuClick"),
-				}
+	o.timers = {
+		fader = 120,
+		screenR = 0,
+		-- screenR = 0,
+		colors = {r=255,g=0,b=0},
+		-- screenR = 0,
+	}
+	o.sounds = {
+		tock = res.load("sound","menuTock"),
+		distort = res.load("sound","distortTock"),
+		click = res.load("sound","menuClick"),
+	}
 	o.name = "Options"
 
 	return o
@@ -45,12 +47,7 @@ function options:draw()
 			love.graphics.setColor(self.timers.colors.r,self.timers.colors.g,self.timers.colors.b)
 		love.graphics.circle("fill",screen:getCentre('x'),screen:getCentre('y'),self.timers.screenR,self.timers.screenR)
 	end
-	local autxt = ''
-	if love.audio.getVolume() == 1 then
-			autxt = ' is ON'
-	else
-			autxt = ' is OFF'
-	end
+	local autxt = love.audio.getVolume() == 1 and ' is ON' or ' is OFF'
 	for i,m in ipairs(self.menu) do
 		if self.menuIndex == i then
 			love.graphics.setColor(255,255,255,255*self.timers.screenR/screen.width)

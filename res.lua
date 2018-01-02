@@ -38,7 +38,7 @@ function res.init()
 				local newLine = false
 				data = item:read(1)
 				while not newLine do
-					if data == '\n' or item:eof() then
+					if data == '\n' or item:isEOF() then
 						newLine = true
 						rx = rx+1
 						val = 0
@@ -53,7 +53,7 @@ function res.init()
 					end
 				end
 				ry = ry+1
-				if item:eof() then
+				if item:isEOF() then
 					doLoop = false
 				end
 				res.quads[string.sub(b,1,-4)..ry] = love.graphics.newQuad(quad[1],quad[2],quad[3],quad[4],quad[5],quad[6],quad[7])
@@ -74,7 +74,7 @@ function res.init()
 				local newLine = false
 				data = item:read(1)
 				while not newLine do
-					if data == '\n' or item:eof() then
+					if data == '\n' or item:isEOF() then
 						newLine = true
 						rx = rx+1
 						val = nil
@@ -91,8 +91,8 @@ function res.init()
 							else
 								val = data
 							end
-						end 
-						
+						end
+
 						quad[rx] = val
 						data = item:read(1)
 					else
@@ -102,7 +102,7 @@ function res.init()
 					end
 				end
 				ry = ry+1
-				if item:eof() then
+				if item:isEOF() then
 					doLoop = false
 				end
 				res.sprites[string.sub(b,1,-6)] = {}
@@ -151,7 +151,7 @@ function res.init()
 				local newLine = false
 				data = item:read(1)
 				while not newLine do
-					if data == '\n' or item:eof() then
+					if data == '\n' or item:isEOF() then
 						newLine = true
 						rx = rx+1
 						val = 0
@@ -166,7 +166,7 @@ function res.init()
 					end
 				end
 				ry = ry+1
-				if item:eof() then
+				if item:isEOF() then
 					doLoop = false
 				end
 				res.quads[string.sub(b,1,-6)..ry] = love.graphics.newQuad(quad[1],quad[2],quad[3],quad[4],quad[5],quad[6],quad[7])
@@ -206,23 +206,23 @@ function res.load(typ, name,mode)
 			res.sounds[name..'.mp3'].val = love.audio.newSource('res/sounds/'..name..'.mp3',"static")
 		end
 		res.sounds[name..'.mp3'].users = res.sounds[name..'.mp3'].users + 1
-		return res.sounds[name..'.mp3'].val 
+		return res.sounds[name..'.mp3'].val
 	elseif typ == 'music' then
 		if mode == "new" then return love.audio.newSource('res/music/'..name..'.mp3',"stream") end
 		if res.music[name..'.mp3'].val == nil then
 			res.music[name..'.mp3'].val = love.audio.newSource('res/music/'..name..'.mp3',"stream")
 		end
 		res.music[name..'.mp3'].users = res.music[name..'.mp3'].users + 1
-		return res.music[name..'.mp3'].val  
+		return res.music[name..'.mp3'].val
 	elseif typ == 'tileset' then
 		if res.tilesets[name].val == nil then
 			res.tilesets[name].val = love.graphics.newImage('res/tilesets/'..name)
 		end
 		res.tilesets[name].users = res.tilesets[name].users + 1
-		return res.tilesets[name].val 
+		return res.tilesets[name].val
 	elseif typ == 'quad' then
 		return res.quads[name]
-	else 
+	else
 		if typ == 'music' then
 			res.music[name].users = loc[name].users + 1
 			return res.music[name].val
@@ -251,7 +251,7 @@ function loadFonts()
 			numFonts = numFonts + 1
 		end
 	end
-	
+
 	print(numFonts..' fonts found\n-----------------------------')
 	return fonts
 end
