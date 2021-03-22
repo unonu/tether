@@ -144,7 +144,7 @@ function rock:update(dt)
 	elseif self.hp <= 0 then
 		cloud.make(self.x,self.y,158,143,132,128)
 		wave.make(self.x,self.y,150,2,255,255,255,48)
-		love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
+		-- love.audio.rewind(state.sounds.explosion);love.audio.play(state.sounds.explosion)
 		screen:shake(1,8,false)
 		state.points = state.points + 1
 	end

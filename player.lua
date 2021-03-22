@@ -387,7 +387,7 @@ end
 	if member._hp ~= member.hp then member._hp = member._hp - (member._hp - member.hp)/12 end
 	if member.hp <= member.stats.hp/4 and member.hp > member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 5, colorExtreme(member.color, 255), "edge") end
-		love.audio.play(self.sounds.aDanger)
+		-- love.audio.play(self.sounds.aDanger)
 		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
 		-- 	member.lapse = 0
 		-- 	self:giveHealth(member.name)
@@ -396,7 +396,7 @@ end
 	if member.hp <= member.stats.hp/8 then
 		if not screen.flashing then screen:flash(1, 10, colorExtreme(member.color, 255), "edge") end
 		if math.random(1, 3) == 2 then screen:aberate(math.random(1, 3), math.random(0, 2)) end
-		love.audio.play(self.sounds.aCritical)
+		-- love.audio.play(self.sounds.aCritical)
 		-- if member.lapse > 1200 and member.lives <= 1 then -- should I make this constant a stat?
 		-- 	member.lapse = 0
 		-- 	self:giveHealth(member.name)
@@ -417,7 +417,7 @@ end
 		member.immunity = 18
 		member.timers.spawn = 60
 		member.spawned = false
-		love.audio.play(self.sounds.aDie)
+		-- love.audio.play(self.sounds.aDie)
 	end
 
 	member.hp = math.min(member.stats.hp, member.hp + (member.hp/(member.stats.hp*600)))
@@ -460,7 +460,7 @@ function player:update()
 
 			makeTether(self.members.a.x,self.members.a.y,self.members.b.x,self.members.b.y,
 						math.floor(24-24*self.distance/self.tetherDistance),tetherSrength)
-			love.audio.play(self.sounds.tether)
+			-- love.audio.play(self.sounds.tether)
 			self.wasTethered = true
 
 			if self.distance <= self.syncDistance then
@@ -481,10 +481,10 @@ function player:update()
 			self.sync.syncing = false
 			self.sync.synced = false
 			if self.wasTethered then
-				love.audio.stop(self.sounds.tether)
-				love.audio.rewind(self.sounds.tether)
-				love.audio.rewind(self.sounds.tetherEnd)
-				love.audio.play(self.sounds.tetherEnd)
+				-- love.audio.stop(self.sounds.tether)
+				-- love.audio.rewind(self.sounds.tether)
+				-- love.audio.rewind(self.sounds.tetherEnd)
+				-- love.audio.play(self.sounds.tetherEnd)
 				self.wasTethered = false
 			end
 		end
@@ -516,7 +516,7 @@ function player:update()
 			self:push('a', math.cos(b.d), math.sin(b.d), -1)
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.a.color, 255), "edge") end
-			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
+			-- love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 			remove = true
 		end
 		if self.members.b.immunity == 0 and b.owner ~= 'player' and b.x >= self.members.b.x-8 and b.x <= self.members.b.x+8 and b.y >= self.members.b.y-8 and b.y <= self.members.b.y+8 then
@@ -526,7 +526,7 @@ function player:update()
 			self:push('b', math.cos(b.d), math.sin(b.d), -1)
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.b.color, 255), "edge") end
-			love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
+			-- love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
 			remove = true
 		end
 		if remove then table.remove(state.bullets, i) end
@@ -540,7 +540,7 @@ function player:update()
 			self.members.a.lapse = 0
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.a.color, 255), "edge") end
-			love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
+			-- love.audio.rewind(self.sounds.aHit);love.audio.play(self.sounds.aHit)
 		end
 		if self.members.b.immunity == 0 and b.collideable and
 		((math.dist(b._x or b.x,b._y or b.y, self.members.b.x,self.members.b.y) < math.dist(b._x or b.x,b._y or b.y,b.x,b.y) and
@@ -550,7 +550,7 @@ function player:update()
 			self.members.b.lapse = 0
 			screen:shake(.5, 4)
 			if not screen.flashing then screen:flash(1, 20, colorExtreme(self.members.b.color, 255), "edge") end
-			love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
+			-- love.audio.rewind(self.sounds.bHit);love.audio.play(self.sounds.bHit)
 		end
 	end
 	for i, c in ipairs(state.crystals) do
@@ -609,12 +609,12 @@ end
 function player:keypressed(k)
 	if k == self.members.a.keys.tether then
 		wave.make(self.members.a.x,self.members.a.y,15,1,104,149,255,128)
-		love.audio.rewind(self.sounds.aEngage)
-		love.audio.play(self.sounds.aEngage)
+		-- love.audio.rewind(self.sounds.aEngage)
+		-- love.audio.play(self.sounds.aEngage)
 	elseif k == self.members.b.keys.tether then
 		wave.make(self.members.b.x,self.members.b.y,15,1,104,149,255,128)
-		love.audio.rewind(self.sounds.bEngage)
-		love.audio.play(self.sounds.bEngage)
+		-- love.audio.rewind(self.sounds.bEngage)
+		-- love.audio.play(self.sounds.bEngage)
 	end
 end
 

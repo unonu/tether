@@ -51,11 +51,11 @@ function game.make(name1,name2)
 		distort = res.load("sound","distortTock"),
 		click = res.load("sound","menuClick"),
 	}
-	love.audio.setVolume(1.0)
-	g.music = res.load("music","music")
-	g.music:rewind()
-	g.music:setVolume(0.5)
-	g.music:play()
+	-- love.audio.setVolume(1.0)
+	-- g.music = res.load("music","music")
+	-- g.music:rewind()
+	-- g.music:setVolume(0.5)
+	-- g.music:play()
 
 	g.pause = 1
 	g.menu = {"Continue","Restart","Resign","Exit to Menu"}
@@ -165,7 +165,7 @@ if not self.syncState then
 else
 
 	--syncState
-	love.graphics.setBlendMode("additive")
+	love.graphics.setBlendMode("add")
 	love.graphics.setColor(self.timers.colors.r,self.timers.colors.g,self.timers.colors.b)
 	love.graphics.rectangle("fill",0,0,screen.width,screen.height)
 	love.graphics.setBlendMode("alpha")
@@ -384,8 +384,8 @@ if self.pause == 1 then
 		print(self.stats.rocks,self.stats.rocksRound)
 		self.rocks = {}
 	elseif k == 'm' then
-		love.audio.rewind(self.music)
-		love.audio.play(self.music)
+		-- love.audio.rewind(self.music)
+		-- love.audio.play(self.music)
 	elseif k == 'M' then
 		love.audio.setVolume(math.abs(love.audio.getVolume()-1))
 	elseif k == 'escape' then
@@ -394,9 +394,9 @@ if self.pause == 1 then
 		love.graphics.setCanvas()
 		screen:clearEffects()
 		self.pause = 3
-		love.audio.pause()
-		love.audio.rewind(self.sounds.tock)
-		love.audio.play(self.sounds.tock)
+		-- love.audio.pause()
+		-- love.audio.rewind(self.sounds.tock)
+		-- love.audio.play(self.sounds.tock)
 	elseif k == 'backspace' then
 		self.player.members.a.hp = 0
 		self.player.members.b.hp = 0
@@ -404,34 +404,34 @@ if self.pause == 1 then
 elseif self.pause == 2 then
 	if k == 'escape' or k == 'return' or k =='lshift' then
 		self.pause = 1
-		love.audio.resume()
-		love.audio.rewind(self.sounds.tock)
-		love.audio.play(self.sounds.tock)
+		-- love.audio.resume()
+		-- love.audio.rewind(self.sounds.tock)
+		-- love.audio.play(self.sounds.tock)
 	end
 elseif self.pause == 3 then
 	if k == 'w' or k == 'up' then
 		if self.menuIndex > 1 then
 			self.menuIndex = self.menuIndex-1
-			love.audio.rewind(self.sounds.click)
-			love.audio.play(self.sounds.click)
+			-- love.audio.rewind(self.sounds.click)
+			-- love.audio.play(self.sounds.click)
 		else
 			screen:shake(.15,2,false)
-			love.audio.rewind(self.sounds.distort)
-			love.audio.play(self.sounds.distort)
+			-- love.audio.rewind(self.sounds.distort)
+			-- love.audio.play(self.sounds.distort)
 		end
 	elseif k == 's' or k == 'down' then
 		if self.menuIndex < #self.menu then
 			self.menuIndex = self.menuIndex+1
-			love.audio.rewind(self.sounds.click)
-			love.audio.play(self.sounds.click)
+			-- love.audio.rewind(self.sounds.click)
+			-- love.audio.play(self.sounds.click)
 		else
 			screen:shake(.15,2,false)
-			love.audio.rewind(self.sounds.distort)
-			love.audio.play(self.sounds.distort)
+			-- love.audio.rewind(self.sounds.distort)
+			-- love.audio.play(self.sounds.distort)
 		end
 	elseif k == 'return' or k =='lshift' then
 		if self.menu[self.menuIndex] == 'Continue' then
-			love.audio.resume()
+			-- love.audio.resume()
 			self.pause = 1
 		elseif self.menu[self.menuIndex] == 'Restart' then
 			screen:shake(.15,2,false)
@@ -447,9 +447,9 @@ elseif self.pause == 3 then
 		end
 	elseif k == 'escape' then
 		self.pause = 1
-		love.audio.resume()
-		love.audio.rewind(self.sounds.tock)
-		love.audio.play(self.sounds.tock)
+		-- love.audio.resume()
+		-- love.audio.rewind(self.sounds.tock)
+		-- love.audio.play(self.sounds.tock)
 	end
 end
 end

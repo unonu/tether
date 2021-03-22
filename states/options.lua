@@ -68,29 +68,29 @@ function options:keypressed(k)
 		if k == 'w' or k == 'up' then
 			if self.menuIndex > 1 then
 				self.menuIndex = self.menuIndex-1
-				love.audio.rewind(self.sounds.click)
-				love.audio.play(self.sounds.click)
+				-- love.audio.rewind(self.sounds.click)
+				-- love.audio.play(self.sounds.click)
 			else
 				screen:shake(.15,2,false)
-				love.audio.rewind(self.sounds.distort)
-				love.audio.play(self.sounds.distort)
+				-- love.audio.rewind(self.sounds.distort)
+				-- love.audio.play(self.sounds.distort)
 			end
 		elseif k == 's' or k == 'down' then
 			if self.menuIndex < #self.menu then
 				self.menuIndex = self.menuIndex+1
-				love.audio.rewind(self.sounds.click)
-				love.audio.play(self.sounds.click)
+				-- love.audio.rewind(self.sounds.click)
+				-- love.audio.play(self.sounds.click)
 			else
 				screen:shake(.15,2,false)
-				love.audio.rewind(self.sounds.distort)
-				love.audio.play(self.sounds.distort)
+				-- love.audio.rewind(self.sounds.distort)
+				-- love.audio.play(self.sounds.distort)
 			end
 		elseif k == 'return' or k =='lshift' or k == 'kp0' then
 			if self.menu[self.menuIndex] == 'Fullscreen' then
 				screen.toggleFullscreen()
 			elseif self.menu[self.menuIndex] == 'Music' then
 				love.audio.setVolume(math.abs(love.audio.getVolume()-1))
-				print(love.audio.getVolume())
+				-- print(love.audio.getVolume())
 			elseif self.menu[self.menuIndex] == 'Back' then
 				state = mainmenu.make(true)
 			end

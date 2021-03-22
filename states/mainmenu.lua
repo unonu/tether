@@ -3,7 +3,7 @@ mainmenu.__index = mainmenu
 
 function mainmenu.make(ready)
 	love.graphics.setFont(fonts.large)
-	love.audio.stop()
+	-- love.audio.stop()
 	local m = {}
 	setmetatable(m,mainmenu)
 	m.menu = {"Arcade","Options","Credits","Exit"}
@@ -127,26 +127,26 @@ function mainmenu:keypressed(k)
 			if k == 'w' or k == 'up' then
 				if self.menuIndex > 1 then
 					self.menuIndex = self.menuIndex-1
-					love.audio.rewind(self.sounds.click)
-					love.audio.play(self.sounds.click)
+					-- love.audio.rewind(self.sounds.click)
+					-- love.audio.play(self.sounds.click)
 				else
 					screen:shake(.15,2,false)
-					love.audio.rewind(self.sounds.distort)
-					love.audio.play(self.sounds.distort)
+					-- love.audio.rewind(self.sounds.distort)
+					-- love.audio.play(self.sounds.distort)
 				end
 			elseif k == 's' or k == 'down' then
 				if self.menuIndex < #self.menu then
 					self.menuIndex = self.menuIndex+1
-					love.audio.rewind(self.sounds.click)
-					love.audio.play(self.sounds.click)
+					-- love.audio.rewind(self.sounds.click)
+					-- love.audio.play(self.sounds.click)
 				else
 					screen:shake(.15,2,false)
-					love.audio.rewind(self.sounds.distort)
-					love.audio.play(self.sounds.distort)
+					-- love.audio.rewind(self.sounds.distort)
+					-- love.audio.play(self.sounds.distort)
 				end
 			elseif k == 'return' or k =='lshift' or k == 'kp0' then
-				love.audio.rewind(self.sounds.tock)
-				love.audio.play(self.sounds.tock)
+				-- love.audio.rewind(self.sounds.tock)
+				-- love.audio.play(self.sounds.tock)
 				if self.menu[self.menuIndex] == 'Arcade' then
 					love.graphics.clear()
 					love.graphics.setColor(255,255,255)

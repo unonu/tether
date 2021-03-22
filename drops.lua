@@ -15,7 +15,7 @@ function crystal.make(x,y)
 end
 
 function crystal:draw()
-	love.graphics.setColor(255,255,0,255*(math.min(self.life,200)/200))
+	love.graphics.setColor(1,1,0,(math.min(self.life,200)/200))
 	love.graphics.draw(state.res.crystal,self.x,self.y,0,1,1,6,6)
 end
 
@@ -36,7 +36,7 @@ function crystal:update(dt)
 		end
 	end
 
-	if self.got then love.audio.rewind(state.sounds.collect);love.audio.play(state.sounds.collect) end
+	-- if self.got then love.audio.rewind(state.sounds.collect);love.audio.play(state.sounds.collect) end
 end
 
 
@@ -77,7 +77,7 @@ function health:update(dt)
 	else
 		self.dead = true
 	end
-	if self.got then love.audio.rewind(state.sounds.collect);love.audio.play(state.sounds.collect) end
+	-- if self.got then love.audio.rewind(state.sounds.collect);love.audio.play(state.sounds.collect) end
 end
 
 function health:trigger(member)
